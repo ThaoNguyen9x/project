@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.gap-slider .slick-track {
+  display: flex;
+  gap: 5px;
+}
+
+.custom-collapse .ant-collapse-header {
+  padding: 0 !important;
+}
+
+table th,
+table td {
+  white-space: nowrap;
+}
+
+a {
+  color: #1e3a8a;
+}
+
+.status {
+  padding: 0.375rem 1rem;
+  border-radius: 0.375rem;
+}
+
+.success {
+  background-color: #d1fae5;
+  color: #064e3b;
+}
+
+.danger {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+}
+
+.warning {
+  background-color: #fef9c3;
+  color: #713f12;
+}
+
+.GET {
+  color: #15803d;
+}
+
+.POST {
+  color: #a16207;
+}
+
+.PUT {
+  color: #1d4ed8;
+}
+
+.DELETE {
+  color: #b91c1c;
+}
+
+.ant-modal-title {
+  justify-self: center;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+}
+
+.ant-form-item {
+  margin-bottom: 0.5rem;
+}
