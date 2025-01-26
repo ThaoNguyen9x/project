@@ -16,9 +16,9 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isLoginPage = location.pathname === "/login";
-  const isForgotPasswordPage = location.pathname === "/forgot-password";
-  const isResetPasswordPage = location.pathname === "/reset-password";
+  const isLoginPage = location.pathname.replace(/\/$/, '') === "/login";
+  const isForgotPasswordPage = location.pathname.replace(/\/$/, '') === "/forgot-password";
+  const isResetPasswordPage = location.pathname.replace(/\/$/, '') === "/reset-password";
 
   useEffect(() => {
     form.resetFields();
@@ -75,7 +75,7 @@ const Login = () => {
 
     if (res && res.statusCode === 200) {
       message.success(res.message);
-      form.resetFields(); 
+      form.resetFields();
       navigate("/login");
     } else {
       notification.error({
@@ -103,7 +103,9 @@ const Login = () => {
     ? handleLogin
     : isForgotPasswordPage
     ? handleForgotPassword
-    : handleResetPassword;
+    : isResetPasswordPage
+    ? handleResetPassword
+    : null;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4">
