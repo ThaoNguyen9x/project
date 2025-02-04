@@ -25,13 +25,13 @@ import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permissio
 import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_DATE_DISPLAY, FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import Highlighter from "react-highlight-words";
-import ViewWorkRegistration from "../../components/admin/Work_Registration/view.work-registration";
-import ModalWorkRegistration from "../../components/admin/Work_Registration/modal.work-registration";
 import { AuthContext } from "../../components/share/Context";
 import dayjs from "dayjs";
+import ModalWorkRegistration from "../../components/admin/Work_Registration/modal.work-registration";
+import ViewWorkRegistration from "../../components/admin/Work_Registration/view.work-registration";
 
 const WorkRegistration = () => {
-   const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -165,6 +165,7 @@ const WorkRegistration = () => {
     {
       title: "STT",
       key: "index",
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -272,7 +273,10 @@ const WorkRegistration = () => {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.UPDATE} hideChildren>
+          <Access
+            permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.UPDATE}
+            hideChildren
+          >
             <div
               onClick={() => {
                 setData(record);
@@ -283,7 +287,10 @@ const WorkRegistration = () => {
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.DELETE} hideChildren>
+          <Access
+            permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.DELETE}
+            hideChildren
+          >
             <Popconfirm
               placement="leftBottom"
               okText="Có"
@@ -378,8 +385,14 @@ const WorkRegistration = () => {
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Đăng ký công việc</h2>
-        <Access permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+        <Access
+          permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.CREATE}
+          hideChildren
+        >
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

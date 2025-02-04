@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -46,4 +47,8 @@ public class Device extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maintenance_service_id")
     private SystemMaintenanceService maintenanceService;
+
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ItemCheck> itemChecks;
 }

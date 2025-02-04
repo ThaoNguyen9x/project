@@ -1,52 +1,23 @@
-import { Avatar, Dropdown, message, Space, Tabs } from "antd";
-import React, { useEffect, useState } from "react";
-import SockJS from "sockjs-client";
-import Stomp from "stompjs";
+import React, { useState } from "react";
+import { Avatar, Dropdown, Space, Tabs } from "antd";
 import { CiMenuKebab } from "react-icons/ci";
 import { LuUsers } from "react-icons/lu";
-import { FORMAT_TEXT_LENGTH } from "../../../utils/constant";
 import Search from "antd/es/transfer/search";
+import { FORMAT_TEXT_LENGTH } from "../../../utils/constant";
 import ChatAddContact from "./ChatAddContact";
 
 const ChatSidebar = ({
   user,
+  userStatus,
   listChatRoomUsers,
   listChatRoomGroups,
   selectChatRoomUser,
   handleCreateRoomPrivate,
   handleCreateGroup,
-  fetchData,
 }) => {
   const [filter, setFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [listMessageUserWs, setListMessageUserWs] = useState([]);
-
-  useEffect(() => {
-    setListMessageUserWs([]);
-
-    const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
-    const stompClient = Stomp.over(sock);
-
-    stompClient.debug = () => {};
-
-    const topic = `/topic/messages/${user?.id}`;
-
-    stompClient.connect({}, () => {
-      stompClient.subscribe(topic, (messageOutput) => {
-        const messageBody = JSON.parse(messageOutput.body);
-        fetchData();
-        setListMessageUserWs((prevMessages) => [
-          ...prevMessages,
-          { ...messageBody },
-        ]);
-
-        message.success("Bạn có một tin nhắn mới. Vui lòng kiểm tra.");
-      });
-    });
-
-    return () => stompClient.disconnect();
-  }, [user?.id]);
 
   const items = [
     {
@@ -88,11 +59,11 @@ const ChatSidebar = ({
         .includes(searchText.toLowerCase())
     )
     .reduce((acc, current) => {
-      const roomName = current.chatRoom?.name;
+      const roomName = current?.chatRoom?.name;
       if (!acc[roomName]) {
-        acc[roomName] = { chatRoom: current.chatRoom, users: [] };
+        acc[roomName] = { chatRoom: current?.chatRoom, users: [] };
       }
-      acc[roomName].users.push(current.user);
+      acc[roomName]?.users.push(current?.user);
       return acc;
     }, {});
 
@@ -101,7 +72,7 @@ const ChatSidebar = ({
   const contacts = [
     {
       key: "1",
-      label: "Khách hàng",
+      label: user?.role?.name !== "Customer" ? "Khách hàng" : "Tất cả",
       children: (
         <>
           {filteredChatRoomUsers
@@ -122,7 +93,7 @@ const ChatSidebar = ({
                       </Avatar>
                       <span
                         className={`absolute bottom-0 right-0 size-2 ${
-                          chatRoomUser?.user?.isOnline
+                          userStatus[chatRoomUser?.user?.id] === "online"
                             ? "bg-green-600"
                             : "bg-red-600"
                         } rounded-full`}
@@ -134,7 +105,9 @@ const ChatSidebar = ({
                         {FORMAT_TEXT_LENGTH(chatRoomUser?.user?.name)}
                       </div>
                       <div className="text-sm text-zinc-400">
-                        {chatRoomUser?.user?.isOnline ? "Online" : "Offline"}
+                        {userStatus[chatRoomUser?.user?.id] === "online"
+                          ? "Online"
+                          : "Offline"}
                         {chatRoomUser?.user?.chatRoomUsers?.[0].chatRoomId}
                       </div>
                     </div>
@@ -155,84 +128,95 @@ const ChatSidebar = ({
         </>
       ),
     },
-    {
-      key: "2",
-      label: "Nhóm",
-      children: (
-        <>
-          {filteredChatRoomGroups.map((chatRoomGroup) => (
-            <button
-              key={chatRoomGroup?.chatRoom?.id}
-              onClick={() => {
-                selectChatRoomUser(chatRoomGroup);
-              }}
-              className="w-full p-3 flex items-center gap-3 hover:bg-gray-100 rounded-md"
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Avatar.Group
-                    max={{
-                      count: 2,
-                      style: {
-                        color: "#f56a00",
-                        backgroundColor: "#fde3cf",
-                      },
+
+    ...(user?.role?.name !== "Customer"
+      ? [
+          {
+            key: "2",
+            label: "Nhóm",
+            children: (
+              <>
+                {filteredChatRoomGroups.map((chatRoomGroup) => (
+                  <button
+                    key={chatRoomGroup?.chatRoom?.id}
+                    onClick={() => {
+                      selectChatRoomUser(chatRoomGroup);
                     }}
+                    className="w-full p-3 flex items-center gap-3 hover:bg-gray-100 rounded-md"
                   >
-                    {chatRoomGroup.users.map((user) => (
-                      <Avatar key={user?.id} size={32} className="bg-red-700">
-                        {user?.role?.name?.[0]?.toUpperCase()}
-                      </Avatar>
-                    ))}
-                  </Avatar.Group>
-                </div>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <Avatar.Group
+                          max={{
+                            count: 2,
+                            style: {
+                              color: "#f56a00",
+                              backgroundColor: "#fde3cf",
+                            },
+                          }}
+                        >
+                          {chatRoomGroup.users.map((user) => (
+                            <Avatar
+                              key={user?.id}
+                              size={32}
+                              className="bg-red-700"
+                            >
+                              {user?.role?.name?.[0]?.toUpperCase()}
+                            </Avatar>
+                          ))}
+                        </Avatar.Group>
+                      </div>
 
-                <div className="hidden lg:block text-left min-w-0">
-                  <div className="font-medium truncate">
-                    {FORMAT_TEXT_LENGTH(chatRoomGroup?.chatRoom?.name)}
-                  </div>
-                </div>
-              </div>
+                      <div className="hidden lg:block text-left min-w-0">
+                        <div className="font-medium truncate">
+                          {FORMAT_TEXT_LENGTH(chatRoomGroup?.chatRoom?.name)}
+                        </div>
+                      </div>
+                    </div>
 
-              {chatRoomGroup?.unreadCount > 0 ? (
-                <div className="flex items-center justify-center bg-red-700 text-white h-5 w-7 rounded-full">
-                  <span className="text-xs font-semibold">
-                    {chatRoomGroup?.unreadCount}
-                  </span>
-                </div>
-              ) : (
-                ""
-              )}
-            </button>
-          ))}
-        </>
-      ),
-    },
+                    {chatRoomGroup?.unreadCount > 0 && (
+                      <div className="flex items-center justify-center bg-red-700 text-white h-5 w-7 rounded-full">
+                        <span className="text-xs font-semibold">
+                          {chatRoomGroup?.unreadCount}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
     <>
-      <div className="h-full w-20 lg:w-72 border-r flex flex-col transition-all duration-200">
-        <div className="w-full pb-5">
+      <div className="h-full w-20 lg:w-72 lg:border-r flex flex-col transition-all duration-200">
+        <div className="w-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <LuUsers className="size-6" />
               <span className="font-medium hidden lg:block">Liên hệ</span>
             </div>
 
-            <Dropdown
-              menu={{
-                items,
-              }}
-              trigger={["click"]}
-              placement="bottomRight"
-            >
-              <a onClick={(e) => e.preventDefault()}>
-                <Space>
-                  <CiMenuKebab className="size-6 text-black" />
-                </Space>
-              </a>
-            </Dropdown>
+            {user?.role?.name !== "Customer" ? (
+              <Dropdown
+                menu={{
+                  items,
+                }}
+                trigger={["click"]}
+                placement="bottomRight"
+              >
+                <a onClick={(e) => e.preventDefault()}>
+                  <Space>
+                    <CiMenuKebab className="size-6 text-black" />
+                  </Space>
+                </a>
+              </Dropdown>
+            ) : (
+              ""
+            )}
           </div>
 
           <div className="mt-3 pr-2">

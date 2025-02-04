@@ -164,6 +164,7 @@ const User = () => {
     {
       title: "STT",
       key: "index",
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -346,7 +347,10 @@ const User = () => {
         <h2 className="text-base xl:text-xl font-bold">Tài khoản</h2>
 
         <Access permission={ALL_PERMISSIONS.USERS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

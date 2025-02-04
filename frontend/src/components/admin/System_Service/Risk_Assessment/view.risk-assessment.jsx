@@ -292,7 +292,7 @@ const ViewRiskAssessment = (props) => {
 
   let items = generateItems();
 
-  if (user?.role?.name === "ADMIN") {
+  if (user?.role?.name === "Application_Admin") {
     items = [
       ...items,
       {

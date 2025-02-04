@@ -1,4 +1,4 @@
-package com.building_mannager_system.service.property_manager;
+package com.building_mannager_system.entity.property_manager;
 
 import com.building_mannager_system.entity.BaseEntity;
 import com.building_mannager_system.entity.User;
@@ -33,7 +33,7 @@ public class ItemCheckResult extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User technichanName;
+    private User technician;
 
     @Column(name = "checked_at", nullable = false) // Thời gian kiểm tra
     private LocalDateTime checkedAt;

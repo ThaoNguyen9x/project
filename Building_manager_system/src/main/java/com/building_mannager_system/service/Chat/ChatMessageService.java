@@ -131,17 +131,14 @@ public class ChatMessageService {
 
         User user = userRepository.findByEmail(email);
 
-        List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(roomId);
+        List<ChatMessage> unreadMessages = chatMessageRepository
+                .findByChatRoomIdAndStatusNotAndCreatedByNot(roomId, MessageStatus.READ, user.getEmail());
 
-        chatMessages.forEach(message -> {
-            if (!message.getCreatedBy().equals(user.getEmail())) {
-                message.setStatus(MessageStatus.READ);
-            }
-        });
+        unreadMessages.forEach(message -> message.setStatus(MessageStatus.READ));
 
-        chatMessageRepository.saveAll(chatMessages);
+        chatMessageRepository.saveAll(unreadMessages);
 
-        return chatMessages.stream()
+        return unreadMessages.stream()
                 .map(message -> modelMapper.map(message, ChatMessageDto.class))
                 .collect(Collectors.toList());
     }

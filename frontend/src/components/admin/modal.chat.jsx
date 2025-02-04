@@ -17,37 +17,24 @@ import NoChatSelected from "./Chat/NoChatSelected";
 import ChatContainer from "./Chat/ChatContainer";
 
 const ModalChat = (props) => {
-  const { openChat, setOpenChat } = props;
+  const {
+    fetchData,
+    listChatRoomUsers,
+    setListChatRoomUsers,
+    listChatRoomGroups,
+    setListChatRoomGroups,
+    openChat,
+    setOpenChat,
+    userStatus,
+  } = props;
   const { user } = useContext(AuthContext);
 
-  const [listChatRoomUsers, setListChatRoomUsers] = useState([]);
-  const [listChatRoomGroups, setListChatRoomGroups] = useState([]);
   const [selectedChatRoomUser, setSelectedChatRoomUser] = useState(null);
 
   const [listMessages, setListMessages] = useState([]);
   const [listMessageWs, setListMessageWs] = useState([]);
 
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-
-    const res = await callGetChatRoomUsers();
-    if (res && res.data && res.statusCode === 200) {
-      setListChatRoomUsers(res.data.result);
-    }
-
-    const res1 = await callGetChatRoomGroups();
-    if (res1 && res1.data && res1.statusCode === 200) {
-      setListChatRoomGroups(res1.data.result);
-    }
-
-    setLoading(false);
-  };
 
   const selectChatRoomUser = async (user) => {
     setLoading(true);
@@ -86,14 +73,27 @@ const ModalChat = (props) => {
   const fetchMessages = async () => {
     setLoading(true);
 
-    const res = await callGetMessagesByRoomId(
-      selectedChatRoomUser?.chatRoom?.id
-    );
+    let allMessages = [];
+    let page = 1;
+    let hasMore = true;
 
-    if (res && res.data) {
-      setListMessages(res.data.result);
+    while (hasMore) {
+      const query = `page=${page}&pageSize=20`;
+      const res = await callGetMessagesByRoomId(
+        selectedChatRoomUser?.chatRoom?.id,
+        query
+      );
+
+      if (res && res.data) {
+        const messages = res.data.result || [];
+        allMessages = [...allMessages, ...messages];
+
+        hasMore = res.data.hasMore || messages.length === 20;
+        page += 1;
+      }
     }
 
+    setListMessages(allMessages);
     setLoading(false);
   };
 
@@ -111,7 +111,7 @@ const ModalChat = (props) => {
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
     const stompClient = Stomp.over(sock);
 
-    stompClient.debug = () => {};
+    // stompClient.debug = () => {};
 
     const topic = `/topic/messages/room/${selectedChatRoomUser?.chatRoom?.id}`;
 
@@ -124,8 +124,8 @@ const ModalChat = (props) => {
           fetchMessages();
           fetchData();
         } else {
-          fetchData();
           fetchMessages();
+          fetchData();
           setListMessageWs((prevMessages) => [
             ...prevMessages,
             { ...messageBody },
@@ -179,13 +179,14 @@ const ModalChat = (props) => {
       }}
       footer={null}
       closable={false}
-      className="!w-2/3 top-10"
+      className="!w-5/6 lg:!w-3/4 top-10"
     >
       <div className="flex items-center justify-center">
         <div className="w-full h-[calc(100vh-8rem)]">
           <div className="flex h-full overflow-hidden">
             <ChatSidebar
               user={user}
+              userStatus={userStatus}
               listChatRoomUsers={listChatRoomUsers}
               listChatRoomGroups={listChatRoomGroups}
               selectChatRoomUser={selectChatRoomUser}
@@ -199,6 +200,7 @@ const ModalChat = (props) => {
             ) : (
               <ChatContainer
                 user={user}
+                userStatus={userStatus}
                 selectedChatRoomUser={selectedChatRoomUser}
                 setSelectedChatRoomUser={setSelectedChatRoomUser}
                 listMessages={listMessages}

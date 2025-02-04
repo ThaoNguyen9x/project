@@ -6,7 +6,7 @@ export const AuthContext = createContext({
   email: "",
   mobile: "",
   role: "",
-  isOnline: ""
+  isOnline: "",
 });
 
 export const AuthWrapper = (props) => {
@@ -16,15 +16,13 @@ export const AuthWrapper = (props) => {
     email: "",
     mobile: "",
     role: "",
-    isOnline: ""
+    isOnline: "",
   });
 
-  const [isAppLoading, setIsAppLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   return (
-    <AuthContext.Provider
-      value={{ user, setUser, isAppLoading, setIsAppLoading }}
-    >
+    <AuthContext.Provider value={{ user, setUser, loading, setLoading }}>
       {props.children}
     </AuthContext.Provider>
   );

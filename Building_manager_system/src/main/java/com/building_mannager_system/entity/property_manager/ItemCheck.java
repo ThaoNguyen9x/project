@@ -1,7 +1,6 @@
-package com.building_mannager_system.service.property_manager;
+package com.building_mannager_system.entity.property_manager;
 
 import com.building_mannager_system.entity.BaseEntity;
-import com.building_mannager_system.entity.property_manager.Device;
 import com.building_mannager_system.enums.Frequency;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +17,7 @@ public class ItemCheck extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Tự động tăng ID
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) // Liên kết đến bảng `device`
+    @ManyToOne // Liên kết đến bảng `device`
     @JoinColumn(name = "device_id", nullable = false) // Cột khóa ngoại
     private Device device;
 

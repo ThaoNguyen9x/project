@@ -12,28 +12,36 @@ export const FORMAT_TEXT_LENGTH = (text, maxLength = 30) => {
 
 export const isURL = (text) => {
   const urlPattern = new RegExp(
-    '^(https?:\\/\\/)?' + // protocol (http:// hoặc https:// là tùy chọn)
-    '([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}' + // domain name (bao gồm các tên miền quốc tế)
-    '(\\/[^\\s]*)?$', // path, không có khoảng trắng
-    'i'
+    "^" +
+      "(?:(?:https?|ftp):\\/\\/)?" +
+      "(?:\\S+(?::\\S*)?@)?" +
+      "(?:" +
+      "(?:(?:[a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,}|" +
+      "localhost|" +
+      "(?:\\d{1,3}\\.){3}\\d{1,3})" +
+      ")" +
+      "(?::\\d{2,5})?" +
+      "(?:[/?#]\\S*)?" +
+      "$",
+    "i"
   );
-  return !!urlPattern.test(text);
+  return urlPattern.test(text);
 };
 
 export const formatDate = (dateString) => {
   const today = new Date();
   const messageDate = new Date(dateString);
-  
+
   if (today.toDateString() === messageDate.toDateString()) {
     return "Hôm nay";
   }
-  
+
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   if (yesterday.toDateString() === messageDate.toDateString()) {
     return "Hôm qua";
   }
-  
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return messageDate.toLocaleDateString('vi-VN', options);
+
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return messageDate.toLocaleDateString("vi-VN", options);
 };

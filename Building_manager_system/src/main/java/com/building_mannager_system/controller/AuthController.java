@@ -4,7 +4,6 @@ import com.building_mannager_system.entity.User;
 import com.building_mannager_system.dto.requestDto.ReqChangePasswordDTO;
 import com.building_mannager_system.dto.requestDto.ReqLoginDTO;
 import com.building_mannager_system.dto.responseDto.ResLoginDTO;
-import com.building_mannager_system.enums.MessageStatus;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.service.UserService;
@@ -34,15 +33,18 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
                           SecurityUtil securityUtil,
                           UserRepository userRepository,
-                          UserService userService) {
+                          UserService userService,
+                          SimpMessagingTemplate messagingTemplate) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @PostMapping(value = {"/login", "/sign-in"})
@@ -68,8 +70,6 @@ public class AuthController {
         ResLoginDTO res = new ResLoginDTO();
         User currentUserDB = userRepository.findByEmail(loginDTO.getEmail());
         if (currentUserDB != null) {
-            currentUserDB.setIsOnline(true);
-
             ResLoginDTO.UserInfo userInfo = new ResLoginDTO.UserInfo(
                     currentUserDB.getId(),
                     currentUserDB.getName(),
@@ -115,7 +115,6 @@ public class AuthController {
             userInfo.setName(currentUser.getName());
             userInfo.setEmail(currentUser.getEmail());
             userInfo.setRole(currentUser.getRole());
-            userInfo.setOnline(currentUser.getIsOnline());
 
             getAccount.setUser(userInfo);
         }
@@ -164,7 +163,6 @@ public class AuthController {
     public ResponseEntity<Void> logout() {
         String email = SecurityUtil.getCurrentUserLogin().orElse(null);
         userService.refreshToken(null, email);
-        userService.changeOffline(email);
 
         ResponseCookie resCookie = ResponseCookie.from("refresh_token", null)
                 .httpOnly(true).secure(true).path("/").maxAge(0).build();

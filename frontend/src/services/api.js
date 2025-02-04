@@ -1261,8 +1261,8 @@ export const callSendMessage = (chatRoom, user, content, imageUrl) => {
   });
 };
 
-export const callGetMessagesByRoomId = (roomId) => {
-  return axios.get(`/api/chat-messages/room/${roomId}`);
+export const callGetMessagesByRoomId = (roomId, query) => {
+  return axios.get(`/api/chat-messages/room/${roomId}?${query}`);
 };
 
 export const callGetChatRoomUsers = () => {
@@ -1309,4 +1309,96 @@ export const callDownloadFile = (file, folder) => {
 
       return { success: true };
     });
+};
+
+/**************** ITEM CHECKS ****************/
+export const callGetAllItemChecks = (query) => {
+  return axios.get(`/api/item-checks?${query}`);
+};
+
+export const callGetAllItemChecksByDeviceId = (deviceId, query) => {
+  return axios.get(`/api/item-checks/device/${deviceId}?${query}`);
+};
+
+export const callCreateItemCheck = (
+  device,
+  checkCategory,
+  checkName,
+  standard,
+  frequency
+) => {
+  return axios.post("/api/item-checks", {
+    device,
+    checkCategory,
+    checkName,
+    standard,
+    frequency,
+  });
+};
+
+export const callUpdateItemCheck = (
+  id,
+  device,
+  checkCategory,
+  checkName,
+  standard,
+  frequency
+) => {
+  return axios.put(`/api/item-checks/${id}`, {
+    device,
+    checkCategory,
+    checkName,
+    standard,
+    frequency,
+  });
+};
+
+export const callDeleteItemCheck = (id) => {
+  return axios.delete(`/api/item-checks/${id}`);
+};
+
+/**************** RESULT CHECKS ****************/
+export const callGetAllResultChecks = (query) => {
+  return axios.get(`/api/result-checks?${query}`);
+};
+
+export const callGetAllResultsByCheckItemId = (itemCheckId, query) => {
+  return axios.get(`/api/result-checks/item-check/${itemCheckId}?${query}`);
+};
+
+export const callCreateResultCheck = (
+  itemCheck,
+  result,
+  note,
+  technician,
+  checkedAt
+) => {
+  return axios.post("/api/result-checks", {
+    itemCheck,
+    result,
+    note,
+    technician,
+    checkedAt,
+  });
+};
+
+export const callUpdateResultCheck = (
+  id,
+  itemCheck,
+  result,
+  note,
+  technician,
+  checkedAt
+) => {
+  return axios.put(`/api/result-checks/${id}`, {
+    itemCheck,
+    result,
+    note,
+    technician,
+    checkedAt,
+  });
+};
+
+export const callDeleteResultCheck = (id) => {
+  return axios.delete(`/api/result-checks/${id}`);
 };

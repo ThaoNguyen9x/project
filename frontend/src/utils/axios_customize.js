@@ -60,14 +60,14 @@ instance.interceptors.response.use(
     //   }
     // }
     
-    if (+error.response.status === 401) {
+    if (+error?.response?.status === 401) {
       localStorage.setItem("redirectedFromExpiredSession", "true");
       window.location.href = "/login";
       localStorage.removeItem("access_token");
     }
     
 
-    if (+error.response.status === 403) {
+    if (+error?.response?.status === 403) {
       notification.error({
         message: "Error",
         description: "You do not have permission to access this information",

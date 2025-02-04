@@ -15,4 +15,6 @@ public interface ChatMessageRepository  extends JpaRepository<ChatMessage, Long>
     List<ChatMessage> findByChatRoomId(Long chatRoomId);
 
     long countByChatRoom_IdAndStatusNotAndCreatedByNot(Long chatRoomId, MessageStatus status, String createdBy);
+
+    List<ChatMessage> findByChatRoomIdAndStatusNotAndCreatedByNot(Long roomId, MessageStatus status, String createdBy);
 }

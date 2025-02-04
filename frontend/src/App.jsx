@@ -53,10 +53,11 @@ import Task from "./pages/admin/Task";
 import NotificationMaintenance from "./pages/admin/NotificationMaintenance";
 import RepairRequest from "./pages/admin/RepairRequest";
 import WorkRegistration from "./pages/admin/WorkRegistration";
-
+import ItemCheck from "./pages/admin/ItemCheck";
+import ResultCheck from "./pages/admin/ResultCheck";
 
 function App() {
-  const { user, setUser, isAppLoading, setIsAppLoading } =
+  const { user, setUser, loading, setLoading } =
     useContext(AuthContext);
 
   const delay = (milSeconds) => {
@@ -69,7 +70,7 @@ function App() {
 
   useEffect(() => {
     const fetchAccount = async () => {
-      setIsAppLoading(true);
+      setLoading(true);
 
       const res = await callGetAccount();
       await delay(3000);
@@ -78,13 +79,13 @@ function App() {
         setUser(res.data);
       }
 
-      setIsAppLoading(false);
+      setLoading(false);
     };
 
     fetchAccount();
   }, []);
 
-  if (isAppLoading) {
+  if (loading) {
     return <Loading />;
   }
 
@@ -204,7 +205,8 @@ function App() {
           path: "payment-contracts",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.PAYMENT_CONTRACTS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.PAYMENT_CONTRACTS.GET_PAGINATE.apiPath
           ) ? (
             <PaymentContract />
           ) : (
@@ -215,7 +217,8 @@ function App() {
           path: "handover-status",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.HANDOVER_STATUS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.HANDOVER_STATUS.GET_PAGINATE.apiPath
           ) ? (
             <HandoverStatus />
           ) : (
@@ -248,7 +251,8 @@ function App() {
           path: "maintenance-services",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.SYSTEM_MAINTENANCE_SERVICES.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.SYSTEM_MAINTENANCE_SERVICES.GET_PAGINATE.apiPath
           ) ? (
             <SystemMaintenanceService />
           ) : (
@@ -259,7 +263,8 @@ function App() {
           path: "maintenance-histories",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath
           ) ? (
             <MaintenanceHistory />
           ) : (
@@ -292,7 +297,8 @@ function App() {
           path: "electricity-usages",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.apiPath
           ) ? (
             <ElectricityUsage />
           ) : (
@@ -325,7 +331,8 @@ function App() {
           path: "repair-proposals",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.REPAIR_PROPOSALS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.REPAIR_PROPOSALS.GET_PAGINATE.apiPath
           ) ? (
             <RepairProposal />
           ) : (
@@ -336,7 +343,8 @@ function App() {
           path: "risk-assessments",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
           ) ? (
             <RiskAssessment />
           ) : (
@@ -347,7 +355,8 @@ function App() {
           path: "risk-assessments",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
           ) ? (
             <RiskAssessment />
           ) : (
@@ -358,7 +367,8 @@ function App() {
           path: "notifications",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.apiPath
           ) ? (
             <NotificationMaintenance />
           ) : (
@@ -380,7 +390,7 @@ function App() {
           path: "work-registrations",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.USERS.GET_PAGINATE.apiPath
+              perm.apiPath === ALL_PERMISSIONS.WORK_REGISTRATIONS.GET_PAGINATE.apiPath
           ) ? (
             <WorkRegistration />
           ) : (
@@ -391,9 +401,31 @@ function App() {
           path: "repair-requests",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.USERS.GET_PAGINATE.apiPath
+              perm.apiPath === ALL_PERMISSIONS.REPAIR_REQUEST.GET_PAGINATE.apiPath
           ) ? (
             <RepairRequest />
+          ) : (
+            <Navigate to="/dashboard" />
+          ),
+        },
+        {
+          path: "item-checks",
+          element: user?.role?.permissions?.some(
+            (perm) =>
+              perm.apiPath === ALL_PERMISSIONS.ITEM_CHECKS.GET_PAGINATE.apiPath
+          ) ? (
+            <ItemCheck />
+          ) : (
+            <Navigate to="/dashboard" />
+          ),
+        },
+        {
+          path: "result-checks",
+          element: user?.role?.permissions?.some(
+            (perm) =>
+              perm.apiPath === ALL_PERMISSIONS.RESULT_CHECKS.GET_PAGINATE.apiPath
+          ) ? (
+            <ResultCheck />
           ) : (
             <Navigate to="/dashboard" />
           ),

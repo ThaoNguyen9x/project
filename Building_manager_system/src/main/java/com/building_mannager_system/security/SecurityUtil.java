@@ -51,8 +51,8 @@ public class SecurityUtil {
 
         // Hardcode permission
         List<String> listAuthority = new ArrayList<>();
-        listAuthority.add("USER");
-        listAuthority.add("ADMIN");
+        listAuthority.add("Customer");
+        listAuthority.add("Application_Admin");
 
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()

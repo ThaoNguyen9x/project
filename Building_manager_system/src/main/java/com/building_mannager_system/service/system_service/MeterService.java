@@ -3,10 +3,16 @@ package com.building_mannager_system.service.system_service;
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.MeterDto;
+import com.building_mannager_system.entity.User;
+import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
 import com.building_mannager_system.entity.customer_service.contact_manager.Office;
+import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
 import com.building_mannager_system.entity.customer_service.system_manger.Meter;
+import com.building_mannager_system.repository.Contract.CustomerRepository;
+import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.office.OfficeRepository;
 import com.building_mannager_system.repository.system_manager.MeterRepository;
+import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.utils.exception.APIException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -23,16 +29,45 @@ public class MeterService {
     private final MeterRepository meterRepository;
     private final ModelMapper modelMapper;
     private final OfficeRepository officeRepository;
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
 
     public MeterService(MeterRepository meterRepository,
-                        ModelMapper modelMapper, OfficeRepository officeRepository) {
+                        ModelMapper modelMapper, OfficeRepository officeRepository, UserRepository userRepository, CustomerRepository customerRepository) {
         this.meterRepository = meterRepository;
         this.modelMapper = modelMapper;
         this.officeRepository = officeRepository;
+        this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
     }
 
     public ResultPaginationDTO getAllMeters(Specification<Meter> spec,
                                                    Pageable pageable) {
+
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
+
+        Customer customer = customerRepository.findById(user.getCustomer().getId())
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer not found"));
+
+        Contract contract = customer.getContracts().stream()
+                .findFirst()
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found"));
+
+        Meter meter;
+        if (contract.getOffice() != null && !contract.getOffice().getMeters().isEmpty()) {
+            meter = meterRepository.findById(contract.getOffice().getMeters().get(0).getId())
+                    .orElse(null);
+        } else {
+            meter = null;
+        }
+
+        if (user.getRole().getName().equals("Customer") && meter != null) {
+            spec = Specification.where((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("serialNumber"), meter.getSerialNumber()));
+        }
 
         Page<Meter> page = meterRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();

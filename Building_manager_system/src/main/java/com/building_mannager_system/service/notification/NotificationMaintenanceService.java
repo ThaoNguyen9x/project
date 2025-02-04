@@ -79,12 +79,12 @@ public class NotificationMaintenanceService {
             notificationMaintenance.setMaintenanceTask(maintenanceTask);
         }
 
-        List<String> roles = List.of("TECHNICAL_MANAGER", "ENGINEERING");
+        List<String> roles = List.of("Technician_Manager", "Technician_Employee");
 
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         if (recipients.isEmpty())
-            throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles TECHNICAL_MANAGER and ENGINEERING.");
+            throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles Technician_Manager and Technician_Employee.");
 
         for (User recipientUser : recipients) {
             Recipient rec = new Recipient();
@@ -111,12 +111,12 @@ public class NotificationMaintenanceService {
             notificationMaintenance.setMaintenanceTask(maintenanceTask);
         }
 
-        List<String> roles = List.of("TECHNICAL_MANAGER", "ENGINEERING");
+        List<String> roles = List.of("Technician_Manager", "Technician_Employee");
 
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         if (recipients.isEmpty())
-            throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles TECHNICAL_MANAGER and ENGINEERING.");
+            throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles Technician_Manager and Technician_Employee.");
 
         for (User recipientUser : recipients) {
             Recipient rec = new Recipient();

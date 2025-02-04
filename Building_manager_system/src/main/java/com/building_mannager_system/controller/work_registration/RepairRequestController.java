@@ -45,7 +45,7 @@ public class RepairRequestController {
     @ApiMessage("Tạo yêu cầu sửa chữa thành công")
     public ResponseEntity<RepairRequestDto> createRepairRequest(@RequestPart(value = "image", required = false) MultipartFile image,
                                                    @ModelAttribute RepairRequest repairRequest) {
-        List<String> roles = List.of("ADMIN");
+        List<String> roles = List.of("Application_Admin");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         RepairRequestDto res = repairRequestService.createRepairRequest(image, repairRequest);

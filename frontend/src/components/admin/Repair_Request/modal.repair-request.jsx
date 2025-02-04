@@ -72,7 +72,7 @@ const ModalRepairRequest = (props) => {
         dayjs(requestDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         content,
         image,
-        status,
+        status
       );
 
       if (res && res.data) {
@@ -91,7 +91,7 @@ const ModalRepairRequest = (props) => {
         dayjs(requestDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         content,
         image,
-        status,
+        status
       );
 
       if (res && res.data) {
@@ -153,15 +153,21 @@ const ModalRepairRequest = (props) => {
                 optionLabelProp="label"
                 allowClear
               >
-                {listUsers.map((user) => (
-                  <Select.Option
-                    key={user.id}
-                    value={user.id}
-                    label={user.name}
-                  >
-                    {user.name}
-                  </Select.Option>
-                ))}
+                {listUsers
+                  .filter(
+                    (user) =>
+                      user?.role?.name === "Technician_Employee" ||
+                      (user?.role?.name === "Subcontractor" && user?.status)
+                  )
+                  .map((user) => (
+                    <Select.Option
+                      key={user.id}
+                      value={user.id}
+                      label={user.name}
+                    >
+                      {user.name}
+                    </Select.Option>
+                  ))}
               </Select>
             </Form.Item>
           </Col>
@@ -234,7 +240,7 @@ const ModalRepairRequest = (props) => {
                 }
               >
                 <Option value="PENDING" label="Đang chờ xử lý">
-                   Đang chờ xử lý
+                  Đang chờ xử lý
                 </Option>
                 <Option value="SUCCESS" label="Đã hoàn thành">
                   Đã hoàn thành

@@ -20,6 +20,9 @@ import { FaRegBell } from "react-icons/fa6";
 import {
   callGetAllNotificationMaintenances,
   callGetAllNotifications,
+  callGetChatRoomGroups,
+  callGetChatRoomUsers,
+  callGetMessagesByRoomId,
   callLogout,
   callReadNotification,
   callReadNotificationMaintenance,
@@ -37,52 +40,80 @@ const AppHeader = () => {
   const [openChat, setOpenChat] = useState(false);
   const [openNotification, setOpenNotification] = useState(false);
   const [listNotifications, setListNotifications] = useState([]);
+  const [listMessages, setListMessages] = useState([]);
   const [notificationDetails, setNotificationDetails] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userStatus, setUserStatus] = useState({});
+  const [stompClient, setStompClient] = useState(null);
+  const [listChatRoomUsers, setListChatRoomUsers] = useState([]);
+  const [listChatRoomGroups, setListChatRoomGroups] = useState([]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
-    const stompClient = Stomp.over(sock);
+    const client = Stomp.over(sock);
 
-    stompClient.debug = () => {};
+    client.debug = () => {}; 
 
-    const topics = [
-      `/topic/paymentNotifications/${user.id}`,
-      `/topic/electricityUsageVerification/${user.id}`,
-      `/topic/maintenance/${user.id}`,
-      `/topic/admin/work-registrations/${user.id}`,
-    ];
+    client.connect({}, () => {
+      setStompClient(client);
 
-    stompClient.connect(
-      {},
-      () => {
-        topics.forEach((topic) => {
-          stompClient.subscribe(topic, (messageOutput) => {
-            const newMessage = JSON.parse(messageOutput.body);
-            fetchNotifications();
+      const topics = [
+        `/topic/user-status`,
+        `/topic/paymentNotifications/${user.id}`,
+        `/topic/electricityUsageVerification/${user.id}`,
+        `/topic/maintenance/${user.id}`,
+        `/topic/admin/work-registrations/${user.id}`,
+        `/topic/messages/${user.id}`,
+      ];
 
-            setListNotifications((prevMessages) => [
-              ...prevMessages,
-              { ...newMessage },
-            ]);
+      topics.forEach((topic) => {
+        client.subscribe(topic, (messageOutput) => {
+          const data = JSON.parse(messageOutput.body);
 
+          fetchData();
+          fetchNotifications();
+
+          if (topic === `/topic/user-status`) {
+            setUserStatus((prev) => ({ ...prev, ...data }));
+          } else if (topic.includes(`/topic/messages/`)) {
+            setListMessages((prev) => [...prev, data]);
+            message.success("Bạn có một tin nhắn mới.");
+          } else {
+            setListNotifications((prev) => [...prev, data]);
             notification.success({
-              message: "Thông báo",
-              description: "Bạn có một thông báo mới. Vui lòng kiểm tra.",
+              message: "Thông báo",
+              description: "Bạn có một thông báo mới. Vui lòng kiểm tra.",
             });
-          });
+          }
         });
-      },
-      (err) => {
-        notification.error({
-          message: "Có lỗi xảy ra",
-          description: "Kết nối thất bại",
-        });
-        console.error("WebSocket Error:", err);
-      }
-    );
+      });
 
-    return () => stompClient.disconnect();
+      client.send(
+        "/app/user-status",
+        {},
+        JSON.stringify({ userId: user.id, status: "online" })
+      );
+
+      const handleTabClose = () => {
+        if (client.connected) {
+          client.send(
+            "/app/user-status",
+            {},
+            JSON.stringify({ userId: user.id, status: "offline" })
+          );
+          client.disconnect();
+        }
+      };
+
+      window.addEventListener("beforeunload", handleTabClose);
+
+      return () => {
+        handleTabClose();
+        window.removeEventListener("beforeunload", handleTabClose);
+      };
+    });
   }, [user.id]);
 
   // Handle logout
@@ -146,15 +177,32 @@ const AppHeader = () => {
     setLoading(false);
   };
 
+  const fetchData = async () => {
+    setLoading(true);
+
+    const res = await callGetChatRoomUsers();
+    if (res && res.data && res.statusCode === 200) {
+      setListChatRoomUsers(res.data.result);
+    }
+
+    const res1 = await callGetChatRoomGroups();
+    if (res1 && res1.data && res1.statusCode === 200) {
+      setListChatRoomGroups(res1.data.result);
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
     fetchNotifications();
+    fetchData();
   }, []);
 
   const notificationItems =
     listNotifications?.filter(
       (notification) =>
         notification?.recipient?.referenceId === user?.id ||
-        ["ENGINEERING", "TECHNICAL_MANAGER"].includes(user?.role?.name)
+        ["Technician_Employee", "Technician_Manager"].includes(user?.role?.name)
     ).length > 0
       ? listNotifications.map((notification, index) => {
           const message = notification?.message
@@ -242,12 +290,19 @@ const AppHeader = () => {
         </div>
         <div className="flex items-center gap-3 xl:gap-5">
           <Button
-            className="!shadow-none border-none p-0"
             onClick={() => {
               setOpenChat(true);
+              fetchData();
             }}
+            className="!shadow-none border-none p-0"
           >
-            <Badge size="default" count={1}>
+            <Badge
+              size="default"
+              count={listChatRoomUsers.reduce(
+                (sum, chatUser) => sum + chatUser.unreadCount,
+                0
+              )}
+            >
               <TiMessages className="w-6 h-6 text-blue-950" />
             </Badge>
           </Button>
@@ -267,7 +322,7 @@ const AppHeader = () => {
                       (notification?.status === "PENDING" &&
                         notification?.recipient?.referenceId === user?.id) ||
                       (notification?.status === "PENDING" &&
-                        ["ENGINEERING", "TECHNICAL_MANAGER"].includes(
+                        ["Technician_Employee", "Technician_Manager"].includes(
                           user?.role?.name
                         ))
                   ).length
@@ -311,14 +366,16 @@ const AppHeader = () => {
       />
 
       {/* Chat Modal */}
-      <ModalChat openChat={openChat} setOpenChat={setOpenChat} />
-
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="absolute top-0 left-0 w-full h-full bg-white opacity-50 flex items-center justify-center">
-          <Spin size="large" />
-        </div>
-      )}
+      <ModalChat
+        fetchData={fetchData}
+        listChatRoomUsers={listChatRoomUsers}
+        setListChatRoomUsers={setListChatRoomUsers}
+        listChatRoomGroups={listChatRoomGroups}
+        setListChatRoomGroups={setListChatRoomGroups}
+        openChat={openChat}
+        setOpenChat={setOpenChat}
+        userStatus={userStatus}
+      />
     </>
   );
 };

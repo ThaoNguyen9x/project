@@ -167,6 +167,7 @@ const PaymentContract = () => {
     {
       title: "STT",
       key: "index",
+      fixed: 'left',
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {

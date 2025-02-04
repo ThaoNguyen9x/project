@@ -10,6 +10,7 @@ import FileWithSize from "../../share/FileWithSize";
 
 const ChatContainer = ({
   user,
+  userStatus,
   selectedChatRoomUser,
   setSelectedChatRoomUser,
   listMessages,
@@ -19,12 +20,17 @@ const ChatContainer = ({
   handleChangeStatusMessage,
 }) => {
   const messageEndRef = useRef(null);
+  const messageRefs = useRef({});
   const [openInfo, setOpenInfo] = useState(false);
   const [openSearch, setOpenSearch] = useState(false);
+  const [activeMessageId, setActiveMessageId] = useState(null);
 
   useEffect(() => {
     if (messageEndRef.current) {
-      messageEndRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+      messageEndRef.current.scrollIntoView({
+        behavior: "auto",
+        inline: "center",
+      });
     }
   }, [listMessages, listMessageWs]);
 
@@ -74,6 +80,14 @@ const ChatContainer = ({
     }
   };
 
+  const scrollToMessage = (messageId) => {
+    const messageElement = messageRefs.current[messageId];
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      setActiveMessageId(messageId);
+    }
+  };
+
   const filteredNotifications = listMessageWs.filter(
     (notification) =>
       notification?.chatRoom?.id === selectedChatRoomUser?.chatRoom?.id
@@ -88,18 +102,21 @@ const ChatContainer = ({
       let addedToGroup = false;
 
       for (let group of groupedMessages) {
-        const groupTime = new Date(group.createdAt);
+        const groupTime = new Date(group?.createdAt);
         const timeDifference = Math.abs(messageTime - groupTime);
 
-        if (timeDifference <= timeGap && group.user.id === message.user.id) {
-          group.messages.push(message);
+        if (
+          timeDifference <= timeGap &&
+          group?.user?.id === message?.user?.id
+        ) {
+          group?.messages.push(message);
 
-          if (message.imageUrl && !group.images.includes(message.imageUrl)) {
-            group.images.push(message.imageUrl);
+          if (message.imageUrl && !group?.images.includes(message?.imageUrl)) {
+            group?.images.push(message?.imageUrl);
           }
 
-          if (message.fileUrl && !group.files.includes(message.fileUrl)) {
-            group.files.push(message.fileUrl);
+          if (message?.fileUrl && !group?.files.includes(message?.fileUrl)) {
+            group?.files.push(message?.fileUrl);
           }
 
           addedToGroup = true;
@@ -110,22 +127,23 @@ const ChatContainer = ({
       if (!addedToGroup) {
         groupedMessages.push({
           createdAt: messageTime,
-          user: message.user,
+          user: message?.user,
           messages: [message],
-          images: message.imageUrl ? [message.imageUrl] : [],
-          files: message.fileUrl ? [message.fileUrl] : [],
+          images: message?.imageUrl ? [message?.imageUrl] : [],
+          files: message?.fileUrl ? [message?.fileUrl] : [],
         });
       }
     });
 
     return groupedMessages.map((group, groupIndex) => (
       <div ref={messageEndRef} key={groupIndex} className="message-group">
-        {group.messages.map((message, index) => (
+        {group?.messages.map((message, index) => (
           <div
             className={`flex ${
               message?.user?.id === user?.id ? "justify-end" : ""
             } items-start gap-2.5`}
-            key={`${message.id}-${index}`}
+            key={`${message?.id}-${index}`}
+            ref={(el) => (messageRefs.current[message?.id] = el)}
           >
             {index === 0 && (
               <>
@@ -135,7 +153,7 @@ const ChatContainer = ({
                   }`}
                 >
                   <Avatar size={32} className="bg-red-700">
-                    {group.user?.role?.name[0]?.toUpperCase()}
+                    {group?.user?.role?.name[0]?.toUpperCase()}
                   </Avatar>
                 </div>
                 <div className="flex flex-col gap-1 w-full max-w-[250px]">
@@ -147,7 +165,7 @@ const ChatContainer = ({
                     {index === 0 && (
                       <>
                         <span className="text-sm font-semibold text-gray-900">
-                          {group.user?.name}
+                          {group?.user?.name}
                         </span>
                         <span className="text-sm font-normal text-gray-500">
                           {formatMessageTime(message?.createdAt)}
@@ -161,36 +179,36 @@ const ChatContainer = ({
                       message?.user?.id === user?.id
                         ? "rounded-s-xl rounded-br-xl"
                         : "rounded-e-xl rounded-es-xl"
-                    }`}
+                    } ${message?.id === activeMessageId ? "!bg-blue-100" : ""}`}
                   >
                     {message?.content && (
                       <>
-                        {isURL(message.content) ? (
+                        {isURL(message?.content) ? (
                           <p className="text-sm font-normal text-gray-900">
                             <a
-                              href={message.content}
+                              href={message?.content}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 underline"
                             >
-                              {message.content}
+                              {message?.content}
                             </a>
                           </p>
                         ) : (
-                          <p>{message.content}</p>
+                          <p>{message?.content}</p>
                         )}
                       </>
                     )}
 
-                    {group.images.length > 0 && (
+                    {group?.images?.length > 0 && (
                       <div
                         className={`${
-                          group.images.length >= 2
+                          group?.images?.length >= 2
                             ? "grid grid-cols-2 gap-2"
                             : "flex flex-col"
                         }`}
                       >
-                        {group.images.map((img, imgIndex) => {
+                        {group?.images?.map((img, imgIndex) => {
                           const fileExtension = img
                             .split(".")
                             .pop()
@@ -216,9 +234,9 @@ const ChatContainer = ({
                       </div>
                     )}
 
-                    {group.images.length > 0 && (
+                    {group?.images?.length > 0 && (
                       <div className="flex flex-col gap-2">
-                        {group.images.map((file, fileIndex) => {
+                        {group?.images.map((file, fileIndex) => {
                           const fileExtension = file
                             .split(".")
                             .pop()
@@ -278,10 +296,13 @@ const ChatContainer = ({
           setSelectedChatRoomUser={setSelectedChatRoomUser}
           setOpenInfo={setOpenInfo}
           setOpenSearch={setOpenSearch}
+          userStatus={userStatus}
         />
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
-          {renderMessages([...listMessages, ...filteredNotifications])}
+          {Array.isArray(listMessages) && listMessages.length > 0
+            ? renderMessages([...listMessages, ...filteredNotifications])
+            : ""}
         </div>
 
         <MessageInput
@@ -293,6 +314,7 @@ const ChatContainer = ({
       </div>
 
       <ChatInfo
+        user={user}
         openInfo={openInfo}
         setOpenInfo={setOpenInfo}
         selectedChatRoomUser={selectedChatRoomUser}
@@ -302,11 +324,13 @@ const ChatContainer = ({
       />
 
       <ChatSearch
+        user={user}
         openSearch={openSearch}
         setOpenSearch={setOpenSearch}
         selectedChatRoomUser={selectedChatRoomUser}
         listMessages={listMessages}
         listMessageWs={listMessageWs}
+        scrollToMessage={scrollToMessage}
       />
     </>
   );

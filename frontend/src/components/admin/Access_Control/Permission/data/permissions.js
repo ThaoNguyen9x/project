@@ -21,6 +21,50 @@ export const ALL_PERMISSIONS = {
       module: "WORK_REGISTRATIONS",
     },
   },
+  RESULT_CHECKS: {
+    GET_PAGINATE: {
+      method: "GET",
+      apiPath: "/api/result-checks",
+      module: "RESULT_CHECKS",
+    },
+    CREATE: {
+      method: "POST",
+      apiPath: "/api/result-checks",
+      module: "RESULT_CHECKS",
+    },
+    UPDATE: {
+      method: "PUT",
+      apiPath: "/api/result-checks/{id}",
+      module: "RESULT_CHECKS",
+    },
+    DELETE: {
+      method: "DELETE",
+      apiPath: "/api/result-checks/{id}",
+      module: "RESULT_CHECKS",
+    },
+  },
+  ITEM_CHECKS: {
+    GET_PAGINATE: {
+      method: "GET",
+      apiPath: "/api/item-checks",
+      module: "ITEM_CHECKS",
+    },
+    CREATE: {
+      method: "POST",
+      apiPath: "/api/item-checks",
+      module: "ITEM_CHECKS",
+    },
+    UPDATE: {
+      method: "PUT",
+      apiPath: "/api/item-checks/{id}",
+      module: "ITEM_CHECKS",
+    },
+    DELETE: {
+      method: "DELETE",
+      apiPath: "/api/item-checks/{id}",
+      module: "ITEM_CHECKS",
+    },
+  },
   REPAIR_REQUEST: {
     GET_PAGINATE: {
       method: "GET",
@@ -533,8 +577,10 @@ export const ALL_PERMISSIONS = {
 };
 
 export const ALL_MODULES = [
-  "REPAIR_REQUEST",
   "WORK_REGISTRATIONS",
+  "RESULT_CHECKS",
+  "ITEM_CHECKS",
+  "REPAIR_REQUEST",
   "TASKS",
   "NOTIFICATION_MAINTENANCES",
   "RISK_ASSESSMENTS",

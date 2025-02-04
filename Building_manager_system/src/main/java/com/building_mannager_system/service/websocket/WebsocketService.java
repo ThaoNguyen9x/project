@@ -1,9 +1,6 @@
 package com.building_mannager_system.service.websocket;
 
-import com.building_mannager_system.entity.User;
 import com.building_mannager_system.repository.UserRepository;
-import com.building_mannager_system.utils.exception.APIException;
-import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,11 +8,9 @@ import org.springframework.stereotype.Service;
 public class WebsocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final UserRepository userRepository;
 
-    public WebsocketService(SimpMessagingTemplate messagingTemplate, UserRepository userRepository) {
+    public WebsocketService(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
-        this.userRepository = userRepository;
     }
 
     // Phương thức gửi thông báo qua WebSocket

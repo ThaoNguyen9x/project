@@ -1,5 +1,6 @@
 package com.building_mannager_system.entity.work_registration;
 
+import com.building_mannager_system.entity.BaseEntity;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.enums.RequestStatus;
 import jakarta.persistence.*;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RepairRequest {
+public class RepairRequest extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long requestID;

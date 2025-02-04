@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Integer>,
     User findByRefreshTokenAndEmail(String refreshToken, String email);
 
     List<User> findByRole_NameIn(List<String> roles);
+
+    List<User> findByIdNotIn(List<Integer> ids);
 }

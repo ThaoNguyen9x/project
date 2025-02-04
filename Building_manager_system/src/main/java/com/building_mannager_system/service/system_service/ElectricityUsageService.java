@@ -80,22 +80,27 @@ public class ElectricityUsageService {
     }
 
     public ResultPaginationDTO getAllElectricityUsages(Specification<ElectricityUsage> spec, Pageable pageable) {
-
-        String email = SecurityUtil.getCurrentUserLogin().isPresent()
-                ? SecurityUtil.getCurrentUserLogin().get()
-                : "";
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
 
         User user = userRepository.findByEmail(email);
+        if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
 
-        Customer customer = customerRepository.findById(user.getId()).orElse(null);
+        Customer customer = customerRepository.findById(user.getCustomer().getId())
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer not found"));
 
         Contract contract = customer.getContracts().stream()
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found"));
 
-        Meter meter = meterRepository.findById(contract.getOffice().getMeters().get(0).getId()).orElse(null);
+        Meter meter;
+        if (contract.getOffice() != null && !contract.getOffice().getMeters().isEmpty()) {
+            meter = meterRepository.findById(contract.getOffice().getMeters().get(0).getId())
+                    .orElse(null);
+        } else {
+            meter = null;
+        }
 
-        if (user.getRole().getName().equals("USER")) {
+        if (user.getRole().getName().equals("Customer") && meter != null) {
             spec = Specification.where((root, query, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get("meter"), meter));
         }

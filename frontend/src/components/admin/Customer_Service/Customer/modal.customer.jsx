@@ -51,7 +51,7 @@ const ModalCustomer = (props) => {
 
   const filteredUsers = listUsers?.filter(
     (user) =>
-      user?.role?.name === "USER" &&
+      user?.role?.name === "Customer" &&
       (!usedUserIds.has(user.id) || data?.user?.id === user.id)
   );
 

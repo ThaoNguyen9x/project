@@ -2,11 +2,14 @@ package com.building_mannager_system.service.notification;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.NotificationDto;
+import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.notification.Notification;
 import com.building_mannager_system.entity.notification.Recipient;
 import com.building_mannager_system.enums.StatusNotifi;
+import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.notification.NotificationRepository;
 import com.building_mannager_system.repository.notification.RecipientRepository;
+import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.utils.exception.APIException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -25,16 +28,28 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final ModelMapper modelMapper;
     private final RecipientRepository recipientRepository;
+    private final UserRepository userRepository;
 
     public NotificationService(NotificationRepository notificationRepository,
-                               ModelMapper modelMapper, RecipientRepository recipientRepository) {
+                               ModelMapper modelMapper, RecipientRepository recipientRepository, UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
         this.modelMapper = modelMapper;
         this.recipientRepository = recipientRepository;
+        this.userRepository = userRepository;
     }
 
     public ResultPaginationDTO getAllNotifications(Specification<Notification> spec,
                                                    Pageable pageable) {
+
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
+
+        if (user.getRole().getName().equals("Customer")) {
+            spec = Specification.where((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("recipient").get("referenceId"), user.getId()));
+        }
 
         Page<Notification> page = notificationRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();

@@ -8,6 +8,7 @@ import com.building_mannager_system.entity.work_registration.RepairRequest;
 import com.building_mannager_system.enums.RequestStatus;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.work_registration.RepairRequestRepository;
+import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.service.ConfigService.FileService;
 import com.building_mannager_system.utils.exception.APIException;
 import org.modelmapper.ModelMapper;
@@ -65,6 +66,16 @@ public class RepairRequestService {
     // ✅ Lấy tất cả RepairRequests
     public ResultPaginationDTO getAllRepairRequests(Specification<RepairRequest> spec,
                                               Pageable pageable) {
+
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
+
+        if (user.getRole().getName().equals("Customer")) {
+            spec = Specification.where((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("createdBy"), email));
+        }
 
         Page<RepairRequest> page = repairRequestRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();

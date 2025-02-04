@@ -15,7 +15,7 @@ const ViewSystem = (props) => {
     },
   ];
 
-  if (user?.role?.name === "ADMIN") {
+  if (user?.role?.name === "Application_Admin") {
     items.push(
       {
         label: "Ngày tạo",

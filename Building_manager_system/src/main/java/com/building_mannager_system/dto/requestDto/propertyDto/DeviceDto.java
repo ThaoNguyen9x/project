@@ -3,8 +3,6 @@ package com.building_mannager_system.dto.requestDto.propertyDto;
 import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.LocationDto;
 import com.building_mannager_system.dto.requestDto.systemDto.SystemDto;
 import com.building_mannager_system.enums.DeviceStatus;
-import com.building_mannager_system.enums.MaintenanceFrequency;
-import com.building_mannager_system.enums.MaintenanceStatus;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -24,7 +22,6 @@ public class DeviceDto {
     private Integer lifespan;
     private DeviceStatus status;
     private SystemMaintenanceServiceDto maintenanceService;
-
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;

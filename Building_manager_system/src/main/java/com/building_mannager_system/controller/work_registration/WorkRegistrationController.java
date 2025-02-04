@@ -46,7 +46,7 @@ public class WorkRegistrationController {
     @ApiMessage("Tạo đăng ký công việc thành công")
     public ResponseEntity<WorkRegistrationDto> createWorkRegistration(@RequestPart(value = "image", required = false) MultipartFile image,
     @ModelAttribute WorkRegistration workRegistration) {
-        List<String> roles = List.of("ADMIN");
+        List<String> roles = List.of("Application_Admin");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         WorkRegistrationDto res = workRegistrationService.createWorkRegistration(image, workRegistration);

@@ -8,9 +8,10 @@ const ChatHeader = ({
   setSelectedChatRoomUser,
   setOpenInfo,
   setOpenSearch,
+  userStatus,
 }) => {
   const onlineUsers = selectedChatRoomUser?.users?.filter(
-    (user) => user.isOnline
+    (user) => user?.isOnline
   );
 
   return (
@@ -24,7 +25,7 @@ const ChatHeader = ({
             {selectedChatRoomUser?.user ? (
               <span
                 className={`absolute bottom-0 right-0 size-2 ${
-                  selectedChatRoomUser?.user?.isOnline
+                  userStatus[selectedChatRoomUser?.user?.id] === "online"
                     ? "bg-green-600"
                     : "bg-red-600"
                 } rounded-full`}
@@ -41,8 +42,8 @@ const ChatHeader = ({
             </h3>
             <p className="text-sm text-zinc-400">
               {selectedChatRoomUser && onlineUsers
-                ? `${onlineUsers.length + 1} users online`
-                : selectedChatRoomUser?.user?.isOnline
+                ? `${onlineUsers?.length + 1} users online`
+                : userStatus[selectedChatRoomUser?.user?.id] === "online"
                 ? "Online"
                 : "Offline"}
             </p>

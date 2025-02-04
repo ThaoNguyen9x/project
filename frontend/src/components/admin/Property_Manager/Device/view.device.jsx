@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { Descriptions, Drawer } from "antd";
 import { FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
+import { Link } from "react-router-dom";
 
 const ViewDevice = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
@@ -8,7 +9,11 @@ const ViewDevice = (props) => {
   const generateItems = () => {
     if (data?.deviceName) {
       return [
-        { label: "Tên thiết bị", children: data?.deviceName || "N/A", span: 2 },
+        {
+          label: "Tên thiết bị",
+          children: data?.deviceName || "N/A",
+          span: 2,
+        },
         {
           label: "Loại thiết bị",
           children: data?.deviceType?.typeName ? (
@@ -82,7 +87,7 @@ const ViewDevice = (props) => {
 
   let items = generateItems();
 
-  if (user?.role?.name === "ADMIN") {
+  if (user?.role?.name === "Application_Admin") {
     items = [
       ...items,
       {

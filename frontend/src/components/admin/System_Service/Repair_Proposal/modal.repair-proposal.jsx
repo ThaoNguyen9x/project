@@ -159,7 +159,7 @@ const ModalRepairProposal = (props) => {
 
           <Col xs={24}>
             <Form.Item
-              label="Title"
+              label="Tiêu đề"
               name="title"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
