@@ -172,7 +172,7 @@ const RepairProposal = () => {
             {searchedColumn === "title" ? (
               <HighlightText text={record?.title} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.title)
+              FORMAT_TEXT_LENGTH(record?.title, 20)
             )}
           </a>
         );
@@ -192,7 +192,7 @@ const RepairProposal = () => {
         return searchedColumn === "description" ? (
           <HighlightText text={description} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(description)
+          FORMAT_TEXT_LENGTH(description, 20)
         );
       },
     },

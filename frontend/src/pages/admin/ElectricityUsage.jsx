@@ -169,7 +169,6 @@ const ElectricityUsage = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -192,7 +191,7 @@ const ElectricityUsage = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.meter?.serialNumber)
+              FORMAT_TEXT_LENGTH(record?.meter?.serialNumber, 20)
             )}
           </a>
         );
@@ -205,7 +204,7 @@ const ElectricityUsage = () => {
       ...getColumnSearchProps("startReading"),
       render: (text, record) => {
         const formatted =
-          `${FORMAT_TEXT_LENGTH(record?.startReading)}` || "N/A";
+          `${record?.startReading}` || "N/A";
 
         return searchedColumn === "startReading" ? (
           <HighlightText text={formatted} searchText={searchText} />
@@ -220,7 +219,7 @@ const ElectricityUsage = () => {
       sorter: (a, b) => a.endReading - b.endReading,
       ...getColumnSearchProps("endReading"),
       render: (text, record) => {
-        const formatted = `${FORMAT_TEXT_LENGTH(record?.endReading)}` || "N/A";
+        const formatted = `${record?.endReading}` || "N/A";
 
         return searchedColumn === "endReading" ? (
           <HighlightText text={formatted} searchText={searchText} />
@@ -235,7 +234,7 @@ const ElectricityUsage = () => {
       sorter: (a, b) => a.usageAmount - b.usageAmount,
       ...getColumnSearchProps("usageAmount"),
       render: (text, record) => {
-        const formatted = `${FORMAT_TEXT_LENGTH(record?.usageAmount)}` || "N/A";
+        const formatted = `${record?.usageAmount}` || "N/A";
 
         return searchedColumn === "usageAmount" ? (
           <HighlightText text={formatted} searchText={searchText} />

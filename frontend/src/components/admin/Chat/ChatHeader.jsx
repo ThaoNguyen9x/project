@@ -2,6 +2,7 @@ import React from "react";
 import { Avatar, Button, Tooltip } from "antd";
 import { IoCloseOutline, IoSearchOutline } from "react-icons/io5";
 import { BsReverseLayoutSidebarReverse } from "react-icons/bs";
+import { FORMAT_TEXT_LENGTH } from "../../../utils/constant";
 
 const ChatHeader = ({
   selectedChatRoomUser,
@@ -9,6 +10,7 @@ const ChatHeader = ({
   setOpenInfo,
   setOpenSearch,
   userStatus,
+  setIsSidebarVisible,
 }) => {
   const onlineUsers = selectedChatRoomUser?.users?.filter(
     (user) => user?.isOnline
@@ -37,8 +39,11 @@ const ChatHeader = ({
 
           <div>
             <h3 className="text-lg font-medium">
-              {selectedChatRoomUser?.user?.name ||
-                selectedChatRoomUser?.chatRoom?.name}
+              {FORMAT_TEXT_LENGTH(
+                selectedChatRoomUser?.user?.name ||
+                  selectedChatRoomUser?.chatRoom?.name,
+                20
+              )}
             </h3>
             <p className="text-sm text-zinc-400">
               {selectedChatRoomUser && onlineUsers
@@ -70,7 +75,10 @@ const ChatHeader = ({
 
           <Tooltip
             title="Đóng cuộc trò chuyện"
-            onClick={() => setSelectedChatRoomUser(null)}
+            onClick={() => {
+              setSelectedChatRoomUser(null);
+              setIsSidebarVisible(true);
+            }}
           >
             <Button type="text" icon={<IoCloseOutline className="size-4" />} />
           </Tooltip>

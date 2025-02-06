@@ -169,7 +169,7 @@ const Permission = () => {
             {searchedColumn === "name" ? (
               <HighlightText text={record?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.name)
+              FORMAT_TEXT_LENGTH(record?.name, 20)
             )}
           </a>
         );
@@ -184,7 +184,7 @@ const Permission = () => {
         return searchedColumn === "apiPath" ? (
           <HighlightText text={record?.apiPath} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.apiPath)
+          FORMAT_TEXT_LENGTH(record?.apiPath, 20)
         );
       },
     },
@@ -222,7 +222,7 @@ const Permission = () => {
         return searchedColumn === "module" ? (
           <HighlightText text={record?.module} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.module)
+          FORMAT_TEXT_LENGTH(record?.module, 20)
         );
       },
     },

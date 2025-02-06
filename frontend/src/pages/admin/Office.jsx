@@ -188,7 +188,7 @@ const Office = () => {
             {searchedColumn === "name" ? (
               <HighlightText text={record?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.name)
+              FORMAT_TEXT_LENGTH(record?.name, 20)
             )}
           </a>
         );
@@ -206,7 +206,7 @@ const Office = () => {
             searchText={searchText}
           />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.location?.floor)
+          FORMAT_TEXT_LENGTH(record?.location?.floor, 20)
         );
       },
     },
@@ -216,7 +216,7 @@ const Office = () => {
       sorter: (a, b) => a.area - b.area,
       ...getColumnSearchProps("area"),
       render: (text, record) => {
-        const formatted = `${FORMAT_TEXT_LENGTH(record?.area)} m²` || "N/A";
+        const formatted = `${record?.area} m²` || "N/A";
 
         return searchedColumn === "area" ? (
           <HighlightText text={formatted} searchText={searchText} />

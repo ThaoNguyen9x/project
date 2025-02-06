@@ -189,7 +189,7 @@ const Quotation = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.supplierName)
+              FORMAT_TEXT_LENGTH(record?.supplierName, 20)
             )}
           </a>
         );
@@ -215,7 +215,7 @@ const Quotation = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(repairProposal?.title)
+              FORMAT_TEXT_LENGTH(repairProposal?.title, 20)
             )}
           </a>
         );

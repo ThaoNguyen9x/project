@@ -209,7 +209,7 @@ const SystemMaintenanceService = () => {
             {searchedColumn === "serviceType" ? (
               <HighlightText text={serviceName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(serviceName)
+              FORMAT_TEXT_LENGTH(serviceName, 20)
             )}
           </a>
         );
@@ -242,7 +242,7 @@ const SystemMaintenanceService = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(subcontractor?.name)
+              FORMAT_TEXT_LENGTH(subcontractor?.name, 20)
             )}
           </a>
         );
@@ -407,7 +407,7 @@ const SystemMaintenanceService = () => {
           >
             <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
               <GoPlus className="h-4 w-4" />
-              Add
+              Thêm
             </Button>
           </Access>
         </div>

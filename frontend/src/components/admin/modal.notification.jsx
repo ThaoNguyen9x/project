@@ -1,5 +1,4 @@
 import { Modal } from "antd";
-import { div } from "framer-motion/client";
 import { Link } from "react-router-dom";
 
 const ModalNotification = (props) => {
@@ -53,13 +52,33 @@ const ModalNotification = (props) => {
           Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
         </Link>
       </div>
+    ) : notificationDetails?.recipient?.name === "Send birthday request" ? (
+      <div className="flex flex-col gap-2">
+        <p>
+          Ngày <b>{message?.birthday}</b> là sinh của nhật của khách hàng{" "}
+          <b>{message?.directorName}</b> của công ty{" "}
+          <b>{message?.companyName}</b>.
+        </p>
+
+        <Link
+          to="/dashboard/customers"
+          onClick={() => setOpenNotification(false)}
+        >
+          Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
+        </Link>
+      </div>
     ) : (
       <div className="flex flex-col gap-2">
-        <p>{notificationDetails?.title}</p>
+        <p>{message?.title}</p>
 
-        <p>{notificationDetails?.description}</p>
+        <p>{message?.description}</p>
 
-        <Link to="">Vui lòng kiểm tra thông tin chi tiết trong hệ thống.</Link>
+        <Link
+          to="/dashboard/notifications"
+          onClick={() => setOpenNotification(false)}
+        >
+          Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
+        </Link>
       </div>
     );
 

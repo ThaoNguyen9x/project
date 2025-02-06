@@ -710,6 +710,44 @@ export const callDeleteDeviceType = (id) => {
   return axios.delete(`/api/device-types/${id}`);
 };
 
+/**************** ELECTRICITY RATES ****************/
+export const callGetAllElectricityRates = (query) => {
+  return axios.get(`/api/electricity-rates?${query}`);
+};
+
+export const callCreateElectricityRate = (
+  tierName,
+  minUsage,
+  maxUsage,
+  rate
+) => {
+  return axios.post("/api/electricity-rates", {
+    tierName,
+    minUsage,
+    maxUsage,
+    rate,
+  });
+};
+
+export const callUpdateElectricityRate = (
+  id,
+  tierName,
+  minUsage,
+  maxUsage,
+  rate
+) => {
+  return axios.put(`/api/electricity-rates/${id}`, {
+    tierName,
+    minUsage,
+    maxUsage,
+    rate,
+  });
+};
+
+export const callDeleteElectricityRate = (id) => {
+  return axios.delete(`/api/electricity-rates/${id}`);
+};
+
 /**************** DEVICES ****************/
 export const callGetAllDevices = (query) => {
   return axios.get(`/api/devices?${query}`);
@@ -1141,7 +1179,6 @@ export const callGetAllRepairRequests = (query) => {
 };
 
 export const callCreateRepairRequest = (
-  account,
   requestDate,
   content,
   image,
@@ -1150,7 +1187,6 @@ export const callCreateRepairRequest = (
   return axios.post(
     "/api/repair-requests",
     {
-      account,
       requestDate,
       content,
       image,
@@ -1164,7 +1200,6 @@ export const callCreateRepairRequest = (
 
 export const callUpdateRepairRequest = (
   id,
-  account,
   requestDate,
   content,
   image,
@@ -1173,7 +1208,6 @@ export const callUpdateRepairRequest = (
   return axios.put(
     `/api/repair-requests/${id}`,
     {
-      account,
       requestDate,
       content,
       image,
@@ -1252,6 +1286,10 @@ export const callCreateGroupChat = ({ accountIds }) => {
   return axios.post(`/api/chat-rooms/group`, { accountIds });
 };
 
+export const callDeleteRoomChat = (id) => {
+  return axios.delete(`/api/chat-rooms/${id}`);
+};
+
 export const callSendMessage = (chatRoom, user, content, imageUrl) => {
   return axios.post("/api/chat-messages/sendMessage", {
     chatRoom,
@@ -1265,12 +1303,12 @@ export const callGetMessagesByRoomId = (roomId, query) => {
   return axios.get(`/api/chat-messages/room/${roomId}?${query}`);
 };
 
-export const callGetChatRoomUsers = () => {
-  return axios.get(`/api/chat-room-users`);
+export const callGetChatRoomUsers = (query) => {
+  return axios.get(`/api/chat-room-users?${query}`);
 };
 
-export const callGetChatRoomGroups = () => {
-  return axios.get(`/api/chat-room-users/group`);
+export const callGetChatRoomGroups = (query) => {
+  return axios.get(`/api/chat-room-users/group?${query}`);
 };
 
 export const callDeleteChatHistory = (roomId) => {
@@ -1401,4 +1439,25 @@ export const callUpdateResultCheck = (
 
 export const callDeleteResultCheck = (id) => {
   return axios.delete(`/api/result-checks/${id}`);
+};
+
+/**************** TRIPER ****************/
+export const callPaymentStripe = (
+  paymentId,
+  contract,
+  paymentStatus,
+  paymentDate,
+  paymentAmount
+) => {
+  return axios.post("/api/stripes/payment", {
+    paymentId,
+    contract,
+    paymentStatus,
+    paymentDate,
+    paymentAmount,
+  });
+};
+
+export const callPaymentStatus = (sessionId) => {
+  return axios.get(`/api/stripes/payment-success?session_id=${sessionId}`);
 };

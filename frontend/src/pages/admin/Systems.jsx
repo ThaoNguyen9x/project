@@ -170,7 +170,7 @@ const System = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.systemName)
+              FORMAT_TEXT_LENGTH(record?.systemName, 20)
             )}
           </a>
         );
@@ -190,7 +190,7 @@ const System = () => {
         return searchedColumn === "description" ? (
           <HighlightText text={description} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(description)
+          FORMAT_TEXT_LENGTH(description, 20)
         );
       },
     },

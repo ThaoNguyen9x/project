@@ -20,9 +20,7 @@ const ModalChat = (props) => {
   const {
     fetchData,
     listChatRoomUsers,
-    setListChatRoomUsers,
     listChatRoomGroups,
-    setListChatRoomGroups,
     openChat,
     setOpenChat,
     userStatus,
@@ -30,6 +28,7 @@ const ModalChat = (props) => {
   const { user } = useContext(AuthContext);
 
   const [selectedChatRoomUser, setSelectedChatRoomUser] = useState(null);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   const [listMessages, setListMessages] = useState([]);
   const [listMessageWs, setListMessageWs] = useState([]);
@@ -39,6 +38,7 @@ const ModalChat = (props) => {
   const selectChatRoomUser = async (user) => {
     setLoading(true);
     setSelectedChatRoomUser(user);
+    setIsSidebarVisible(false);
     setLoading(false);
   };
 
@@ -111,7 +111,7 @@ const ModalChat = (props) => {
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
     const stompClient = Stomp.over(sock);
 
-    // stompClient.debug = () => {};
+    stompClient.debug = () => {};
 
     const topic = `/topic/messages/room/${selectedChatRoomUser?.chatRoom?.id}`;
 
@@ -133,8 +133,6 @@ const ModalChat = (props) => {
         }
       });
     });
-
-    return () => stompClient.disconnect();
   }, [selectedChatRoomUser?.chatRoom?.id]);
 
   // Xóa lịch sử
@@ -193,6 +191,7 @@ const ModalChat = (props) => {
               handleCreateRoomPrivate={handleCreateRoomPrivate}
               handleCreateGroup={handleCreateGroup}
               fetchData={fetchData}
+              isSidebarVisible={isSidebarVisible}
             />
 
             {!selectedChatRoomUser ? (
@@ -208,6 +207,7 @@ const ModalChat = (props) => {
                 handleDeleteChatHistory={handleDeleteChatHistory}
                 fetchData={fetchData}
                 handleChangeStatusMessage={handleChangeStatusMessage}
+                setIsSidebarVisible={setIsSidebarVisible}
               />
             )}
           </div>

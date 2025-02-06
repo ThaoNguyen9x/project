@@ -191,10 +191,10 @@ const ChatSearch = ({
   return (
     <div
       ref={infoRef}
-      className={`absolute bg-white border border-r rounded-r-lg h-full transition-all duration-300 z-50 top-0 overflow-x-hidden
+      className={`absolute rounded-lg bg-white border border-r rounded-r-lg h-full transition-all duration-300 z-50 top-0 overflow-x-hidden
         ${
           openSearch
-            ? "opacity-100 w-[calc(100vw-65rem)] right-0"
+            ? "opacity-100 w-full lg:w-[calc(100vw-65rem)] right-0"
             : "opacity-0 w-0 right-[0%]"
         }  overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300`}
     >
@@ -242,7 +242,8 @@ const ChatSearch = ({
                         ? "Bạn"
                         : FORMAT_TEXT_LENGTH(
                             userSents.find((user) => user.key === selectedUser)
-                              ?.label
+                              ?.label,
+                            20
                           ) || "Người gửi"
                       : "Người gửi"}
 
@@ -320,7 +321,7 @@ const ChatSearch = ({
                       </Avatar>
                       <div className="w-full flex flex-col border-b p-2">
                         <div className="flex items-center justify-between">
-                          <p>{FORMAT_TEXT_LENGTH(message?.user?.name)}</p>
+                          <p>{FORMAT_TEXT_LENGTH(message?.user?.name, 20)}</p>
                           <p className="text-xs">
                             {formatMessageTime(message?.createdAt)}
                           </p>
@@ -391,7 +392,7 @@ const ChatSearch = ({
                       />
 
                       <div className="flex items-center justify-between">
-                        <p>{FORMAT_TEXT_LENGTH(file?.user?.name)}</p>
+                        <p>{FORMAT_TEXT_LENGTH(file?.user?.name, 20)}</p>
                         <p className="text-xs">
                           {formatMessageTime(file?.createdAt)}
                         </p>

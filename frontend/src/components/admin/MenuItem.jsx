@@ -297,6 +297,12 @@ const MenuItem = ({ activeMenu, permissions }) => {
           ACL_ENABLE,
           [
             {
+              label: "Giá điện",
+              apiPath: ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath,
+              method: ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.method,
+              path: "/dashboard/electricity-rates",
+            },
+            {
               label: "Mức tiêu thụ điện",
               apiPath: ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.apiPath,
               method: ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.method,

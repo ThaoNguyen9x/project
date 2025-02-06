@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Avatar, Button, Collapse, Image, Modal } from "antd";
 import { AiOutlineDelete } from "react-icons/ai";
-import { formatDate, isURL } from "../../../utils/constant";
+import { FORMAT_TEXT_LENGTH, formatDate, isURL } from "../../../utils/constant";
 import { IoIosLink } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import iconPDF from "../../../assets/icons/icon-pdf.svg";
@@ -266,10 +266,10 @@ const ChatInfo = ({
   return (
     <div
       ref={infoRef}
-      className={`absolute bg-white border border-r rounded-r-lg h-full transition-all duration-300 z-50 top-0 
+      className={`absolute rounded-lg bg-white border border-r rounded-r-lg h-full transition-all duration-300 z-50 top-0 
         ${
           openInfo
-            ? "opacity-100 w-[calc(100vw-65rem)] right-0"
+            ? "opacity-100 w-full lg:w-[calc(100vw-65rem)] right-0"
             : "opacity-0 w-0 right-[0%]"
         }  overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300`}
     >
@@ -288,14 +288,17 @@ const ChatInfo = ({
             <IoClose />
           </button>
         </div>
-        <div className="mx-5 my-4">
-          <div className="flex flex-col items-center justify-center">
+        <div className="m-5">
+          <div className="flex flex-col items-center justify-center gap-2">
             <Avatar size={40} className="bg-red-700">
               {selectedChatRoomUser?.user?.role?.name[0]?.toUpperCase() || "G"}
             </Avatar>
             <h3 className="text-lg font-medium">
-              {selectedChatRoomUser?.user?.name ||
-                selectedChatRoomUser?.chatRoom?.name}
+              {FORMAT_TEXT_LENGTH(
+                selectedChatRoomUser?.user?.name ||
+                  selectedChatRoomUser?.chatRoom?.name,
+                20
+              )}
             </h3>
             <Collapse
               size="small"
@@ -323,6 +326,7 @@ const ChatInfo = ({
                   open={isModalConfirm}
                   onOk={() => {
                     handleDeleteChatHistory();
+                    setOpenInfo(false);
                     setIsModalConfirm(false);
                   }}
                   onCancel={() => setIsModalConfirm(false)}

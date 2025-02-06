@@ -195,7 +195,7 @@ const MaintenanceHistory = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.performedDate)
+              record?.performedDate
             )}
           </a>
         );
@@ -250,7 +250,7 @@ const MaintenanceHistory = () => {
             {searchedColumn === "technician.name" ? (
               <HighlightText text={technician?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(technician?.name)
+              FORMAT_TEXT_LENGTH(technician?.name, 20)
             )}
           </a>
         );

@@ -9,91 +9,55 @@ const ViewRepairRequest = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
 
   const generateItems = () => {
-    if (data?.requestDate) {
-      return [
-        {
-          label: "Ngày yêu cầu",
-          children:
-            dayjs(data?.requestDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
-        },
-        {
-          label: "Nội dung",
-          children: data?.content,
-          span: 2,
-        },
-        {
-          label: "Nhân viên phụ trách",
-          children: data?.account?.name ? (
+    return [
+      {
+        label: "Ngày yêu cầu",
+        children: dayjs(data?.requestDate).format(FORMAT_DATE_DISPLAY) || "N/A",
+        span: 2,
+      },
+      {
+        label: "Nội dung",
+        children: data?.content,
+        span: 2,
+      },
+      {
+        label: "Bản vẽ",
+        children:
+          (
             <a
-              onClick={() => {
-                setData(data?.account);
-                setOpenViewDetail(true);
-              }}
+              href={`${
+                import.meta.env.VITE_BACKEND_URL
+              }/storage/repair_requests/${data?.imageUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {data?.account?.name}
+              {data?.imageUrl}
             </a>
-          ) : (
-            "N/A"
-          ),
-          span: 2,
-        },
-        {
-          label: "Bản vẽ",
-          children:
-            (
-              <a
-                href={`${
-                  import.meta.env.VITE_BACKEND_URL
-                }/storage/repair_requests/${data?.imageUrl}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {data?.imageUrl}
-              </a>
-            ) || "N/A",
-          span: 2,
-        },
-        {
-          label: "Trạng thái",
-          children: (
-            <span
-              className={`status ${
-                data?.status === "PENDING"
-                  ? "warning"
-                  : data?.status === "REJECTED"
-                  ? "danger"
-                  : "success"
-              }`}
-            >
-              {data?.status === "PENDING"
-                ? "Đang chờ duyệt"
-                : data?.status === "APPROVED"
-                ? "Đã được duyệt"
-                : "Bị từ chối"}
-            </span>
-          ),
-          span: 2,
-        },
-      ];
-    } else {
-      return [
-        { label: "Họ và tên", children: data?.name || "N/A", span: 2 },
-        { label: "Email", children: data?.email || "N/A", span: 2 },
-        { label: "Điện thoại", children: data?.mobile || "N/A" },
-        { label: "Vai trò", children: data?.role?.name || "N/A" },
-        {
-          label: "Trạng thái",
-          span: 2,
-          children:
-            (
-              <span className={`${data?.status ? "success" : "danger"} status`}>
-                {data?.status ? "Hoạt động" : "Không hoạt động"}
-              </span>
-            ) || "N/A",
-        },
-      ];
-    }
+          ) || "N/A",
+        span: 2,
+      },
+      {
+        label: "Trạng thái",
+        children: (
+          <span
+            className={`status ${
+              data?.status === "PENDING"
+                ? "warning"
+                : data?.status === "REJECTED"
+                ? "danger"
+                : "success"
+            }`}
+          >
+            {data?.status === "PENDING"
+              ? "Đang chờ duyệt"
+              : data?.status === "APPROVED"
+              ? "Đã được duyệt"
+              : "Bị từ chối"}
+          </span>
+        ),
+        span: 2,
+      },
+    ];
   };
 
   let items = generateItems();

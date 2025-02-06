@@ -23,7 +23,7 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 const ModalRepairRequest = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData, listUsers } =
+  const { user, data, setData, openModal, setOpenModal, fetchData, listUsers } =
     props;
 
   const [form] = Form.useForm();
@@ -34,7 +34,6 @@ const ModalRepairRequest = (props) => {
     if (data?.requestID) {
       const init = {
         ...data,
-        account: data.account ? data.account?.id : null,
         requestDate: data.requestDate ? dayjs(data.requestDate) : null,
       };
 
@@ -56,7 +55,7 @@ const ModalRepairRequest = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const { account, requestDate, content, status } = values;
+    const { requestDate, content, status } = values;
 
     const image =
       dataFile.length > 0
@@ -68,7 +67,6 @@ const ModalRepairRequest = (props) => {
     if (data?.requestID) {
       const res = await callUpdateRepairRequest(
         data?.requestID,
-        account,
         dayjs(requestDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         content,
         image,
@@ -87,7 +85,6 @@ const ModalRepairRequest = (props) => {
       }
     } else {
       const res = await callCreateRepairRequest(
-        account,
         dayjs(requestDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         content,
         image,
@@ -142,50 +139,6 @@ const ModalRepairRequest = (props) => {
         <Row gutter={16}>
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Nhân viên phụ trách"
-              name="account"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-              >
-                {listUsers
-                  .filter(
-                    (user) =>
-                      user?.role?.name === "Technician_Employee" ||
-                      (user?.role?.name === "Subcontractor" && user?.status)
-                  )
-                  .map((user) => (
-                    <Select.Option
-                      key={user.id}
-                      value={user.id}
-                      label={user.name}
-                    >
-                      {user.name}
-                    </Select.Option>
-                  ))}
-              </Select>
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Nội dung"
-              name="content"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Input autoComplete="off" allowClear />
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
               label="Bản vẽ"
               name={data?.image ? "image" : "imageUrl"}
               rules={[
@@ -210,6 +163,18 @@ const ModalRepairRequest = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
+              label="Nội dung"
+              name="content"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
               label="Ngày yêu cầu"
               name="requestDate"
               rules={[
@@ -220,34 +185,38 @@ const ModalRepairRequest = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+          {user?.role?.name !== "Customer" ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
               >
-                <Option value="PENDING" label="Đang chờ xử lý">
-                  Đang chờ xử lý
-                </Option>
-                <Option value="SUCCESS" label="Đã hoàn thành">
-                  Đã hoàn thành
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="PENDING" label="Đang chờ xử lý">
+                    Đang chờ xử lý
+                  </Option>
+                  <Option value="SUCCESS" label="Đã hoàn thành">
+                    Đã hoàn thành
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

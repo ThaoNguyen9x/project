@@ -27,11 +27,12 @@ const ViewPaymentContract = (props) => {
         },
         {
           label: "Số tiền thanh toán",
-          children:
-            data?.paymentAmount.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }) || "N/A",
+          children: data?.paymentAmount
+            ? data.paymentAmount.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })
+            : "N/A",
           span: 2,
         },
         {

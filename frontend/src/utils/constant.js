@@ -3,7 +3,7 @@ export const FORMAT_DATE_TIME_DISPLAY = "DD-MM-YYYY HH:mm:ss";
 export const FORMAT_DATE_DISPLAY = "DD-MM-YYYY";
 
 // Define a function to format text length
-export const FORMAT_TEXT_LENGTH = (text, maxLength = 30) => {
+export const FORMAT_TEXT_LENGTH = (text, maxLength) => {
   if (text?.length > maxLength) {
     return text.substring(0, maxLength) + "...";
   }

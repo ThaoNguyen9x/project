@@ -14,6 +14,8 @@ const ChatSidebar = ({
   selectChatRoomUser,
   handleCreateRoomPrivate,
   handleCreateGroup,
+  handleDeleteRoomChat,
+  isSidebarVisible,
 }) => {
   const [filter, setFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
@@ -22,7 +24,7 @@ const ChatSidebar = ({
   const items = [
     {
       key: "add",
-      label: "Add contact",
+      label: "Tạo cuộc trò chuyện",
       onClick: () => setOpenModal(true),
     },
     {
@@ -72,7 +74,7 @@ const ChatSidebar = ({
   const contacts = [
     {
       key: "1",
-      label: user?.role?.name !== "Customer" ? "Khách hàng" : "Tất cả",
+      label: "Tất cả",
       children: (
         <>
           {filteredChatRoomUsers
@@ -100,9 +102,9 @@ const ChatSidebar = ({
                       />
                     </div>
 
-                    <div className="hidden lg:block text-left min-w-0">
+                    <div className="block text-left min-w-0">
                       <div className="font-medium truncate">
-                        {FORMAT_TEXT_LENGTH(chatRoomUser?.user?.name)}
+                        {FORMAT_TEXT_LENGTH(chatRoomUser?.user?.name, 20)}
                       </div>
                       <div className="text-sm text-zinc-400">
                         {userStatus[chatRoomUser?.user?.id] === "online"
@@ -167,9 +169,12 @@ const ChatSidebar = ({
                         </Avatar.Group>
                       </div>
 
-                      <div className="hidden lg:block text-left min-w-0">
+                      <div className="block text-left min-w-0">
                         <div className="font-medium truncate">
-                          {FORMAT_TEXT_LENGTH(chatRoomGroup?.chatRoom?.name)}
+                          {FORMAT_TEXT_LENGTH(
+                            chatRoomGroup?.chatRoom?.name,
+                            20
+                          )}
                         </div>
                       </div>
                     </div>
@@ -192,7 +197,11 @@ const ChatSidebar = ({
 
   return (
     <>
-      <div className="h-full w-20 lg:w-72 lg:border-r flex flex-col transition-all duration-200">
+      <div
+        className={`h-full w-full lg:w-72 lg:border-r ${
+          isSidebarVisible ? "block" : "hidden lg:block"
+        } flex flex-col transition-all duration-300`}
+      >
         <div className="w-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

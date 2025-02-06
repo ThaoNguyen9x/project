@@ -166,7 +166,7 @@ const Role = () => {
             {searchedColumn === "name" ? (
               <HighlightText text={record?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.name)
+              FORMAT_TEXT_LENGTH(record?.name, 20)
             )}
           </a>
         );

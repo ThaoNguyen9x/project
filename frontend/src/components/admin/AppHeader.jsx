@@ -18,11 +18,9 @@ import { IoIosLogOut } from "react-icons/io";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaRegBell } from "react-icons/fa6";
 import {
-  callGetAllNotificationMaintenances,
   callGetAllNotifications,
   callGetChatRoomGroups,
   callGetChatRoomUsers,
-  callGetMessagesByRoomId,
   callLogout,
   callReadNotification,
   callReadNotificationMaintenance,
@@ -54,7 +52,7 @@ const AppHeader = () => {
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
     const client = Stomp.over(sock);
 
-    client.debug = () => {}; 
+    client.debug = () => {};
 
     client.connect({}, () => {
       setStompClient(client);
@@ -66,6 +64,7 @@ const AppHeader = () => {
         `/topic/maintenance/${user.id}`,
         `/topic/admin/work-registrations/${user.id}`,
         `/topic/messages/${user.id}`,
+        `/topic/adminNotifications/${user.id}`,
       ];
 
       topics.forEach((topic) => {
@@ -163,12 +162,9 @@ const AppHeader = () => {
   const fetchNotifications = async () => {
     setLoading(true);
 
-    const [res1, res2] = await Promise.all([
-      callGetAllNotifications(),
-      callGetAllNotificationMaintenances(),
-    ]);
+    const [res1] = await Promise.all([callGetAllNotifications()]);
 
-    const allResults = [...res1.data.result, ...res2.data.result];
+    const allResults = [...res1.data.result];
 
     setListNotifications(
       allResults.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -179,6 +175,28 @@ const AppHeader = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    
+        let page = 1;
+        let hasMore = true;
+    
+        while (hasMore) {
+          const query = `page=${page}&pageSize=20`;
+          const res = await callGetChatRoomUsers(
+            query
+          );
+    
+          if (res && res.data) {
+            const messages = res.data.result
+    
+            hasMore = res.data.hasMore || messages.length === 20;
+            page += 1;
+          }
+        }
+    
+        setListChatRoomUsers(res.data.result);
+        setLoading(false);
+
+    
 
     const res = await callGetChatRoomUsers();
     if (res && res.data && res.statusCode === 200) {
@@ -199,11 +217,7 @@ const AppHeader = () => {
   }, []);
 
   const notificationItems =
-    listNotifications?.filter(
-      (notification) =>
-        notification?.recipient?.referenceId === user?.id ||
-        ["Technician_Employee", "Technician_Manager"].includes(user?.role?.name)
-    ).length > 0
+    listNotifications.length > 0
       ? listNotifications.map((notification, index) => {
           const message = notification?.message
             ? JSON.parse(notification?.message)
@@ -220,20 +234,29 @@ const AppHeader = () => {
               })
             : "N/A";
 
-          const notificationText =
-            message?.paymentStatus === "UNPAID"
-              ? `Khách hàng có khoản thanh toán ${formattedAmount} hạn chót thanh toán vào ${formattedDate}.`
-              : message?.paymentStatus === "PAID"
-              ? `Khách hàng vừa thanh toán thành công khoản tiền ${formattedAmount} vào ngày ${formattedDate}.`
-              : message?.status === "UNACTIV"
-              ? `Khách hàng vui lòng kiểm tra đồng hồ số ${message?.meter?.serialNumber} đã được ghi chỉ số vào ngày ${message?.readingDate}.`
-              : ``;
+          let notificationText = "";
+
+          if (message) {
+            if (message.paymentStatus === "UNPAID") {
+              notificationText = `Khách hàng có khoản thanh toán ${formattedAmount} hạn chót thanh toán vào ${formattedDate}.`;
+            } else if (message.paymentStatus === "PAID") {
+              notificationText = `Khách hàng vừa thanh toán thành công khoản tiền ${formattedAmount} vào ngày ${formattedDate}.`;
+            } else if (message.status === "UNACTIV") {
+              notificationText = `Khách hàng vui lòng kiểm tra đồng hồ số ${message?.meter?.serialNumber} đã được ghi chỉ số vào ngày ${message?.readingDate}.`;
+            } else if (message.status === "ACTIV") {
+              notificationText = `Đồng hồ số ${message?.meter?.serialNumber} đã được xác nhận vào ngày ${message?.readingDate}.`;
+            } else if (message.companyName) {
+              notificationText = `Khách hàng ${message?.directorName} của công ty ${message?.companyName} sau 3 ngày nữa sẽ đến sinh nhật.`;
+            } else if (message.maintenanceDate) {
+              notificationText = `Bạn có lịch bảo trì vào ngày ${message?.maintenanceDate}`;
+            }
+          }
 
           return {
-            key: index,
+            key: notification.id,
             label: (
               <div
-                key={index}
+                key={notification.id}
                 onClick={() => {
                   setNotificationDetails(notification);
                   handleReadNotification(notification?.id);
@@ -243,7 +266,7 @@ const AppHeader = () => {
                   notification.status === "READ"
                     ? "text-gray-400"
                     : "text-black"
-                }`}
+                } hover:text-blue-500 transition duration-300 ease-in-out`}
               >
                 <p className="font-bold">
                   {message?.paymentStatus === "UNPAID"
@@ -254,9 +277,17 @@ const AppHeader = () => {
                     ? "Chưa được xác nhận"
                     : message?.status === "ACTIV"
                     ? "Đã được xác nhận"
-                    : notification?.title}
+                    : message?.companyName
+                    ? "Thông báo sinh nhật"
+                    : message?.title
+                    ? "Thông báo bảo trì"
+                    : "Thông báo không xác định"}
                 </p>
-                {notificationText.substring(0, 50) + " ..."}
+                <p>
+                  {notificationText.length > 40
+                    ? notificationText.substring(0, 40) + " ..."
+                    : notificationText}
+                </p>
               </div>
             ),
           };
@@ -369,9 +400,7 @@ const AppHeader = () => {
       <ModalChat
         fetchData={fetchData}
         listChatRoomUsers={listChatRoomUsers}
-        setListChatRoomUsers={setListChatRoomUsers}
         listChatRoomGroups={listChatRoomGroups}
-        setListChatRoomGroups={setListChatRoomGroups}
         openChat={openChat}
         setOpenChat={setOpenChat}
         userStatus={userStatus}

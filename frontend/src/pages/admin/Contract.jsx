@@ -195,7 +195,7 @@ const Contract = () => {
             {searchedColumn === "startDate" ? (
               <HighlightText text={record?.startDate} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.startDate)
+              record?.startDate
             )}
           </a>
         );
@@ -227,7 +227,7 @@ const Contract = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(customer?.companyName)
+              FORMAT_TEXT_LENGTH(customer?.companyName, 20)
             )}
           </a>
         );

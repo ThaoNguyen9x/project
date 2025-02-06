@@ -191,7 +191,7 @@ const HandoverStatus = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.handoverDate)
+              record?.handoverDate
             )}
           </a>
         );
@@ -228,7 +228,7 @@ const HandoverStatus = () => {
         return searchedColumn === "equipmentFile" ? (
           <HighlightText text={record?.equipmentFile} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.equipmentFile)
+          FORMAT_TEXT_LENGTH(record?.equipmentFile, 20)
         );
       },
     },

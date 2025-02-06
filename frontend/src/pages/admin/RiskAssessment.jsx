@@ -200,7 +200,7 @@ const RiskAssessment = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.assessmentDate)
+              record?.assessmentDate
             )}
           </a>
         );

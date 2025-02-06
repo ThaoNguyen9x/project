@@ -174,7 +174,7 @@ const Meter = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.serialNumber)
+              FORMAT_TEXT_LENGTH(record?.serialNumber, 20)
             )}
           </a>
         );
@@ -222,7 +222,7 @@ const Meter = () => {
             {searchedColumn === "office?.name" ? (
               <HighlightText text={office?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(`${office.name} - ${office.location.floor}`)
+              FORMAT_TEXT_LENGTH(`${office.name} - ${office.location.floor}`, 30)
             )}
           </a>
         );

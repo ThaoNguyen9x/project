@@ -171,7 +171,7 @@ const CustomerType = () => {
             {searchedColumn === "typeName" ? (
               <HighlightText text={record?.typeName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.typeName)
+              FORMAT_TEXT_LENGTH(record?.typeName, 20)
             )}
           </a>
         );

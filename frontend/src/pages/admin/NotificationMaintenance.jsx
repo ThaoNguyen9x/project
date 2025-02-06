@@ -184,7 +184,7 @@ const NotificationMaintenance = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.title)
+              FORMAT_TEXT_LENGTH(record?.title, 20)
             )}
           </a>
         );

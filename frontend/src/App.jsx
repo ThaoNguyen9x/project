@@ -55,10 +55,10 @@ import RepairRequest from "./pages/admin/RepairRequest";
 import WorkRegistration from "./pages/admin/WorkRegistration";
 import ItemCheck from "./pages/admin/ItemCheck";
 import ResultCheck from "./pages/admin/ResultCheck";
+import ElectricityRate from "./pages/admin/ElectricityRate";
 
 function App() {
-  const { user, setUser, loading, setLoading } =
-    useContext(AuthContext);
+  const { user, setUser, loading, setLoading } = useContext(AuthContext);
 
   const delay = (milSeconds) => {
     return new Promise((resolve, reject) => {
@@ -390,7 +390,8 @@ function App() {
           path: "work-registrations",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.WORK_REGISTRATIONS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.WORK_REGISTRATIONS.GET_PAGINATE.apiPath
           ) ? (
             <WorkRegistration />
           ) : (
@@ -401,7 +402,8 @@ function App() {
           path: "repair-requests",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.REPAIR_REQUEST.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.REPAIR_REQUEST.GET_PAGINATE.apiPath
           ) ? (
             <RepairRequest />
           ) : (
@@ -420,16 +422,18 @@ function App() {
           ),
         },
         {
-          path: "result-checks",
+          path: "electricity-rates",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.RESULT_CHECKS.GET_PAGINATE.apiPath
+              perm.apiPath ===
+              ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath
           ) ? (
-            <ResultCheck />
+            <ElectricityRate />
           ) : (
             <Navigate to="/dashboard" />
           ),
         },
+
       ],
     },
     {

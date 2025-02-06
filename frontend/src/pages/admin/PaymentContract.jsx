@@ -20,6 +20,8 @@ import {
   callGetAllPaymentContracts,
   callGetAllContracts,
   callSendPaymentRequest,
+  callPaymentStripe,
+  callPaymentStatus,
 } from "../../services/api";
 
 import Access from "../../components/share/Access";
@@ -167,7 +169,7 @@ const PaymentContract = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -189,7 +191,10 @@ const PaymentContract = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.paymentAmount)
+              record?.paymentAmount.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })
             )}
           </a>
         );
@@ -212,9 +217,12 @@ const PaymentContract = () => {
             }}
           >
             {searchedColumn === "contract.customer.companyName" ? (
-              <HighlightText text={contract?.customer?.companyName} searchText={searchText} />
+              <HighlightText
+                text={contract?.customer?.companyName}
+                searchText={searchText}
+              />
             ) : (
-              FORMAT_TEXT_LENGTH(contract?.customer?.companyName)
+              FORMAT_TEXT_LENGTH(contract?.customer?.companyName, 20)
             )}
           </a>
         );
@@ -256,15 +264,33 @@ const PaymentContract = () => {
       render: (text, record) => {
         return (
           <div className="flex items-center gap-3">
+            {record?.paymentStatus === "UNPAID" &&
+            user?.role?.name === "Customer" ? (
+              <Button
+                onClick={() => {
+                  handlePaymentStripe(
+                    record?.paymentId,
+                    record?.contract?.id,
+                    record?.paymentStatus === "UNPAID" ? "UNPAID" : "PAID",
+                    record?.paymentDate,
+                    record?.paymentAmount
+                  );
+                }}
+              >
+                Thanh toán
+              </Button>
+            ) : (
+              ""
+            )}
             {record?.paymentStatus === "UNPAID" ? (
-              <Tooltip title="asd">
+              <Tooltip title="Gửi thông báo">
                 <>
                   <Access
                     permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.SEND_PAYMENT}
                     hideChildren
                   >
                     <div
-                      onClick={() => handleNotification(record.paymentId)}
+                      onClick={() => handleNotification(record?.paymentId)}
                       className="cursor-pointer text-blue-900"
                     >
                       <>
@@ -277,45 +303,53 @@ const PaymentContract = () => {
             ) : (
               ""
             )}
-            <Access
-              permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.UPDATE}
-              hideChildren
-            >
-              <div
-                onClick={() => {
-                  setData(record);
-                  setOpenModal(true);
-                }}
-                className="cursor-pointer text-amber-900"
-              >
-                <CiEdit className="h-5 w-5" />
-              </div>
-            </Access>
-            <Access
-              permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.DELETE}
-              hideChildren
-            >
-              <Popconfirm
-                placement="leftBottom"
-                okText="Có"
-                cancelText="Không"
-                title="Xác nhận"
-                description="Bạn có chắc chắn muốn xóa không?"
-                onConfirm={() => handleDelete(record.paymentId)}
-                icon={
-                  <QuestionCircleOutlined
-                    style={{
-                      color: "red",
+            <Tooltip title="Chỉnh sửa">
+              <>
+                <Access
+                  permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.UPDATE}
+                  hideChildren
+                >
+                  <div
+                    onClick={() => {
+                      setData(record);
+                      setOpenModal(true);
                     }}
-                  />
-                }
-                className="cursor-pointer DELETE"
-              >
-                <>
-                  <AiOutlineDelete className="h-5 w-5" />
-                </>
-              </Popconfirm>
-            </Access>
+                    className="cursor-pointer text-amber-900"
+                  >
+                    <CiEdit className="h-5 w-5" />
+                  </div>
+                </Access>
+              </>
+            </Tooltip>
+            <Tooltip title="Xóa">
+              <>
+                <Access
+                  permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.DELETE}
+                  hideChildren
+                >
+                  <Popconfirm
+                    placement="leftBottom"
+                    okText="Có"
+                    cancelText="Không"
+                    title="Xác nhận"
+                    description="Bạn có chắc chắn muốn xóa không?"
+                    onConfirm={() => handleDelete(record.paymentId)}
+                    icon={
+                      <QuestionCircleOutlined
+                        style={{
+                          color: "red",
+                        }}
+                      />
+                    }
+                    className="cursor-pointer DELETE"
+                  >
+                    <>
+                      <AiOutlineDelete className="h-5 w-5" />
+                    </>
+                  </Popconfirm>
+                </Access>
+              </>
+            </Tooltip>
           </div>
         );
       },
@@ -325,6 +359,35 @@ const PaymentContract = () => {
   useEffect(() => {
     fetchData();
   }, [searchedColumn, searchText, current, pageSize, sortQuery]);
+
+  useEffect(() => {
+    const fetchPaymentStatus = async () => {
+      const sessionId = new URLSearchParams(window.location.search).get(
+        "session_id"
+      );
+      if (!sessionId) return;
+
+      const res = await callPaymentStatus(sessionId);
+
+      if (typeof res === "string") {
+        if (res && res === "Success") {
+          fetchData();
+          message.success("Thanh toán thành công");
+        } else {
+          notification.error({
+            message: "Có lỗi xảy ra",
+            description: "Thanh toán chưa hoàn thành hoặc phiên không hợp lệ",
+          });
+        }
+
+        const url = new URL(window.location);
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.toString());
+      }
+    };
+
+    fetchPaymentStatus();
+  }, []);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -387,33 +450,42 @@ const PaymentContract = () => {
   };
 
   const handleNotification = async (paymentId) => {
-    const lastNotification = localStorage.getItem(
-      `lastNotification_${paymentId}`
-    );
-    const now = new Date();
-
-    if (lastNotification) {
-      const lastDate = new Date(lastNotification);
-      const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24)); // Tính số ngày đã trôi qua
-
-      if (diffDays < 3) {
-        notification.warning({
-          message: "Không thể gửi thông báo",
-          description: `Bạn chỉ có thể gửi thông báo sau ${3 - diffDays} ngày.`,
-        });
-        return;
-      }
-    }
-
     const res = await callSendPaymentRequest(paymentId);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
       notification.error({
         message: "Có lỗi xảy ra",
         description: res.error,
+      });
+    }
+  };
+
+  const handlePaymentStripe = async (
+    paymentId,
+    contract,
+    paymentStatus,
+    paymentDate,
+    paymentAmount
+  ) => {
+    const res = await callPaymentStripe(
+      paymentId,
+      {
+        id: contract,
+      },
+      paymentStatus,
+      paymentDate,
+      paymentAmount
+    );
+
+    if (res && res.data && res.data.sessionUrl) {
+      window.location.href = res.data.sessionUrl;
+    } else {
+      notification.error({
+        message: "Có lỗi xảy ra",
+        description: res?.error,
       });
     }
   };
@@ -426,7 +498,10 @@ const PaymentContract = () => {
           permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.CREATE}
           hideChildren
         >
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

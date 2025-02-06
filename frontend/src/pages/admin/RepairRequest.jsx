@@ -166,7 +166,7 @@ const RepairRequest = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -208,29 +208,7 @@ const RepairRequest = () => {
         return searchedColumn === "content" ? (
           <HighlightText text={content} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(content)
-        );
-      },
-    },
-    {
-      title: "Nhân viên phụ trách",
-      dataIndex: "account",
-      sorter: (a, b) => a.account.typeName.localeCompare(b.account.name),
-      ...getColumnSearchProps("account.name"),
-      render: (account) => {
-        return (
-          <a
-            onClick={() => {
-              setData(account);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "account.name" ? (
-              <HighlightText text={account?.name} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(account?.name)
-            )}
-          </a>
+          FORMAT_TEXT_LENGTH(content, 20)
         );
       },
     },
@@ -373,7 +351,10 @@ const RepairRequest = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Yêu cầu sửa chữa</h2>
         <Access permission={ALL_PERMISSIONS.REPAIR_REQUEST.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
@@ -405,6 +386,7 @@ const RepairRequest = () => {
         />
 
         <ModalRepairRequest
+          user={user}
           data={data}
           setData={setData}
           openModal={openModal}

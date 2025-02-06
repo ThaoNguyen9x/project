@@ -190,7 +190,7 @@ const ResultCheck = () => {
             {searchedColumn === "itemCheck.checkName" ? (
               <HighlightText text={record?.itemCheck?.checkName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.itemCheck?.checkName)
+              FORMAT_TEXT_LENGTH(record?.itemCheck?.checkName, 20)
             )}
           </a>
         );
@@ -205,7 +205,7 @@ const ResultCheck = () => {
         return searchedColumn === "note" ? (
           <HighlightText text={record?.note} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.note)
+          FORMAT_TEXT_LENGTH(record?.note, 20)
         );
       },
     },
@@ -228,7 +228,7 @@ const ResultCheck = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(technician?.name)
+              FORMAT_TEXT_LENGTH(technician?.name, 20)
             )}
           </a>
         );

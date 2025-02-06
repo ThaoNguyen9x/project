@@ -179,7 +179,7 @@ const Task = () => {
             {searchedColumn === "taskName" ? (
               <HighlightText text={record?.taskName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.taskName)
+              FORMAT_TEXT_LENGTH(record?.taskName, 20)
             )}
           </a>
         );
@@ -199,7 +199,7 @@ const Task = () => {
         return searchedColumn === "taskDescription" ? (
           <HighlightText text={taskDescription} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(taskDescription)
+          FORMAT_TEXT_LENGTH(taskDescription, 20)
         );
       },
     },
@@ -224,7 +224,7 @@ const Task = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(assignedTo?.name)
+              FORMAT_TEXT_LENGTH(assignedTo?.name, 20)
             )}
           </a>
         );

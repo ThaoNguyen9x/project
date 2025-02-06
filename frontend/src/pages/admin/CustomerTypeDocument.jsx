@@ -186,7 +186,7 @@ const CustomerTypeDocument = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.documentType)
+              FORMAT_TEXT_LENGTH(record?.documentType, 20)
             )}
           </a>
         );
@@ -212,7 +212,7 @@ const CustomerTypeDocument = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(customerType?.typeName)
+              FORMAT_TEXT_LENGTH(customerType?.typeName, 20)
             )}
           </a>
         );

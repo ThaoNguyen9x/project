@@ -183,7 +183,7 @@ const ItemCheck = () => {
             {searchedColumn === "checkName" ? (
               <HighlightText text={record?.checkName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.checkName)
+              FORMAT_TEXT_LENGTH(record?.checkName, 20)
             )}
           </a>
         );
@@ -198,7 +198,7 @@ const ItemCheck = () => {
         return searchedColumn === "checkCategory" ? (
           <HighlightText text={record?.checkCategory} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.checkCategory)
+          FORMAT_TEXT_LENGTH(record?.checkCategory, 20)
         );
       },
     },
@@ -211,7 +211,7 @@ const ItemCheck = () => {
         return searchedColumn === "standard" ? (
           <HighlightText text={record?.standard} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.standard)
+          FORMAT_TEXT_LENGTH(record?.standard, 20)
         );
       },
     },
@@ -234,7 +234,7 @@ const ItemCheck = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(device?.deviceName)
+              FORMAT_TEXT_LENGTH(device?.deviceName, 20)
             )}
           </a>
         );

@@ -15,24 +15,19 @@ import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
-  callDeleteDevice,
-  callGetAllDevices,
-  callGetAllDeviceTypes,
-  callGetAllLocations,
-  callGetAllSystemMaintenanceServices,
-  callGetAllSystems,
+  callDeleteElectricityRate,
+  callGetAllElectricityRates,
 } from "../../services/api";
 
-import ModalDevice from "../../components/admin/Property_Manager/Device/modal.device";
-import ViewDevice from "../../components/admin/Property_Manager/Device/view.device";
+import ModalElectricityRate from "../../components/admin/System_Service/Electricity_Rate/modal.electricity-rate";
+import ViewElectricityRate from "../../components/admin/System_Service/Electricity_Rate/view.electricity-rate";
 import Access from "../../components/share/Access";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
-import Highlighter from "react-highlight-words";
 import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 
-const Device = () => {
+const ElectricityRate = () => {
   const { user } = useContext(AuthContext);
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,40 +44,6 @@ const Device = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
-
-  const [listSystems, setListSystems] = useState([]);
-  const [listLocations, setListLocations] = useState([]);
-  const [listDeviceTypes, setListDeviceTypes] = useState([]);
-  const [listSystemMaintenanceServices, setListSystemMaintenanceServices] =
-    useState([]);
-
-  useEffect(() => {
-    const init = async () => {
-      const systems = await callGetAllSystems();
-      if (systems && systems.data) {
-        setListSystems(systems.data?.result);
-      }
-
-      const locations = await callGetAllLocations();
-      if (locations && locations.data) {
-        setListLocations(locations.data?.result);
-      }
-
-      const deviceTypes = await callGetAllDeviceTypes();
-      if (deviceTypes && deviceTypes.data) {
-        setListDeviceTypes(deviceTypes.data?.result);
-      }
-
-      const systemMaintenanceServices =
-        await callGetAllSystemMaintenanceServices();
-      if (systemMaintenanceServices && systemMaintenanceServices.data) {
-        setListSystemMaintenanceServices(
-          systemMaintenanceServices.data?.result
-        );
-      }
-    };
-    init();
-  }, []);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -193,10 +154,10 @@ const Device = () => {
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
-      title: "Tên thiết bị",
-      dataIndex: "deviceName",
-      sorter: (a, b) => a.deviceName.localeCompare(b.deviceName),
-      ...getColumnSearchProps("deviceName"),
+      title: "Tên bậc giá",
+      dataIndex: "tierName",
+      sorter: (a, b) => a.tierName.localeCompare(b.tierName),
+      ...getColumnSearchProps("tierName"),
       render: (text, record) => {
         return (
           <a
@@ -205,74 +166,60 @@ const Device = () => {
               setOpenViewDetail(true);
             }}
           >
-            {searchedColumn === "deviceName" ? (
-              <HighlightText
-                text={record?.deviceName}
-                searchText={searchText}
-              />
+            {searchedColumn === "tierName" ? (
+              <HighlightText text={record?.tierName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.deviceName, 20)
+              FORMAT_TEXT_LENGTH(record?.tierName, 20)
             )}
           </a>
         );
       },
     },
     {
-      title: "Loại thiết bị",
-      dataIndex: "deviceType",
-      sorter: (a, b) =>
-        a.deviceType.typeName.localeCompare(b.deviceType.typeName),
-      ...getColumnSearchProps("deviceType.typeName"),
-      render: (deviceType) => {
-        return (
-          <a
-            onClick={() => {
-              setData(deviceType);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "deviceType.typeName" ? (
-              <HighlightText text={deviceType?.typeName} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(deviceType?.typeName, 20)
-            )}
-          </a>
+      title: "Mức tiêu thụ tối thiểu",
+      dataIndex: "minUsage",
+      sorter: (a, b) => a.minUsage - b.minUsage,
+      ...getColumnSearchProps("minUsage"),
+      render: (text, record) => {
+        const formatted =
+          `${record?.minUsage}` || "N/A";
+
+        return searchedColumn === "minUsage" ? (
+          <HighlightText text={formatted} searchText={searchText} />
+        ) : (
+          formatted
         );
       },
     },
     {
-      title: "Ngày cài đặt",
-      dataIndex: "installationDate",
-      sorter: (a, b) =>
-        new Date(a.installationDate) - new Date(b.installationDate),
-      ...getColumnSearchProps("installationDate"),
+      title: "Mức tiêu thụ tối đa",
+      dataIndex: "maxUsage",
+      sorter: (a, b) => a.maxUsage - b.maxUsage,
+      ...getColumnSearchProps("maxUsage"),
+      render: (text, record) => {
+        const formatted =
+          `${record?.maxUsage}` || "N/A";
+
+        return searchedColumn === "maxUsage" ? (
+          <HighlightText text={formatted} searchText={searchText} />
+        ) : (
+          formatted
+        );
+      },
     },
     {
-      title: "Tuổi thọ",
-      dataIndex: "lifespan",
-      sorter: (a, b) => a.lifespan - b.lifespan,
-      ...getColumnSearchProps("lifespan"),
-    },
-    {
-      title: "Hệ thống",
-      dataIndex: "system",
-      sorter: (a, b) =>
-        a.system.systemName.localeCompare(b.system.systemName),
-      ...getColumnSearchProps("system.systemName"),
-      render: (system) => {
-        return (
-          <a
-            onClick={() => {
-              setData(system);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "system.systemName" ? (
-              <HighlightText text={system?.systemName} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(system?.systemName, 20)
-            )}
-          </a>
+      title: "Giá điện",
+      dataIndex: "rate",
+      sorter: (a, b) => a.rate - b.rate,
+      ...getColumnSearchProps("rate"),
+      render: (text, record) => {
+        const formatted =
+          `${record?.rate}` || "N/A";
+
+        return searchedColumn === "rate" ? (
+          <HighlightText text={formatted} searchText={searchText} />
+        ) : (
+          formatted
         );
       },
     },
@@ -280,7 +227,7 @@ const Device = () => {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.DEVICES.UPDATE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.ELECTRICITY_RATES.UPDATE} hideChildren>
             <div
               onClick={() => {
                 setData(record);
@@ -291,14 +238,14 @@ const Device = () => {
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access permission={ALL_PERMISSIONS.DEVICES.DELETE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.ELECTRICITY_RATES.DELETE} hideChildren>
             <Popconfirm
               placement="leftBottom"
               okText="Có"
               cancelText="Không"
               title="Xác nhận"
               description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.deviceId)}
+              onConfirm={() => handleDelete(record.id)}
               icon={
                 <QuestionCircleOutlined
                   style={{
@@ -335,7 +282,7 @@ const Device = () => {
       query += `&${sortQuery}`;
     }
 
-    const res = await callGetAllDevices(query);
+    const res = await callGetAllElectricityRates(query);
     if (res && res.data) {
       setList(
         res.data.result.sort(
@@ -368,8 +315,8 @@ const Device = () => {
     }
   };
 
-  const handleDelete = async (deviceId) => {
-    const res = await callDeleteDevice(deviceId);
+  const handleDelete = async (id) => {
+    const res = await callDeleteElectricityRate(id);
 
     if (res && res && res.statusCode === 200) {
       message.success(res.message);
@@ -385,8 +332,8 @@ const Device = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Thiết bị</h2>
-        <Access permission={ALL_PERMISSIONS.DEVICES.CREATE} hideChildren>
+        <h2 className="text-base xl:text-xl font-bold">Giá điện</h2>
+        <Access permission={ALL_PERMISSIONS.ELECTRICITY_RATES.CREATE} hideChildren>
           <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
             <GoPlus className="h-4 w-4" />
             Thêm
@@ -395,7 +342,7 @@ const Device = () => {
       </div>
       <div className="relative overflow-x-auto">
         <Table
-          rowKey={(record) => record.deviceId}
+          rowKey={(record) => record.id}
           loading={isLoading}
           columns={columns}
           dataSource={list}
@@ -410,7 +357,7 @@ const Device = () => {
           }}
         />
 
-        <ViewDevice
+        <ViewElectricityRate
           user={user}
           data={data}
           setData={setData}
@@ -418,20 +365,16 @@ const Device = () => {
           setOpenViewDetail={setOpenViewDetail}
         />
 
-        <ModalDevice
+        <ModalElectricityRate
           data={data}
           setData={setData}
           openModal={openModal}
           setOpenModal={setOpenModal}
           fetchData={fetchData}
-          listSystems={listSystems}
-          listLocations={listLocations}
-          listDeviceTypes={listDeviceTypes}
-          listSystemMaintenanceServices={listSystemMaintenanceServices}
         />
       </div>
     </div>
   );
 };
 
-export default Device;
+export default ElectricityRate;

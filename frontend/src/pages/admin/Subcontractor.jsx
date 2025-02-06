@@ -183,9 +183,9 @@ const Subcontractor = () => {
             className="text-blue-900"
           >
             {searchedColumn === "name" ? (
-              <HighlightText text={record.name} searchText={searchText} />
+              <HighlightText text={record?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record.name)
+              FORMAT_TEXT_LENGTH(record?.name, 20)
             )}
           </a>
         );
@@ -228,7 +228,7 @@ const Subcontractor = () => {
             {searchedColumn === "serviceType" ? (
               <HighlightText text={serviceName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(serviceName)
+              FORMAT_TEXT_LENGTH(serviceName, 20)
             )}
           </>
         );
@@ -278,7 +278,7 @@ const Subcontractor = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(system?.systemName)
+              FORMAT_TEXT_LENGTH(system?.systemName, 20)
             )}
           </a>
         );

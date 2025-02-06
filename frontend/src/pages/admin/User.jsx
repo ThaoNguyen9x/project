@@ -183,7 +183,7 @@ const User = () => {
             {searchedColumn === "name" ? (
               <HighlightText text={record?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.name)
+              FORMAT_TEXT_LENGTH(record?.name, 20)
             )}
           </a>
         );
@@ -198,7 +198,7 @@ const User = () => {
         return searchedColumn === "email" ? (
           <HighlightText text={record?.email} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.email)
+          FORMAT_TEXT_LENGTH(record?.email, 20)
         );
       },
     },
@@ -211,7 +211,7 @@ const User = () => {
         return searchedColumn === "role.name" ? (
           <HighlightText text={record?.role?.name} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.role?.name)
+          FORMAT_TEXT_LENGTH(record?.role?.name, 20)
         );
       },
     },

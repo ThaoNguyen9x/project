@@ -1,4 +1,26 @@
 export const ALL_PERMISSIONS = {
+  ELECTRICITY_RATES: {
+    GET_PAGINATE: {
+      method: "GET",
+      apiPath: "/api/electricity-rates",
+      module: "ELECTRICITY_RATES",
+    },
+    CREATE: {
+      method: "POST",
+      apiPath: "/api/electricity-rates",
+      module: "ELECTRICITY_RATES",
+    },
+    UPDATE: {
+      method: "PUT",
+      apiPath: "/api/electricity-rates/{id}",
+      module: "ELECTRICITY_RATES",
+    },
+    DELETE: {
+      method: "DELETE",
+      apiPath: "/api/electricity-rates/{id}",
+      module: "ELECTRICITY_RATES",
+    },
+  },
   WORK_REGISTRATIONS: {
     GET_PAGINATE: {
       method: "GET",
@@ -577,6 +599,7 @@ export const ALL_PERMISSIONS = {
 };
 
 export const ALL_MODULES = [
+  "ELECTRICITY_RATES",
   "WORK_REGISTRATIONS",
   "RESULT_CHECKS",
   "ITEM_CHECKS",

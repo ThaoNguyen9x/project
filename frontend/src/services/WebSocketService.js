@@ -1,4 +1,3 @@
-import { message } from "antd";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 
@@ -25,8 +24,9 @@ export const WebSocketService = {
       () => {
         clearTimeout(connectTimeout);
 
-        message.success("Kết nối thành công");
-
+        // message.success("Kết nối thành công");
+        console.clear()
+        
         reconnectAttempts = 0;
         if (setLoading) setLoading(false);
 

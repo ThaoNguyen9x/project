@@ -213,7 +213,7 @@ const ModalTask = (props) => {
               >
                 {listUsers
                   ?.filter(
-                    (user) => user.status && user?.role?.name === "ENGINEERING"
+                    (user) => user.status && user?.role?.name === "Technician_Employee"
                   )
                   .map((user) => (
                     <Select.Option

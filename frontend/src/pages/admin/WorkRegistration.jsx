@@ -207,7 +207,7 @@ const WorkRegistration = () => {
         return searchedColumn === "note" ? (
           <HighlightText text={note} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(note)
+          FORMAT_TEXT_LENGTH(note, 20)
         );
       },
     },
@@ -227,7 +227,7 @@ const WorkRegistration = () => {
             {searchedColumn === "account.name" ? (
               <HighlightText text={account?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(account?.name)
+              FORMAT_TEXT_LENGTH(account?.name, 20)
             )}
           </a>
         );

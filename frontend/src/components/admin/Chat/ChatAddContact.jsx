@@ -33,15 +33,13 @@ const ChatAddContact = ({
   };
 
   const handleCheckboxChange = (user, checked) => {
-    const value = user.role?.name[0]?.toUpperCase();
-
     if (checked) {
       setSelectedUsers((prev) => [
         ...prev,
-        { id: user.id, value, label: user.name },
+        { id: user.id, value: user.role?.name, label: user.name },
       ]);
     } else {
-      setSelectedUsers((prev) => prev.filter((item) => item.value !== value));
+      setSelectedUsers((prev) => prev.filter((item) => item.id !== user.id));
     }
   };
 
@@ -81,7 +79,7 @@ const ChatAddContact = ({
   return (
     <div>
       <Modal
-        title="Add Contact"
+        title="Tạo cuộc trò chuyện"
         open={openModal}
         onCancel={() => {
           setOpenModal(false);
@@ -111,9 +109,7 @@ const ChatAddContact = ({
                   className="w-full px-3 hover:bg-gray-100 rounded-md"
                 >
                   <Checkbox
-                    checked={selectedUsers.some(
-                      (item) => item.value === user.role?.name[0]?.toUpperCase()
-                    )}
+                    checked={selectedUsers.some((item) => item.id === user.id)}
                     onChange={(e) =>
                       handleCheckboxChange(user, e.target.checked)
                     }
@@ -122,9 +118,9 @@ const ChatAddContact = ({
                       <Avatar size={32} className="bg-red-700">
                         {user?.role?.name[0]?.toUpperCase()}
                       </Avatar>
-                      <div className="hidden lg:block text-left min-w-0">
+                      <div className="block text-left min-w-0">
                         <div className="font-medium truncate">
-                          {FORMAT_TEXT_LENGTH(user?.name)}
+                          {FORMAT_TEXT_LENGTH(user?.name, 20)}
                         </div>
                       </div>
                     </div>

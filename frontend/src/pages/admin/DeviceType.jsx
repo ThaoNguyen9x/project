@@ -169,7 +169,7 @@ const DeviceType = () => {
             {searchedColumn === "typeName" ? (
               <HighlightText text={record?.typeName} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.typeName)
+              FORMAT_TEXT_LENGTH(record?.typeName, 20)
             )}
           </a>
         );
@@ -189,7 +189,7 @@ const DeviceType = () => {
         return searchedColumn === "description" ? (
           <HighlightText text={description} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(description)
+          FORMAT_TEXT_LENGTH(description, 20)
         );
       },
     },

@@ -195,7 +195,7 @@ const Customer = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(record?.companyName)
+              FORMAT_TEXT_LENGTH(record?.companyName, 20)
             )}
           </a>
         );
@@ -210,7 +210,7 @@ const Customer = () => {
         return searchedColumn === "directorName" ? (
           <HighlightText text={record?.directorName} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.directorName)
+          FORMAT_TEXT_LENGTH(record?.directorName, 20)
         );
       },
     },
@@ -223,7 +223,7 @@ const Customer = () => {
         return searchedColumn === "email" ? (
           <HighlightText text={record?.email} searchText={searchText} />
         ) : (
-          FORMAT_TEXT_LENGTH(record?.email)
+          FORMAT_TEXT_LENGTH(record?.email, 20)
         );
       },
     },
@@ -243,7 +243,7 @@ const Customer = () => {
             {searchedColumn === "user.name" ? (
               <HighlightText text={user?.name} searchText={searchText} />
             ) : (
-              FORMAT_TEXT_LENGTH(user?.name)
+              FORMAT_TEXT_LENGTH(user?.name, 20)
             )}
           </a>
         );
@@ -269,7 +269,7 @@ const Customer = () => {
                 searchText={searchText}
               />
             ) : (
-              FORMAT_TEXT_LENGTH(customerType?.typeName)
+              FORMAT_TEXT_LENGTH(customerType?.typeName, 20)
             )}
           </a>
         );
