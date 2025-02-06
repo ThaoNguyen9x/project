@@ -27,6 +27,4 @@ public interface UserService {
     void resetPassword(String token, String newPassword);
 
     void changePassword(String email, String oldPassword, String newPassword);
-
-    void changeOffline(String email);
 }

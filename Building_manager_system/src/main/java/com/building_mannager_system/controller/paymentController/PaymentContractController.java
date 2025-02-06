@@ -7,6 +7,7 @@ import com.building_mannager_system.service.notification.NotificationPaymentCont
 import com.building_mannager_system.service.payment.PaymentContractService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -77,4 +78,7 @@ public class PaymentContractController {
 //        // Gửi thông báo thanh toán đã hoàn tất
 //        return "Payment confirmed: " + paymentResponse.getPaymentStatus();
 //    }
+
+    @Value("${stripe.secret.key}")
+    private String secretKey;
 }

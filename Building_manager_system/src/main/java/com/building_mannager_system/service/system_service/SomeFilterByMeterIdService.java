@@ -52,13 +52,13 @@ public class SomeFilterByMeterIdService {
         // Kiểm tra Office của Meter
         Office office = meter.getOffice();
         if (office == null || office.getContracts() == null || office.getContracts().isEmpty()) {
-            throw new APIException(HttpStatus.NOT_FOUND, "No contracts found for the office");
+            throw new APIException(HttpStatus.NOT_FOUND, "Không tìm thấy hợp đồng nào cho văn phòng");
         }
 
         // Lấy Contract đầu tiên
         Contract contract = office.getContracts().get(0);
         if (contract == null || contract.getCustomer() == null || contract.getCustomer().getUser() == null) {
-            throw new APIException(HttpStatus.NOT_FOUND, "Customer or User not found for the contract");
+            throw new APIException(HttpStatus.NOT_FOUND, "Không tìm thấy Khách hàng cho hợp đồng");
         }
 
         // Trả về User ID

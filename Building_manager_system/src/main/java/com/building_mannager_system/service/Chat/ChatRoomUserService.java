@@ -115,9 +115,7 @@ public class ChatRoomUserService {
     }
 
     public ResultPaginationDTO getAllChatRoomGroupsByUser(Specification<ChatRoomUser> spec, Pageable pageable) {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent()
-                ? SecurityUtil.getCurrentUserLogin().get()
-                : "";
+        String email = SecurityUtil.getCurrentUserLogin().orElse(null);
 
         User user = userRepository.findByEmail(email);
 
@@ -156,7 +154,6 @@ public class ChatRoomUserService {
 
         return rs;
     }
-
 
     public void removeUserFromChatRoom(Long id) {
         ChatRoomUser ex = chatRoomUserRepository.findById(id)

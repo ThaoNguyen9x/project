@@ -85,27 +85,28 @@ public class ElectricityUsageService {
         User user = userRepository.findByEmail(email);
         if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
 
-        Customer customer = customerRepository.findById(user.getCustomer().getId())
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer not found"));
+        if (user.getRole().getName().equals("Customer")) {
+            Customer customer = user.getCustomer();
+            if (customer == null) throw new APIException(HttpStatus.NOT_FOUND, "Customer not found");
 
-        Contract contract = customer.getContracts().stream()
-                .findFirst()
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found"));
+            Contract contract = customer.getContracts().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found"));
 
-        Meter meter;
-        if (contract.getOffice() != null && !contract.getOffice().getMeters().isEmpty()) {
-            meter = meterRepository.findById(contract.getOffice().getMeters().get(0).getId())
-                    .orElse(null);
-        } else {
-            meter = null;
-        }
+            Meter meter = contract.getOffice() != null && !contract.getOffice().getMeters().isEmpty()
+                    ? contract.getOffice().getMeters().get(0)
+                    : null;
 
-        if (user.getRole().getName().equals("Customer") && meter != null) {
-            spec = Specification.where((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("meter"), meter));
+            if (meter != null) {
+                spec = Specification.where((root, query, criteriaBuilder) ->
+                        criteriaBuilder.equal(root.get("meter"), meter));
+            } else {
+                throw new APIException(HttpStatus.NOT_FOUND, "No meter found for this customer");
+            }
         }
 
         Page<ElectricityUsage> page = electricityUsageRepository.findAll(spec, pageable);
+
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
 

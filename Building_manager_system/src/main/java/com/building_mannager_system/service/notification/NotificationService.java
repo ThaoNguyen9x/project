@@ -46,10 +46,8 @@ public class NotificationService {
         User user = userRepository.findByEmail(email);
         if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
 
-        if (user.getRole().getName().equals("Customer")) {
-            spec = Specification.where((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("recipient").get("referenceId"), user.getId()));
-        }
+        spec = Specification.where((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("recipient").get("referenceId"), user.getId()));
 
         Page<Notification> page = notificationRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -57,12 +55,10 @@ public class NotificationService {
 
         mt.setPage(pageable.getPageNumber() + 1);
         mt.setPageSize(pageable.getPageSize());
-
         mt.setPages(page.getTotalPages());
         mt.setTotal(page.getTotalElements());
 
         rs.setMeta(mt);
-        rs.setResult(page.getContent());
 
         List<NotificationDto> list = page.getContent()
                 .stream()

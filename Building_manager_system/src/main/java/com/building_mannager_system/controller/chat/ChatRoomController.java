@@ -61,9 +61,11 @@ public class ChatRoomController {
 //        return chatRoomService.getAllChatRooms();
 //    }
 //
-//    // Xóa phòng chat theo ID
-//    @DeleteMapping("/{id}")
-//    public void deleteChatRoom(@PathVariable Long id) {
-//        chatRoomService.deleteChatRoom(id);
-//    }
+    // Xóa phòng chat theo ID
+    @DeleteMapping("/{id}")
+    @ApiMessage("Xóa trò chuyện thành công")
+    public ResponseEntity<Void> deleteChatRoom(@PathVariable(name = "id") Long id) {
+        chatRoomService.deleteChatRoom(id);
+        return ResponseEntity.ok(null);
+    }
 }

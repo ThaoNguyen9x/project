@@ -6,7 +6,6 @@ import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
 import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
 import com.building_mannager_system.entity.pament_entity.PaymentContract;
-import com.building_mannager_system.enums.PaymentStatus;
 import com.building_mannager_system.repository.Contract.ContractRepository;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.paymentRepository.PaymentContractRepository;
@@ -59,8 +58,7 @@ public class PaymentContractService {
 
         User user = userRepository.findByEmail(email);
 
-        if (user.getRole().getName().equals("USER")) {
-            // Adjust the specification to filter contracts based on the user's ID in the associated Customer
+        if (user.getRole().getName().equals("Customer")) {
             spec = spec.and((root, query, builder) ->
                     builder.equal(root.get("contract").get("customer").get("user").get("id"), user.getId())
             );

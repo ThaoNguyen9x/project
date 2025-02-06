@@ -237,13 +237,4 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
         }
     }
-
-    @Override
-    public void changeOffline(String email) {
-        User user = userRepository.findByEmail(email);
-
-        user.setIsOnline(false);
-
-        userRepository.save(user);
-    }
 }

@@ -3,7 +3,6 @@ package com.building_mannager_system.service.notification;
 import com.building_mannager_system.component.WebSocketEventListener;
 import com.building_mannager_system.dto.requestDto.paymentDto.PaymentContractDto;
 import com.building_mannager_system.entity.User;
-import com.building_mannager_system.entity.customer_service.system_manger.Meter;
 import com.building_mannager_system.entity.notification.Notification;
 import com.building_mannager_system.entity.notification.Recipient;
 import com.building_mannager_system.entity.pament_entity.PaymentContract;
@@ -22,18 +21,15 @@ import java.time.LocalDateTime;
 public class NotificationPaymentContractService {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final WebSocketEventListener webSocketEventListener;
     private final NotificationService notificationService;
     private final RecipientService recipientService;
     private final UserRepository userRepository;
 
     public NotificationPaymentContractService(SimpMessagingTemplate messagingTemplate,
-                                              WebSocketEventListener webSocketEventListener,
                                               NotificationService notificationService,
                                               RecipientService recipientService,
                                               UserRepository userRepository) {
         this.messagingTemplate = messagingTemplate;
-        this.webSocketEventListener = webSocketEventListener;
         this.notificationService = notificationService;
         this.recipientService = recipientService;
         this.userRepository = userRepository;
@@ -88,13 +84,12 @@ public class NotificationPaymentContractService {
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found"));
 
         try {
-            // Tạo đối tượng Recipient
             String message = JsonUntils.toJson(verificationElectricityUsageDto);
             Recipient rec = new Recipient();
 
             rec.setType("Contact");
             rec.setName("Electricity usage verification");
-            rec.setReferenceId(contactId); // Reference ID có thể là contactId hoặc ID của đối tượng liên quan
+            rec.setReferenceId(contactId);
 
             Recipient recipient = recipientService.createRecipient(rec);
 
@@ -102,10 +97,10 @@ public class NotificationPaymentContractService {
             notification.setRecipient(recipient);
             notification.setMessage(message);
 
-            notification.setStatus(StatusNotifi.PENDING); // Đánh dấu là PENDING
+            notification.setStatus(StatusNotifi.PENDING);
             notification.setCreatedAt(LocalDateTime.now());
 
-            notificationService.createNotification(notification); // Lưu thông báo vào cơ sở dữ liệu
+            notificationService.createNotification(notification);
             messagingTemplate.convertAndSend("/topic/electricityUsageVerification/" + user.getId(), verificationElectricityUsageDto);
         } catch (Exception e) {
             e.printStackTrace();

@@ -12,7 +12,10 @@ import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.notification.MaintenanceTaskRepository;
 import com.building_mannager_system.repository.notification.NotificationMaintenanceRepository;
+import com.building_mannager_system.repository.notification.NotificationRepository;
+import com.building_mannager_system.repository.notification.RecipientRepository;
 import com.building_mannager_system.service.websocket.WebsocketService;
+import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,20 +37,24 @@ public class NotificationMaintenanceService {
     private final MaintenanceTaskRepository maintenanceTaskRepository;
     private final UserRepository userRepository;
     private final RecipientService recipientService;
+    private final NotificationRepository notificationRepository;
+    private final RecipientRepository recipientRepository;
 
     public NotificationMaintenanceService(NotificationMaintenanceRepository notificationMaintenanceRepository,
                                           WebsocketService websocketService,
-                                          ModelMapper modelMapper, MaintenanceTaskRepository maintenanceTaskRepository, UserRepository userRepository, RecipientService recipientService) {
+                                          ModelMapper modelMapper, MaintenanceTaskRepository maintenanceTaskRepository, UserRepository userRepository, RecipientService recipientService, NotificationRepository notificationRepository, RecipientRepository recipientRepository) {
         this.notificationMaintenanceRepository = notificationMaintenanceRepository;
         this.websocketService = websocketService;
         this.modelMapper = modelMapper;
         this.maintenanceTaskRepository = maintenanceTaskRepository;
         this.userRepository = userRepository;
         this.recipientService = recipientService;
+        this.notificationRepository = notificationRepository;
+        this.recipientRepository = recipientRepository;
     }
 
     public ResultPaginationDTO getAllNotifications(Specification<NotificationMaintenance> spec,
-                                                      Pageable pageable) {
+                                                   Pageable pageable) {
 
         Page<NotificationMaintenance> page = notificationMaintenanceRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -80,21 +88,48 @@ public class NotificationMaintenanceService {
         }
 
         List<String> roles = List.of("Technician_Manager", "Technician_Employee");
-
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-        if (recipients.isEmpty())
+        if (recipients.isEmpty()) {
             throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles Technician_Manager and Technician_Employee.");
+        }
+
+        String message;
+        try {
+            message = JsonUntils.toJson(notificationMaintenance);
+        } catch (Exception e) {
+            throw new APIException(HttpStatus.INTERNAL_SERVER_ERROR, "Error serializing notification message", e);
+        }
 
         for (User recipientUser : recipients) {
-            Recipient rec = new Recipient();
-            rec.setType("Technical");
-            rec.setName("Notification Maintenance");
-            rec.setReferenceId(recipientUser.getId()); // Reference ID for the recipient
+            List<Recipient> existingRecipients = recipientRepository.findByReferenceId(recipientUser.getId());
 
-            Recipient recipient = recipientService.createRecipient(rec);
+            Recipient existingRecipient = null;
+            if (existingRecipients != null && !existingRecipients.isEmpty()) {
+                existingRecipient = existingRecipients.get(0);
+            }
 
-            websocketService.sendNotificationToRecipients(recipientUser.getId(), notificationMaintenance);
+            if (existingRecipient == null) {
+                Recipient rec = new Recipient();
+                rec.setType("Technical");
+                rec.setName("Notification Maintenance");
+                rec.setReferenceId(recipientUser.getId());
+                existingRecipient = recipientService.createRecipient(rec);
+            }
+
+            Notification notification = new Notification();
+            notification.setRecipient(existingRecipient);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(LocalDateTime.now());
+
+            notificationRepository.save(notification);
+
+            try {
+                websocketService.sendNotificationToRecipients(recipientUser.getId(), notificationMaintenance);
+            } catch (Exception e) {
+                System.err.println("Error sending WebSocket notification for user ID: " + recipientUser.getId() + ", " + e.getMessage());
+            }
         }
 
         return modelMapper.map(notificationMaintenanceRepository.save(notificationMaintenance), NotificationMaintenanceDto.class);
@@ -104,7 +139,6 @@ public class NotificationMaintenanceService {
         NotificationMaintenance ex = notificationMaintenanceRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Notification maintenance not found with ID: " + id));
 
-        // Check MaintenanceTask
         if (notificationMaintenance.getMaintenanceTask() != null) {
             MaintenanceTask maintenanceTask = maintenanceTaskRepository.findById(notificationMaintenance.getMaintenanceTask().getId())
                     .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Maintenance task not found with ID: " + notificationMaintenance.getMaintenanceTask().getId()));
@@ -112,21 +146,46 @@ public class NotificationMaintenanceService {
         }
 
         List<String> roles = List.of("Technician_Manager", "Technician_Employee");
-
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-        if (recipients.isEmpty())
+        if (recipients.isEmpty()) {
             throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles Technician_Manager and Technician_Employee.");
+        }
+
+        String message;
+        try {
+            message = JsonUntils.toJson(notificationMaintenance);
+        } catch (Exception e) {
+            throw new APIException(HttpStatus.INTERNAL_SERVER_ERROR, "Error serializing notification message", e);
+        }
 
         for (User recipientUser : recipients) {
-            Recipient rec = new Recipient();
-            rec.setType("Technical");
-            rec.setName("Notification Maintenance");
-            rec.setReferenceId(recipientUser.getId()); // Reference ID for the recipient
+            List<Recipient> existingRecipients = recipientRepository.findByReferenceId(recipientUser.getId());
 
-            Recipient recipient = recipientService.createRecipient(rec);
+            if (existingRecipients == null || existingRecipients.isEmpty()) {
+                // If recipient does not exist, create it
+                Recipient rec = new Recipient();
+                rec.setType("Technical");
+                rec.setName("Notification Maintenance");
+                rec.setReferenceId(recipientUser.getId());
+                existingRecipients.add(recipientService.createRecipient(rec));
+            }
 
-            websocketService.sendNotificationToRecipients(recipientUser.getId(), notificationMaintenance);
+            Recipient existingRecipient = existingRecipients.get(0);
+
+            Notification notification = new Notification();
+            notification.setRecipient(existingRecipient);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(LocalDateTime.now());
+
+            notificationRepository.save(notification);
+
+            try {
+                websocketService.sendNotificationToRecipients(recipientUser.getId(), notificationMaintenance);
+            } catch (Exception e) {
+                System.err.println("Error sending WebSocket notification for user ID: " + recipientUser.getId() + ", " + e.getMessage());
+            }
         }
 
         ex.setTitle(notificationMaintenance.getTitle());

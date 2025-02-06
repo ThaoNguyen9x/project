@@ -41,52 +41,52 @@ public class MeterService {
         this.customerRepository = customerRepository;
     }
 
-    public ResultPaginationDTO getAllMeters(Specification<Meter> spec,
-                                                   Pageable pageable) {
-
+    public ResultPaginationDTO getAllMeters(Specification<Meter> spec, Pageable pageable) {
         String email = SecurityUtil.getCurrentUserLogin().orElse("");
-
         User user = userRepository.findByEmail(email);
         if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
 
-        Customer customer = customerRepository.findById(user.getCustomer().getId())
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer not found"));
+        if ("Customer".equals(user.getRole().getName())) {
+            if (user.getCustomer() == null) {
+                throw new APIException(HttpStatus.BAD_REQUEST, "User có role Customer nhưng không có liên kết Customer");
+            }
 
-        Contract contract = customer.getContracts().stream()
-                .findFirst()
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found"));
+            Customer customer = customerRepository.findById(user.getCustomer().getId())
+                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer not found"));
 
-        Meter meter;
-        if (contract.getOffice() != null && !contract.getOffice().getMeters().isEmpty()) {
-            meter = meterRepository.findById(contract.getOffice().getMeters().get(0).getId())
-                    .orElse(null);
-        } else {
-            meter = null;
-        }
+            Contract contract = customer.getContracts().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found"));
 
-        if (user.getRole().getName().equals("Customer") && meter != null) {
-            spec = Specification.where((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("serialNumber"), meter.getSerialNumber()));
+            Meter meter = null;
+            if (contract.getOffice() != null && !contract.getOffice().getMeters().isEmpty()) {
+                meter = meterRepository.findById(contract.getOffice().getMeters().get(0).getId())
+                        .orElse(null);
+            }
+
+            if (meter != null) {
+                Meter finalMeter = meter;
+                spec = Specification.where((root, query, criteriaBuilder) ->
+                        criteriaBuilder.equal(root.get("serialNumber"), finalMeter.getSerialNumber()));
+            }
         }
 
         Page<Meter> page = meterRepository.findAll(spec, pageable);
+
         ResultPaginationDTO rs = new ResultPaginationDTO();
         ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
 
         mt.setPage(pageable.getPageNumber() + 1);
         mt.setPageSize(pageable.getPageSize());
-
         mt.setPages(page.getTotalPages());
         mt.setTotal(page.getTotalElements());
 
         rs.setMeta(mt);
-        rs.setResult(page.getContent());
 
         List<MeterDto> list = page.getContent()
                 .stream()
                 .map(item -> modelMapper.map(item, MeterDto.class))
                 .collect(Collectors.toList());
-
         rs.setResult(list);
 
         return rs;
@@ -94,8 +94,9 @@ public class MeterService {
 
     public MeterDto createMeter(Meter meter) {
 
-        if (meterRepository.existsBySerialNumber(meter.getSerialNumber()))
+        if (meterRepository.existsBySerialNumber(meter.getSerialNumber())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Serial Number này đã được sử dụng");
+        }
 
         // Check office
         if (meter.getOffice() != null) {
@@ -103,7 +104,7 @@ public class MeterService {
                     .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Office not found with ID: " + meter.getOffice().getId()));
             meter.setOffice(office);
         }
-        
+
         return modelMapper.map(meterRepository.save(meter), MeterDto.class);
     }
 
@@ -118,8 +119,9 @@ public class MeterService {
         Meter ex = meterRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Meter not found with ID: " + id));
 
-        if (meterRepository.existsBySerialNumberNotAndId(meter.getSerialNumber(), id))
+        if (meterRepository.existsBySerialNumberNotAndId(meter.getSerialNumber(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Serial Number này đã được sử dụng");
+        }
 
         // Check office
         if (meter.getOffice() != null) {

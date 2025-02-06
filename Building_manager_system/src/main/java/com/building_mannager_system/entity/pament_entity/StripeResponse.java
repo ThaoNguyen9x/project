@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Stripe {
+public class StripeResponse {
     private String status;
     private String message;
     private String sessionId;

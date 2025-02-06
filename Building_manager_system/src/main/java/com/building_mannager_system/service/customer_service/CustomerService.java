@@ -1,14 +1,21 @@
 package com.building_mannager_system.service.customer_service;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.CustomerBirthdayNotificationDto;
 import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerType;
+import com.building_mannager_system.entity.notification.Notification;
+import com.building_mannager_system.entity.notification.Recipient;
+import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.repository.Contract.CustomerRepository;
 import com.building_mannager_system.repository.Contract.CustomerTypeRepository;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.security.SecurityUtil;
+import com.building_mannager_system.service.notification.NotificationService;
+import com.building_mannager_system.service.notification.RecipientService;
+import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,9 +23,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,15 +37,24 @@ public class CustomerService {
     private final ModelMapper modelMapper;
     private final CustomerTypeRepository customerTypeRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
+    private final RecipientService recipientService;
 
     public CustomerService(CustomerRepository customerRepository,
                            ModelMapper modelMapper,
                            CustomerTypeRepository customerTypeRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           SimpMessagingTemplate messagingTemplate,
+                           NotificationService notificationService,
+                           RecipientService recipientService) {
         this.customerRepository = customerRepository;
         this.modelMapper = modelMapper;
         this.customerTypeRepository = customerTypeRepository;
         this.userRepository = userRepository;
+        this.messagingTemplate = messagingTemplate;
+        this.notificationService = notificationService;
+        this.recipientService = recipientService;
     }
 
     public ResultPaginationDTO getAllCustomers(Specification<Customer> spec,
@@ -139,35 +157,69 @@ public class CustomerService {
         return modelMapper.map(customerRepository.save(ex), CustomerDto.class);
     }
 
-    public List<CustomerDto> checkBirthDay(){
-        // Lấy ngày hôm nay
+    public List<CustomerBirthdayNotificationDto> checkBirthDay() {
         LocalDate today = LocalDate.now();
 
-        // Lấy ngày trong 3 ngày tới
-        LocalDate targetDate = today.plusDays(3);
-
-        // Lọc các khách hàng có sinh nhật trong 3 ngày tới
-        List<CustomerDto> customersWithUpcomingBirthdays = customerRepository.findAll().stream()
+        // Tìm danh sách khách hàng có sinh nhật trong 3 ngày tới
+        List<CustomerBirthdayNotificationDto> customersWithUpcomingBirthdays = customerRepository.findAll().stream()
                 .filter(customer -> customer.getBirthday() != null)
-                .filter(customer -> isBirthdayInNextThreeDays(customer.getBirthday(), today, targetDate))
-                .map(item -> modelMapper.map(item, CustomerDto.class)) // Sử dụng Mapper để chuyển đổi Customer thành CustomerDto
+                .filter(customer -> isBirthdayInNextThreeDays(customer.getBirthday(), today))
+                .filter(customer -> "ACTIV".equals(customer.getStatus()))
+                .map(customer -> modelMapper.map(customer, CustomerBirthdayNotificationDto.class))
                 .collect(Collectors.toList());
 
-        return customersWithUpcomingBirthdays;
+        // Gửi thông báo nếu có khách hàng có sinh nhật
+        for (CustomerBirthdayNotificationDto customerDto : customersWithUpcomingBirthdays) {
+            sendBirthdayNotification(customerDto);
+        }
 
+        return customersWithUpcomingBirthdays;
     }
 
-    // Kiểm tra xem sinh nhật có trong 3 ngày tới không
-    private boolean isBirthdayInNextThreeDays(LocalDate birthday, LocalDate today, LocalDate targetDate) {
-        // Chỉ so sánh ngày và tháng, không xét năm
+    // Kiểm tra sinh nhật trong 3 ngày tới
+    private boolean isBirthdayInNextThreeDays(LocalDate birthday, LocalDate today) {
         LocalDate nextBirthday = birthday.withYear(today.getYear());
 
-        // Nếu ngày sinh nhật đã qua trong năm nay, lấy sinh nhật của năm sau
         if (nextBirthday.isBefore(today)) {
             nextBirthday = nextBirthday.withYear(today.getYear() + 1);
         }
 
-        // Kiểm tra xem ngày sinh nhật có trong khoảng từ ngày hôm nay đến 3 ngày tới không
-        return !nextBirthday.isBefore(today) && !nextBirthday.isAfter(targetDate);
+        long daysUntilBirthday = today.until(nextBirthday).getDays();
+        return daysUntilBirthday >= 0 && daysUntilBirthday <= 3;
+    }
+
+    public void sendBirthdayNotification(CustomerBirthdayNotificationDto customerDto) {
+        try {
+            List<String> roles = List.of("Application_Admin");
+            List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+            if (recipients.isEmpty()) return;
+
+            String message = JsonUntils.toJson(customerDto);
+
+            for (User user : recipients) {
+                Recipient rec = new Recipient();
+                rec.setType("Birthday");
+                rec.setName("Send birthday request");
+                rec.setReferenceId(user.getId());
+
+                Recipient recipient = recipientService.createRecipient(rec);
+
+                Notification notification = new Notification();
+                notification.setRecipient(recipient);
+                notification.setMessage(message);
+                notification.setStatus(StatusNotifi.PENDING);
+                notification.setCreatedAt(LocalDateTime.now());
+
+                notificationService.createNotification(notification);
+
+                messagingTemplate.convertAndSend("/topic/adminNotifications/" + user.getId(), message);
+            }
+
+            System.out.println("✅ Notification sent to all Admins successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("❌ Error sending notification to Admin: " + e.getMessage());
+        }
     }
 }

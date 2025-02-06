@@ -1,12 +1,9 @@
 package com.building_mannager_system.entity.customer_service.system_manger;
 
-
 import com.building_mannager_system.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -28,10 +25,4 @@ public class ElectricityRate extends BaseEntity {
 
     @Column(name = "rate", nullable = false)
     private Double rate;  // Giá điện (VNĐ/kWh)
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;  // Thời gian tạo bản ghi
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;  // Thời gian cập nhật bản ghi
 }

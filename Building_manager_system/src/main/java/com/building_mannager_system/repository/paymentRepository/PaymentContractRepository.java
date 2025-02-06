@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface PaymentContractRepository extends JpaRepository<PaymentContract, Integer>,
         JpaSpecificationExecutor<PaymentContract> {
 
-
+    Optional<PaymentContract> findBySessionId(String sessionId);
 }

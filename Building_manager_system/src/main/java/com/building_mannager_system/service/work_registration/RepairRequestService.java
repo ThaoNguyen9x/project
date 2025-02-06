@@ -48,17 +48,13 @@ public class RepairRequestService {
 
     // ✅ Tạo mới RepairRequest
     public RepairRequestDto createRepairRequest(MultipartFile image, RepairRequest repairRequest) {
-        // Kiểm tra user
-        if (repairRequest.getAccount() != null) {
-            User user = userRepository.findById(repairRequest.getAccount().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + repairRequest.getAccount().getId()));
-            repairRequest.setAccount(user);
-        } else {
-            throw new APIException(HttpStatus.NOT_FOUND, "User not found");
-        }
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+        User user = userRepository.findByEmail(email);
 
         fileService.validateFile(image, allowedExtensions);
         repairRequest.setImageUrl(fileService.storeFile(image, folder));
+
+        repairRequest.setAccount(user);
 
         return modelMapper.map(repairRequestRepository.save(repairRequest), RepairRequestDto.class);
     }
@@ -74,7 +70,7 @@ public class RepairRequestService {
 
         if (user.getRole().getName().equals("Customer")) {
             spec = Specification.where((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("createdBy"), email));
+                    criteriaBuilder.equal(root.get("account").get("id"), user.getId()));
         }
 
         Page<RepairRequest> page = repairRequestRepository.findAll(spec, pageable);
@@ -113,14 +109,8 @@ public class RepairRequestService {
         RepairRequest ex = repairRequestRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Repair Request not found with ID: " + id));
 
-        // Kiểm tra user
-        if (repairRequest.getAccount() != null) {
-            User user = userRepository.findById(repairRequest.getAccount().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + repairRequest.getAccount().getId()));
-            repairRequest.setAccount(user);
-        } else {
-            throw new APIException(HttpStatus.NOT_FOUND, "User not found");
-        }
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+        User user = userRepository.findByEmail(email);
 
         if (image != null && !image.isEmpty()) {
             fileService.validateFile(image, allowedExtensions);
@@ -134,7 +124,7 @@ public class RepairRequestService {
             ex.setImageUrl(fileService.storeFile(image, folder));
         }
 
-        ex.setAccount(repairRequest.getAccount());
+        ex.setAccount(user);
         ex.setContent(repairRequest.getContent());
         ex.setStatus(repairRequest.getStatus());
         ex.setRequestDate(repairRequest.getRequestDate());

@@ -9,13 +9,12 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerBirthdayDto {
+public class CustomerBirthdayNotificationDto {
     private Integer id;
     private String companyName;
     private String email;
     private String phone;
     private String address;
-    private String status;
     private String directorName;
     private LocalDate birthday;
     private LocalDateTime createdAt;
