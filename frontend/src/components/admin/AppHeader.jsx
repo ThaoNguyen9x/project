@@ -175,39 +175,44 @@ const AppHeader = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    
-        let page = 1;
-        let hasMore = true;
-    
-        while (hasMore) {
-          const query = `page=${page}&pageSize=20`;
-          const res = await callGetChatRoomUsers(
-            query
-          );
-    
-          if (res && res.data) {
-            const messages = res.data.result
-    
-            hasMore = res.data.hasMore || messages.length === 20;
-            page += 1;
-          }
-        }
-    
-        setListChatRoomUsers(res.data.result);
-        setLoading(false);
-
-    
-
-    const res = await callGetChatRoomUsers();
-    if (res && res.data && res.statusCode === 200) {
-      setListChatRoomUsers(res.data.result);
+  
+    // Fetch Users
+    let pageUsers = 1;
+    let hasMoreUsers = true;
+    let allUsers = [];
+  
+    while (hasMoreUsers) {
+      const query = `page=${pageUsers}&pageSize=20`;
+      const res = await callGetChatRoomUsers(query);
+  
+      if (res && res.data) {
+        allUsers = [...allUsers, ...res.data.result];
+        hasMoreUsers = res.data.hasMore; 
+        pageUsers += 1;
+      } else {
+        hasMoreUsers = false;
+      }
     }
-
-    const res1 = await callGetChatRoomGroups();
-    if (res1 && res1.data && res1.statusCode === 200) {
-      setListChatRoomGroups(res1.data.result);
+  
+    let pageGroups = 1;
+    let hasMoreGroups = true;
+    let allGroups = [];
+  
+    while (hasMoreGroups) {
+      const query = `page=${pageGroups}&pageSize=20`;
+      const res = await callGetChatRoomGroups(query);
+  
+      if (res && res.data) {
+        allGroups = [...allGroups, ...res.data.result];
+        hasMoreGroups = res.data.hasMore; 
+        pageGroups += 1;
+      } else {
+        hasMoreGroups = false; 
+      }
     }
-
+  
+    setListChatRoomUsers(allUsers);
+    setListChatRoomGroups(allGroups);
     setLoading(false);
   };
 
