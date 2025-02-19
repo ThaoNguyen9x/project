@@ -38,22 +38,15 @@ public class WorkRegistrationController {
     @GetMapping
     @ApiMessage("Lấy danh sách đăng ký công việc thành công")
     public ResponseEntity<ResultPaginationDTO> getAllWorkRegistrations(@Filter Specification<WorkRegistration> spec,
-                                                           Pageable pageable) {
+                                                                       Pageable pageable) {
         return ResponseEntity.ok(workRegistrationService.getAllWorkRegistrations(spec, pageable));
     }
 
     @PostMapping
     @ApiMessage("Tạo đăng ký công việc thành công")
     public ResponseEntity<WorkRegistrationDto> createWorkRegistration(@RequestPart(value = "image", required = false) MultipartFile image,
-    @ModelAttribute WorkRegistration workRegistration) {
-        List<String> roles = List.of("Application_Admin");
-        List<User> recipients = userRepository.findByRole_NameIn(roles);
-
-        WorkRegistrationDto res = workRegistrationService.createWorkRegistration(image, workRegistration);
-        for (User recipient : recipients)
-            messagingTemplate.convertAndSend("/topic/admin/work-registrations/" + recipient.getId(), res);
-
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
+                                                                      @ModelAttribute WorkRegistration workRegistration) {
+        return new ResponseEntity<>(workRegistrationService.createWorkRegistration(image, workRegistration), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -65,8 +58,8 @@ public class WorkRegistrationController {
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật đăng ký công việc thành công")
     public ResponseEntity<WorkRegistrationDto> updateWorkRegistration(@PathVariable(name = "id") int id,
-                                                                @RequestPart(value = "image", required = false) MultipartFile image,
-                                                                @ModelAttribute WorkRegistration workRegistration) throws URISyntaxException {
+                                                                      @RequestPart(value = "image", required = false) MultipartFile image,
+                                                                      @RequestBody WorkRegistration workRegistration) throws URISyntaxException {
         return ResponseEntity.ok(workRegistrationService.updateWorkRegistration(id, image, workRegistration));
     }
 

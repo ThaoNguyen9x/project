@@ -8,4 +8,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LocationRepository extends JpaRepository<Location ,Integer>,
         JpaSpecificationExecutor<Location> {
+
+    Boolean existsByFloor(String floor);
+
+    Boolean existsByFloorAndIdNot(String floor, int id);
 }

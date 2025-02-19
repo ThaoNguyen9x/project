@@ -5,8 +5,6 @@ import com.building_mannager_system.entity.Role;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.responseDto.ResUserDTO;
-import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
-import com.building_mannager_system.repository.Contract.CustomerRepository;
 import com.building_mannager_system.repository.PasswordResetTokenRepository;
 import com.building_mannager_system.repository.RoleRepository;
 import com.building_mannager_system.repository.UserRepository;
@@ -23,10 +21,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,21 +36,19 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
-    private final CustomerRepository customerRepository;
 
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
                            ModelMapper modelMapper,
                            PasswordResetTokenRepository passwordResetTokenRepository,
-                           EmailService emailService, CustomerRepository customerRepository) {
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.emailService = emailService;
-        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -114,9 +110,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResUserDTO createUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail()))
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Email đã được sử dụng");
+        }
 
         // Check role
         if (user.getRole() != null) {
@@ -144,8 +142,9 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + id));
 
 
-        if (userRepository.existsByEmailAndIdNot(user.getEmail(), id))
+        if (userRepository.existsByEmailAndIdNot(user.getEmail(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Email đã được sử dụng");
+        }
 
         // Check role
         if (user.getRole() != null) {
@@ -186,8 +185,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void generatePasswordResetToken(String email) {
         User user = userRepository.findByEmail(email);
-        if (user == null)
+        if (user == null) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Không tìm thấy");
+        }
 
         String token = UUID.randomUUID().toString();
         Instant expiryDate = Instant.now().plusSeconds(360);
@@ -206,11 +206,13 @@ public class UserServiceImpl implements UserService {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(() -> new APIException(HttpStatus.BAD_REQUEST, "Token đặt lại mật khẩu không hợp lệ"));
 
-        if (resetToken.isUsed())
+        if (resetToken.isUsed()) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Token đặt lại mật khẩu đã được sử dụng");
+        }
 
-        if (resetToken.getExpiryDate().isBefore(Instant.now()))
+        if (resetToken.getExpiryDate().isBefore(Instant.now())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Token đặt lại mật khẩu đã hết hạn");
+        }
 
         User user = new User();
         user.setPassword(passwordEncoder.encode(newPassword));

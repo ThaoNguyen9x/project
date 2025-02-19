@@ -30,6 +30,7 @@ import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import HighlightText from "../../components/share/HighlightText";
 import Highlighter from "react-highlight-words";
 import { AuthContext } from "../../components/share/Context";
+import { useLocation } from "react-router-dom";
 
 const RepairProposal = () => {
   const { user } = useContext(AuthContext);
@@ -397,6 +398,26 @@ const RepairProposal = () => {
       });
     }
   };
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get("id");
+
+    if (id) {
+      const fetchRequest = async () => {
+        const res = await callGetAllRepairProposals(
+          `filter=id~'${id}'`
+        );
+        if (res?.data?.result.length) {
+          setData(res.data.result[0]);
+          setOpenViewDetail(true);
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

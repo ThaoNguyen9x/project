@@ -1,15 +1,13 @@
 package com.building_mannager_system.entity.property_manager;
 
-
 import com.building_mannager_system.entity.BaseEntity;
 import com.building_mannager_system.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "maintenance_history")
@@ -40,4 +38,8 @@ public class MaintenanceHistory extends BaseEntity {
     private String findings;
 
     private String resolution;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "maintenanceHistory")
+    @JsonIgnore
+    private List<RiskAssessment> riskAssessments;
 }

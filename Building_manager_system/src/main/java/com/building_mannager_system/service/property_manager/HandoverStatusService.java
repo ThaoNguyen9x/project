@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class HandoverStatusService {
     @Value("${upload-file.base-uri}")
     private String baseURI;
     private String folder = "handover_status";
+    List<String> allowedExtensions = Arrays.asList("pdf");
 
     private final HandoverStatusRepository handoverStatusRepository;
     private final ModelMapper modelMapper;
@@ -70,7 +72,8 @@ public class HandoverStatusService {
         return rs;
     }
 
-    public HandoverStatusDto createHandoverStatus(MultipartFile drawing, HandoverStatus handoverStatus) throws IOException, URISyntaxException {
+    @Transactional
+    public HandoverStatusDto createHandoverStatus(MultipartFile equipment, MultipartFile drawing, HandoverStatus handoverStatus) throws IOException, URISyntaxException {
         // Check office
         if (handoverStatus.getOffice() != null) {
             Office office = officeRepository.findById(handoverStatus.getOffice().getId())
@@ -80,7 +83,9 @@ public class HandoverStatusService {
             throw new APIException(HttpStatus.NOT_FOUND, "Office information is invalid or missing");
         }
 
-        List<String> allowedExtensions = Arrays.asList("pdf");
+        fileService.validateFile(equipment, allowedExtensions);
+        handoverStatus.setEquipmentFile(fileService.storeFile(equipment, folder));
+
         fileService.validateFile(drawing, allowedExtensions);
         handoverStatus.setDrawingFile(fileService.storeFile(drawing, folder));
 
@@ -94,7 +99,7 @@ public class HandoverStatusService {
         return modelMapper.map(handoverStatus, HandoverStatusDto.class);
     }
 
-    public HandoverStatusDto updateHandoverStatus(int id, MultipartFile drawing, HandoverStatus handoverStatus) throws URISyntaxException, IOException {
+    public HandoverStatusDto updateHandoverStatus(int id, MultipartFile equipment, MultipartFile drawing, HandoverStatus handoverStatus) throws URISyntaxException, IOException {
         HandoverStatus ex = handoverStatusRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Handover status not found with ID: " + id));
 
@@ -107,7 +112,17 @@ public class HandoverStatusService {
             throw new APIException(HttpStatus.NOT_FOUND, "Office information is invalid or missing");
         }
 
-        List<String> allowedExtensions = Arrays.asList("pdf");
+        if (equipment != null && !equipment.isEmpty()) {
+            fileService.validateFile(equipment, allowedExtensions);
+
+            // Xóa tệp cũ nếu tồn tại
+            if (ex.getEquipmentFile() != null) {
+                fileService.deleteFile(baseURI + folder + "/" + ex.getEquipmentFile());
+            }
+
+            // Lưu tệp mới
+            ex.setEquipmentFile(fileService.storeFile(equipment, folder));
+        }
 
         if (drawing != null && !drawing.isEmpty()) {
             fileService.validateFile(drawing, allowedExtensions);
@@ -124,7 +139,6 @@ public class HandoverStatusService {
         ex.setHandoverDate(handoverStatus.getHandoverDate());
         ex.setStatus(handoverStatus.getStatus());
         ex.setOffice(handoverStatus.getOffice());
-        ex.setEquipmentFile(handoverStatus.getEquipmentFile());
 
         return modelMapper.map(handoverStatusRepository.save(ex), HandoverStatusDto.class);
     }
@@ -135,6 +149,10 @@ public class HandoverStatusService {
 
         if (handoverStatus.getDrawingFile() != null) {
             fileService.deleteFile(baseURI + folder + "/" + handoverStatus.getDrawingFile());
+        }
+
+        if (handoverStatus.getEquipmentFile() != null) {
+            fileService.deleteFile(baseURI + folder + "/" + handoverStatus.getEquipmentFile());
         }
 
         handoverStatusRepository.delete(handoverStatus);

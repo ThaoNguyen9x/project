@@ -11,9 +11,9 @@ import java.util.List;
 public interface CustomerTypesMapper {
 
 
-    CustomerTypeDto toDTO(CustomerType customerType);
+//    CustomerTypeDto toDTO(CustomerType customerType);
 
-    CustomerType toEntity(CustomerTypeDto customerTypeDTO);
+//    CustomerType toEntity(CustomerTypeDto customerTypeDTO);
 
-    List<CustomerTypeDto> toDTOList(List<CustomerType> customerTypes);
+//    List<CustomerTypeDto> toDTOList(List<CustomerType> customerTypes);
 }

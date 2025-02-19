@@ -1,6 +1,5 @@
 package com.building_mannager_system.entity.property_manager;
 
-
 import com.building_mannager_system.entity.BaseEntity;
 import com.building_mannager_system.enums.ServiceType;
 import jakarta.persistence.*;

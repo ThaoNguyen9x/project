@@ -3,7 +3,7 @@ import { Descriptions, Drawer } from "antd";
 import { FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
 
 const ViewNotificationMaintenance = (props) => {
-  const { data, setData, openViewDetail, setOpenViewDetail } = props;
+  const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
 
   const commonItems = [
     {
@@ -43,11 +43,6 @@ const ViewNotificationMaintenance = (props) => {
           span: 2,
         },
         {
-          label: "Người nhận",
-          children: data?.recipient || "N/A",
-          span: 2,
-        },
-        {
           label: "Ngày bảo trì",
           children:
             dayjs(data?.maintenanceDate).format(FORMAT_DATE_TIME_DISPLAY) ||
@@ -77,13 +72,56 @@ const ViewNotificationMaintenance = (props) => {
           children: data?.taskName || "N/A",
           span: 2,
         },
+        {
+          label: "Mô tả",
+          children: data?.taskDescription || "N/A",
+          span: 2,
+        },
+        {
+          label: "Loại bảo trì",
+          children:
+            (
+              <span
+                className={`${
+                  data?.maintenanceType == "SCHEDULED" ? "success" : "warning"
+                } status`}
+              >
+                {data?.maintenanceType == "SCHEDULED"
+                  ? "Bảo trì định kỳ"
+                  : "Bảo trì sự cố đột xuất"}
+              </span>
+            ) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Người thực hiện bảo trì",
+          children: data?.assignedTo || "N/A",
+          span: 2,
+        },
+        {
+          label: "Số điện thoại người thực hiện bảo trì",
+          children: data?.assignedToPhone || "N/A",
+          span: 2,
+        },
+        {
+          label: "Thời gian dự kiến hoàn thành",
+          children: data?.expectedDuration || "N/A",
+          span: 2,
+        },
       ];
 
-  const items = [...specificItems, ...commonItems];
+  const items =
+    user?.role?.name === "Application_Admin"
+      ? [...specificItems, ...commonItems]
+      : [...specificItems];
 
   return (
     <Drawer
-      title="Chi tiết"
+    title={`${
+      data?.title
+        ? "Thông tin sự cố bất thường"
+        : "Thông tin nhiệm vụ bảo trì"
+    }`}
       onClose={() => setOpenViewDetail(false)}
       open={openViewDetail}
       width={window.innerWidth > 900 ? 800 : window.innerWidth}

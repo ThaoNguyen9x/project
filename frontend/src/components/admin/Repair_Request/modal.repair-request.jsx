@@ -19,6 +19,7 @@ import {
   callUpdateRepairRequest,
 } from "../../../services/api";
 import dayjs from "dayjs";
+import TextArea from "antd/es/input/TextArea";
 
 const { Option } = Select;
 
@@ -114,13 +115,20 @@ const ModalRepairRequest = (props) => {
   };
 
   const beforeUpload = (file) => {
-    const isPdf = file.type === "application/pdf";
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
 
-    if (!isPdf) {
-      message.error("Bạn chỉ có thể tải lên tệp PDF");
+    const isAllowed = allowedTypes.includes(file.type);
+
+    if (!isAllowed) {
+      message.error("Bạn chỉ có thể tải lên tệp PDF, JPG, JPEG, PNG, WEBP");
     }
 
-    return isPdf || Upload.LIST_IGNORE;
+    return isAllowed || Upload.LIST_IGNORE;
   };
 
   return (
@@ -133,13 +141,13 @@ const ModalRepairRequest = (props) => {
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}
-      className="w-full lg:!w-1/2"
+      className="w-full"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
         <Row gutter={16}>
-          <Col lg={12} md={12} sm={24} xs={24}>
+          <Col xs={24}>
             <Form.Item
-              label="Bản vẽ"
+              label="Hình ảnh đính kèm"
               name={data?.image ? "image" : "imageUrl"}
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -161,7 +169,7 @@ const ModalRepairRequest = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
+          <Col xs={24}>
             <Form.Item
               label="Nội dung"
               name="content"
@@ -169,23 +177,11 @@ const ModalRepairRequest = (props) => {
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <TextArea autoSize={{ minRows: 3, maxRows: 5 }} allowClear />
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Ngày yêu cầu"
-              name="requestDate"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <DatePicker format="YYYY-MM-DDTHH:mm:ss" className="w-full" />
-            </Form.Item>
-          </Col>
-
-          {user?.role?.name !== "Customer" ? (
+          {data?.requestID ? (
             <Col lg={12} md={12} sm={24} xs={24}>
               <Form.Item
                 label="Trạng thái"

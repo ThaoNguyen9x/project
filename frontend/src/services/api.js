@@ -73,11 +73,20 @@ export const callCreateUser = (name, email, mobile, password, status, role) => {
   });
 };
 
-export const callUpdateUser = (id, name, email, mobile, status, role) => {
+export const callUpdateUser = (
+  id,
+  name,
+  email,
+  mobile,
+  password,
+  status,
+  role
+) => {
   return axios.put(`/api/users/${id}`, {
     name,
     email,
     mobile,
+    password,
     status,
     role,
   });
@@ -298,22 +307,28 @@ export const callGetAllOffices = (query) => {
 export const callCreateOffice = (
   name,
   location,
-  area,
   rentPrice,
   serviceFee,
+  startX,
+  startY,
+  endX,
+  endY,
   status,
-  drawing
+  drawingOffice
 ) => {
   return axios.post(
     "/api/offices",
     {
       name,
       location,
-      area,
       rentPrice,
       serviceFee,
+      startX,
+      startY,
+      endX,
+      endY,
       status,
-      drawing,
+      drawingOffice,
     },
     {
       headers: { "Content-Type": "multipart/form-data" },
@@ -325,22 +340,28 @@ export const callUpdateOffice = (
   id,
   name,
   location,
-  area,
   rentPrice,
   serviceFee,
+  startX,
+  startY,
+  endX,
+  endY,
   status,
-  drawing
+  drawingOffice
 ) => {
   return axios.put(
     `/api/offices/${id}`,
     {
       name,
       location,
-      area,
       rentPrice,
       serviceFee,
+      startX,
+      startY,
+      endX,
+      endY,
       status,
-      drawing,
+      drawingOffice,
     },
     {
       headers: { "Content-Type": "multipart/form-data" },
@@ -357,6 +378,59 @@ export const callGetAllLocations = (query) => {
   return axios.get(`/api/locations?${query}`);
 };
 
+export const callGetLocation = (id) => {
+  return axios.get(`/api/locations/${id}`);
+};
+
+export const callCreateLocation = (
+  floor,
+  numberFloor,
+  commonArea,
+  netArea,
+  startX,
+  startY,
+  endX,
+  endY
+) => {
+  return axios.post("/api/locations", {
+    floor,
+    numberFloor,
+    commonArea,
+    netArea,
+    startX,
+    startY,
+    endX,
+    endY,
+  });
+};
+
+export const callUpdateLocation = (
+  id,
+  floor,
+  numberFloor,
+  commonArea,
+  netArea,
+  startX,
+  startY,
+  endX,
+  endY
+) => {
+  return axios.put(`/api/locations/${id}`, {
+    floor,
+    numberFloor,
+    commonArea,
+    netArea,
+    startX,
+    startY,
+    endX,
+    endY,
+  });
+};
+
+export const callDeleteLocation = (id) => {
+  return axios.delete(`/api/locations/${id}`);
+};
+
 /**************** CONTRACT ****************/
 export const callGetAllContracts = (query) => {
   return axios.get(`/api/contracts?${query}`);
@@ -368,7 +442,7 @@ export const callCreateContract = (
   leaseStatus,
   office,
   customer,
-  drawing
+  drawingContract
 ) => {
   return axios.post(
     "/api/contracts",
@@ -378,7 +452,7 @@ export const callCreateContract = (
       leaseStatus,
       office,
       customer,
-      drawing,
+      drawingContract,
     },
     {
       headers: { "Content-Type": "multipart/form-data" },
@@ -393,7 +467,7 @@ export const callUpdateContract = (
   leaseStatus,
   office,
   customer,
-  drawing
+  drawingContract
 ) => {
   return axios.put(
     `/api/contracts/${id}`,
@@ -403,7 +477,7 @@ export const callUpdateContract = (
       leaseStatus,
       office,
       customer,
-      drawing,
+      drawingContract,
     },
     {
       headers: { "Content-Type": "multipart/form-data" },
@@ -423,13 +497,13 @@ export const callGetAllPaymentContracts = (query) => {
 export const callCreatePaymentContract = (
   contract,
   paymentAmount,
-  paymentDate,
+  dueDate,
   paymentStatus
 ) => {
   return axios.post("/api/payments", {
     contract,
     paymentAmount,
-    paymentDate,
+    dueDate,
     paymentStatus,
   });
 };
@@ -438,13 +512,13 @@ export const callUpdatePaymentContract = (
   paymentId,
   contract,
   paymentAmount,
-  paymentDate,
+  dueDate,
   paymentStatus
 ) => {
   return axios.put(`/api/payments/${paymentId}`, {
     contract,
     paymentAmount,
-    paymentDate,
+    dueDate,
     paymentStatus,
   });
 };
@@ -463,19 +537,17 @@ export const callGetAllHandoverStatus = (query) => {
 };
 
 export const callCreateHandoverStatus = (
-  handoverDate,
   status,
   office,
-  equipmentFile,
+  equipment,
   drawing
 ) => {
   return axios.post(
     "/api/handover-status",
     {
-      handoverDate,
       status,
       office,
-      equipmentFile,
+      equipment,
       drawing,
     },
     {
@@ -486,19 +558,17 @@ export const callCreateHandoverStatus = (
 
 export const callUpdateHandoverStatus = (
   id,
-  handoverDate,
   status,
   office,
-  equipmentFile,
+  equipment,
   drawing
 ) => {
   return axios.put(
     `/api/handover-status/${id}`,
     {
-      handoverDate,
       status,
       office,
-      equipmentFile,
+      equipment,
       drawing,
     },
     {
@@ -549,7 +619,6 @@ export const callGetAllSubcontracts = (query) => {
 export const callCreateSubcontract = (
   name,
   phone,
-  serviceType,
   contractStartDate,
   contractEndDate,
   rating,
@@ -558,7 +627,6 @@ export const callCreateSubcontract = (
   return axios.post("/api/subcontractors", {
     name,
     phone,
-    serviceType,
     contractStartDate,
     contractEndDate,
     rating,
@@ -570,7 +638,6 @@ export const callUpdateSubcontract = (
   id,
   name,
   phone,
-  serviceType,
   contractStartDate,
   contractEndDate,
   rating,
@@ -579,7 +646,6 @@ export const callUpdateSubcontract = (
   return axios.put(`/api/subcontractors/${id}`, {
     name,
     phone,
-    serviceType,
     contractStartDate,
     contractEndDate,
     rating,
@@ -761,7 +827,9 @@ export const callCreateDevice = (
   installationDate,
   lifespan,
   status,
-  maintenanceService
+  maintenanceService,
+  x,
+  y
 ) => {
   return axios.post("/api/devices", {
     system,
@@ -772,6 +840,8 @@ export const callCreateDevice = (
     lifespan,
     status,
     maintenanceService,
+    x,
+    y,
   });
 };
 
@@ -784,7 +854,9 @@ export const callUpdateDevice = (
   installationDate,
   lifespan,
   status,
-  maintenanceService
+  maintenanceService,
+  x,
+  y
 ) => {
   return axios.put(`/api/devices/${id}`, {
     system,
@@ -795,6 +867,8 @@ export const callUpdateDevice = (
     lifespan,
     status,
     maintenanceService,
+    x,
+    y,
   });
 };
 
@@ -873,31 +947,18 @@ export const callGetAllMeters = (query) => {
   return axios.get(`/api/meters?${query}`);
 };
 
-export const callCreateMeter = (
-  serialNumber,
-  meterType,
-  installationDate,
-  office
-) => {
+export const callCreateMeter = (serialNumber, meterType, office) => {
   return axios.post("/api/meters", {
     serialNumber,
     meterType,
-    installationDate,
     office,
   });
 };
 
-export const callUpdateMeter = (
-  id,
-  serialNumber,
-  meterType,
-  installationDate,
-  office
-) => {
+export const callUpdateMeter = (id, serialNumber, meterType, office) => {
   return axios.put(`/api/meters/${id}`, {
     serialNumber,
     meterType,
-    installationDate,
     office,
   });
 };
@@ -972,7 +1033,6 @@ export const callGetAllRepairProposals = (query) => {
 export const callCreateRepairProposal = (
   title,
   description,
-  requestDate,
   priority,
   proposalType,
   riskAssessment,
@@ -981,7 +1041,6 @@ export const callCreateRepairProposal = (
   return axios.post("/api/repair-proposals", {
     title,
     description,
-    requestDate,
     priority,
     proposalType,
     riskAssessment,
@@ -993,7 +1052,6 @@ export const callUpdateRepairProposal = (
   id,
   title,
   description,
-  requestDate,
   priority,
   proposalType,
   riskAssessment,
@@ -1002,7 +1060,6 @@ export const callUpdateRepairProposal = (
   return axios.put(`/api/repair-proposals/${id}`, {
     title,
     description,
-    requestDate,
     priority,
     proposalType,
     riskAssessment,
@@ -1093,14 +1150,12 @@ export const callGetAllNotificationMaintenances = (query) => {
 export const callCreateNotificationMaintenance = (
   title,
   description,
-  maintenanceTask,
-  recipient
+  maintenanceTask
 ) => {
   return axios.post("/api/notifications", {
     title,
     description,
     maintenanceTask,
-    recipient,
   });
 };
 
@@ -1108,14 +1163,12 @@ export const callUpdateNotificationMaintenance = (
   id,
   title,
   description,
-  maintenanceTask,
-  recipient
+  maintenanceTask
 ) => {
   return axios.put(`/api/notifications/${id}`, {
     title,
     description,
     maintenanceTask,
-    recipient,
   });
 };
 
@@ -1230,7 +1283,6 @@ export const callGetAllWorkRegistrations = (query) => {
 
 export const callCreateWorkRegistration = (
   account,
-  registrationDate,
   scheduledDate,
   note,
   image,
@@ -1240,7 +1292,6 @@ export const callCreateWorkRegistration = (
     "/api/work-registrations",
     {
       account,
-      registrationDate,
       scheduledDate,
       note,
       image,
@@ -1255,7 +1306,6 @@ export const callCreateWorkRegistration = (
 export const callUpdateWorkRegistration = (
   id,
   account,
-  registrationDate,
   scheduledDate,
   note,
   image,
@@ -1263,7 +1313,6 @@ export const callUpdateWorkRegistration = (
 ) => {
   return axios.put(`/api/work-registrations/${id}`, {
     account,
-    registrationDate,
     scheduledDate,
     note,
     image,
@@ -1446,18 +1495,118 @@ export const callPaymentStripe = (
   paymentId,
   contract,
   paymentStatus,
-  paymentDate,
+  dueDate,
   paymentAmount
 ) => {
   return axios.post("/api/stripes/payment", {
     paymentId,
     contract,
     paymentStatus,
-    paymentDate,
+    dueDate,
     paymentAmount,
   });
 };
 
 export const callPaymentStatus = (sessionId) => {
   return axios.get(`/api/stripes/payment-success?session_id=${sessionId}`);
+};
+
+/**************** CUSTOMER DOCUMENTS ****************/
+export const callGetAllCustomerDocuments = (query) => {
+  return axios.get(`/api/customer-documents?${query}`);
+};
+
+export const callCreateCustomerDocument = (
+  customer,
+  customerTypeDocument,
+  path,
+  isApproved
+) => {
+  return axios.post(
+    "/api/customer-documents",
+    {
+      customer,
+      customerTypeDocument,
+      path,
+      isApproved,
+    },
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+};
+
+export const callUpdateCustomerDocument = (
+  id,
+  customer,
+  customerTypeDocument,
+  path,
+  isApproved
+) => {
+  return axios.put(
+    `/api/customer-documents/${id}`,
+    {
+      customer,
+      customerTypeDocument,
+      path,
+      isApproved,
+    },
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+};
+
+export const callDeleteCustomerDocument = (id) => {
+  return axios.delete(`/api/customer-documents/${id}`);
+};
+
+/**************** COMMON AREA ****************/
+export const callGetAllCommonAreas = (query) => {
+  return axios.get(`/api/common-areas?${query}`);
+};
+
+export const callCreateCommonArea = (
+  location,
+  name,
+  color,
+  startX,
+  startY,
+  endX,
+  endY
+) => {
+  return axios.post("/api/common-areas", {
+    location,
+    name,
+    color,
+    startY,
+    startX,
+    endX,
+    endY,
+  });
+};
+
+export const callUpdateCommonArea = (
+  id,
+  location,
+  name,
+  color,
+  startY,
+  startX,
+  endX,
+  endY
+) => {
+  return axios.put(`/api/common-areas/${id}`, {
+    location,
+    name,
+    color,
+    startY,
+    startX,
+    endX,
+    endY,
+  });
+};
+
+export const callDeleteCommonArea = (id) => {
+  return axios.delete(`/api/common-areas/${id}`);
 };

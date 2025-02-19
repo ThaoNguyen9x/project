@@ -39,7 +39,7 @@ const ModalMeter = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const { serialNumber, meterType, installationDate, office } = values;
+    const { serialNumber, meterType, office } = values;
 
     setIsSubmit(true);
 
@@ -48,7 +48,6 @@ const ModalMeter = (props) => {
         data?.id,
         serialNumber,
         meterType,
-        installationDate,
         { id: office }
       );
 
@@ -66,7 +65,6 @@ const ModalMeter = (props) => {
       const res = await callCreateMeter(
         serialNumber,
         meterType,
-        installationDate,
         { id: office }
       );
 
@@ -144,18 +142,6 @@ const ModalMeter = (props) => {
           </Col>
 
           <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Ngày cài đặt"
-              name="installationDate"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <DatePicker format="YYYY-MM-DD" className="w-full" />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24}>
             <Form.Item
               label="Văn phòng"
               name="office"

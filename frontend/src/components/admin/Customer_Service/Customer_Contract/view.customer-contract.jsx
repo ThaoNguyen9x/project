@@ -1,11 +1,8 @@
 import dayjs from "dayjs";
-import { Descriptions, Drawer, Space } from "antd";
-import {
-  FORMAT_DATE_DISPLAY,
-  FORMAT_DATE_TIME_DISPLAY,
-} from "../../../../utils/constant";
+import { Descriptions, Drawer } from "antd";
+import { FORMAT_DATE_DISPLAY, FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
 
-const ViewContract = (props) => {
+const ViewCustomerContract = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
 
   const onClose = () => {
@@ -17,7 +14,7 @@ const ViewContract = (props) => {
     if (data?.startDate) {
       return [
         {
-          label: "Công ty",
+          label: "Khách hàng",
           children: data?.customer?.companyName ? (
             <a
               onClick={() => {
@@ -35,11 +32,11 @@ const ViewContract = (props) => {
         {
           label: "Tổng số tiền",
           children: data?.totalAmount
-            ? data.totalAmount.toLocaleString("vi-VN", {
+            ? data?.totalAmount.toLocaleString("en-US", {
                 style: "currency",
-                currency: "VND",
+                currency: "USD",
               })
-            : "N/A",
+            : 0,
           span: 2,
         },
         {
@@ -225,4 +222,4 @@ const ViewContract = (props) => {
   );
 };
 
-export default ViewContract;
+export default ViewCustomerContract;

@@ -104,16 +104,30 @@ const MenuItem = ({ activeMenu, permissions }) => {
           ACL_ENABLE,
           [
             {
-              label: "Hợp đồng",
-              path: "/dashboard/contracts",
-              apiPath: ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.method,
+              label: "Hợp đồng khách hàng",
+              path: "/dashboard/customer-contracts",
+              apiPath:
+                ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath ||
+                ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.apiPath,
+              method:
+                ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.method ||
+                ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.method,
             },
             {
-              label: "Khách hàng",
-              path: "/dashboard/customers",
-              apiPath: ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.method,
+              label: "Vị trí",
+              path: "/dashboard/locations",
+              apiPath:
+                ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.GET_PAGINATE.apiPath,
+              method:
+                ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.GET_PAGINATE.method,
+            },
+            {
+              label: "Khu vực chung",
+              path: "/dashboard/common-areas",
+              apiPath:
+                ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.GET_PAGINATE.apiPath,
+              method:
+                ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.GET_PAGINATE.method,
             },
             {
               label: "Hồ sơ phân loại",
@@ -132,27 +146,24 @@ const MenuItem = ({ activeMenu, permissions }) => {
           ]
         ),
 
-        generateMenuSection(
-          "Văn phòng",
-          "sub3",
-          <ShopOutlined />,
+        checkPermission(
           permissions,
-          ACL_ENABLE,
-          [
-            {
-              label: "Văn phòng",
-              path: "/dashboard/offices",
+          ALL_PERMISSIONS.OFFICES.GET_PAGINATE.apiPath,
+          ALL_PERMISSIONS.OFFICES.GET_PAGINATE.method,
+          ACL_ENABLE
+        )
+          ? {
+              label: (
+                <Link to="/dashboard/offices">
+                  Văn phòng
+                </Link>
+              ),
+              key: "/dashboard/offices",
               apiPath: ALL_PERMISSIONS.OFFICES.GET_PAGINATE.apiPath,
               method: ALL_PERMISSIONS.OFFICES.GET_PAGINATE.method,
-            },
-            {
-              label: "Tình trạng bàn giao",
-              path: "/dashboard/handover-status",
-              apiPath: ALL_PERMISSIONS.HANDOVER_STATUS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.HANDOVER_STATUS.GET_PAGINATE.method,
-            },
-          ]
-        ),
+              icon: <ShopOutlined />,
+            }
+          : null,
 
         generateMenuSection(
           "Đăng ký công việc",
@@ -178,12 +189,6 @@ const MenuItem = ({ activeMenu, permissions }) => {
               apiPath: ALL_PERMISSIONS.REPAIR_PROPOSALS.GET_PAGINATE.apiPath,
               method: ALL_PERMISSIONS.REPAIR_PROPOSALS.GET_PAGINATE.method,
               path: "/dashboard/repair-proposals",
-            },
-            {
-              label: "Đánh giá rủi ro",
-              apiPath: ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.method,
-              path: "/dashboard/risk-assessments",
             },
           ]
         ),
@@ -247,10 +252,13 @@ const MenuItem = ({ activeMenu, permissions }) => {
               path: "/dashboard/device-types",
             },
             {
-              label: "Lịch sử bảo trì",
+              label: "Lịch sử bảo trì & Đánh giá rủi ro",
               apiPath:
-                ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.method,
+                ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath ||
+                ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath,
+              method:
+                ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.method ||
+                ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.method,
               path: "/dashboard/maintenance-histories",
             },
             {
@@ -273,18 +281,6 @@ const MenuItem = ({ activeMenu, permissions }) => {
               apiPath: ALL_PERMISSIONS.SYSTEMS.GET_PAGINATE.apiPath,
               method: ALL_PERMISSIONS.SYSTEMS.GET_PAGINATE.method,
               path: "/dashboard/systems",
-            },
-            {
-              label: "Kiểm tra mục",
-              apiPath: ALL_PERMISSIONS.ITEM_CHECKS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.ITEM_CHECKS.GET_PAGINATE.method,
-              path: "/dashboard/item-checks",
-            },
-            {
-              label: "Kết quả kiểm tra mục",
-              apiPath: ALL_PERMISSIONS.RESULT_CHECKS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.RESULT_CHECKS.GET_PAGINATE.method,
-              path: "/dashboard/result-checks",
             },
           ]
         ),
@@ -347,7 +343,6 @@ const MenuItem = ({ activeMenu, permissions }) => {
       selectedKeys={[activeMenu]}
       openKeys={openKeys}
       onOpenChange={handleOpenChange}
-      
     />
   );
 };

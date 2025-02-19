@@ -49,7 +49,6 @@ const ModalSubcontractor = (props) => {
     const {
       name,
       phone,
-      serviceType,
       contractStartDate,
       contractEndDate,
       rating,
@@ -63,7 +62,6 @@ const ModalSubcontractor = (props) => {
         data?.id,
         name,
         phone,
-        serviceType,
         dayjs(contractStartDate).startOf("day").format("YYYY-MM-DD"),
         dayjs(contractEndDate).startOf("day").format("YYYY-MM-DD"),
         rating,
@@ -84,7 +82,6 @@ const ModalSubcontractor = (props) => {
       const res = await callCreateSubcontract(
         name,
         phone,
-        serviceType,
         dayjs(contractStartDate).startOf("day").format("YYYY-MM-DD"),
         dayjs(contractEndDate).startOf("day").format("YYYY-MM-DD"),
         rating,
@@ -205,42 +202,6 @@ const ModalSubcontractor = (props) => {
                     {system.systemName}
                   </Select.Option>
                 ))}
-              </Select>
-            </Form.Item>
-          </Col>
-
-          <Col xs={24}>
-            <Form.Item
-              label="Dịch vụ"
-              name="serviceType"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-              className="mb-2"
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
-                <Option value="ELECTRICAL" label="Hệ thống Điện">
-                  Hệ thống Điện
-                </Option>
-                <Option value="PLUMBING" label="Hệ thống Cấp thoát nước">
-                  Hệ thống Cấp thoát nước
-                </Option>
-                <Option value="HVAC" label="Hệ thống Điều hòa không khí">
-                  Hệ thống Điều hòa không khí
-                </Option>
-                <Option value="FIRE_PROTECTION" label="Hệ thống Phòng cháy">
-                  Hệ thống Phòng cháy
-                </Option>
               </Select>
             </Form.Item>
           </Col>

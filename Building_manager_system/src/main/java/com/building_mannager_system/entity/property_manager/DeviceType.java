@@ -32,4 +32,9 @@ public class DeviceType extends BaseEntity {
     @OneToMany(mappedBy = "deviceType")
     @JsonIgnore
     private List<Device> devices;
+
+    public DeviceType(String description, String typeName) {
+        this.description = description;
+        this.typeName = typeName;
+    }
 }

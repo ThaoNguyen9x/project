@@ -119,7 +119,7 @@ public class MeterService {
         Meter ex = meterRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Meter not found with ID: " + id));
 
-        if (meterRepository.existsBySerialNumberNotAndId(meter.getSerialNumber(), id)) {
+        if (meterRepository.existsBySerialNumberAndIdNot(meter.getSerialNumber(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Serial Number này đã được sử dụng");
         }
 
@@ -132,7 +132,7 @@ public class MeterService {
 
         ex.setOffice(meter.getOffice());
         ex.setMeterType(meter.getMeterType());
-        ex.setSerialNumber(ex.getSerialNumber());
+        ex.setSerialNumber(meter.getSerialNumber());
         ex.setInstallationDate(meter.getInstallationDate());
 
         return modelMapper.map(meterRepository.save(ex), MeterDto.class);

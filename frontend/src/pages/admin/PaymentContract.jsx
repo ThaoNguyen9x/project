@@ -33,6 +33,7 @@ import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { TbNotification } from "react-icons/tb";
 import { AuthContext } from "../../components/share/Context";
+import { useLocation } from "react-router-dom";
 
 const PaymentContract = () => {
   const { user } = useContext(AuthContext);
@@ -191,9 +192,9 @@ const PaymentContract = () => {
                 searchText={searchText}
               />
             ) : (
-              record?.paymentAmount.toLocaleString("vi-VN", {
+              record?.paymentAmount.toLocaleString("en-US", {
                 style: "currency",
-                currency: "VND",
+                currency: "USD",
               })
             )}
           </a>
@@ -227,6 +228,13 @@ const PaymentContract = () => {
           </a>
         );
       },
+    },
+    {
+      title: "Hạn thanh toán",
+      dataIndex: "dueDate",
+      sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
+      ...getColumnSearchProps("dueDate"),
+      render: (text, record, index) => record?.dueDate || "N/A",
     },
     {
       title: "Ngày thanh toán",
@@ -272,7 +280,7 @@ const PaymentContract = () => {
                     record?.paymentId,
                     record?.contract?.id,
                     record?.paymentStatus === "UNPAID" ? "UNPAID" : "PAID",
-                    record?.paymentDate,
+                    record?.dueDate,
                     record?.paymentAmount
                   );
                 }}
@@ -467,7 +475,7 @@ const PaymentContract = () => {
     paymentId,
     contract,
     paymentStatus,
-    paymentDate,
+    dueDate,
     paymentAmount
   ) => {
     const res = await callPaymentStripe(
@@ -476,7 +484,7 @@ const PaymentContract = () => {
         id: contract,
       },
       paymentStatus,
-      paymentDate,
+      dueDate,
       paymentAmount
     );
 
@@ -489,6 +497,26 @@ const PaymentContract = () => {
       });
     }
   };
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const paymentId = queryParams.get("paymentId");
+
+    if (paymentId) {
+      const fetchRequest = async () => {
+        const res = await callGetAllPaymentContracts(
+          `filter=paymentId~'${paymentId}'`
+        );
+        if (res?.data?.result.length) {
+          setData(res.data.result[0]);
+          setOpenViewDetail(true);
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

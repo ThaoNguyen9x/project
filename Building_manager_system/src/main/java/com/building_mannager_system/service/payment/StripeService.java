@@ -12,6 +12,8 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -49,8 +51,8 @@ public class StripeService {
             // Price data
             SessionCreateParams.LineItem.PriceData priceData =
                     SessionCreateParams.LineItem.PriceData.builder()
-                            .setCurrency("VND")
-                            .setUnitAmountDecimal(paymentContract.getPaymentAmount())
+                            .setCurrency("USD")
+                            .setUnitAmountDecimal(paymentContract.getPaymentAmount().multiply(BigDecimal.valueOf(100)))
                             .setProductData(productData)
                             .build();
 
@@ -104,6 +106,7 @@ public class StripeService {
 
                 if (optionalPaymentContract.isPresent()) {
                     PaymentContract paymentContract = optionalPaymentContract.get();
+                    paymentContract.setPaymentDate(LocalDate.now());
                     paymentContract.setPaymentStatus(PaymentStatus.PAID);
                     paymentContractRepository.save(paymentContract);
                     return true;

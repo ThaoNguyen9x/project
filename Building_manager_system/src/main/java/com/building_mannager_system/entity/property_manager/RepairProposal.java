@@ -31,7 +31,7 @@ public class RepairProposal extends BaseEntity {
     private String description;  // Mô tả chi tiết của đề xuất
 
     @Column(name = "request_date", nullable = false)
-    private LocalDate requestDate;  // Ngày yêu cầu
+    private LocalDate requestDate = LocalDate.now();  // Ngày yêu cầu
 
     @Column(name = "priority", nullable = false)
     private Integer priority;  // Mức độ ưu tiên của đề xuất
@@ -49,5 +49,5 @@ public class RepairProposal extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private ProposalStatus status;  // Trạng thái của đề xuất (Pending, Approved, Rejected, Completed)
+    private ProposalStatus status = ProposalStatus.PENDING;  // Trạng thái của đề xuất (Pending, Approved, Rejected, Completed)
 }

@@ -16,6 +16,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class MaintenanceHistoryService {
     private final MaintenanceHistoryRepository maintenanceHistoryRepository;
@@ -48,6 +51,13 @@ public class MaintenanceHistoryService {
 
         rs.setMeta(mt);
         rs.setResult(page.getContent());
+
+        List<MaintenanceHistoryDto> list = page.getContent()
+                .stream()
+                .map(item -> modelMapper.map(item, MaintenanceHistoryDto.class))
+                .collect(Collectors.toList());
+
+        rs.setResult(list);
 
         return rs;
     }

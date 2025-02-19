@@ -32,7 +32,7 @@ const ModalPaymentContract = (props) => {
       const init = {
         ...data,
         contract: data.contract ? data.contract?.id : null,
-        paymentDate: data.paymentDate ? dayjs(data.paymentDate) : null,
+        dueDate: data.dueDate ? dayjs(data.dueDate) : null,
       };
 
       form.setFieldsValue(init);
@@ -40,7 +40,7 @@ const ModalPaymentContract = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const { contract, paymentAmount, paymentDate, paymentStatus } = values;
+    const { contract, paymentAmount, dueDate, paymentStatus } = values;
 
     setIsSubmit(true);
 
@@ -49,7 +49,7 @@ const ModalPaymentContract = (props) => {
         data?.paymentId,
         { id: contract },
         paymentAmount,
-        dayjs(paymentDate).startOf("day").format("YYYY-MM-DD"),
+        dayjs(dueDate).startOf("day").format("YYYY-MM-DD"),
         paymentStatus
       );
 
@@ -67,7 +67,7 @@ const ModalPaymentContract = (props) => {
       const res = await callCreatePaymentContract(
         { id: contract },
         paymentAmount,
-        dayjs(paymentDate).startOf("day").format("YYYY-MM-DD"),
+        dayjs(dueDate).startOf("day").format("YYYY-MM-DD"),
         paymentStatus
       );
 
@@ -169,8 +169,8 @@ const ModalPaymentContract = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Ngày thanh toán"
-              name="paymentDate"
+              label="Hạn thanh toán"
+              name="dueDate"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
@@ -179,7 +179,8 @@ const ModalPaymentContract = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
+          {
+            data?.paymentId ? <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Trạng thái"
               name="paymentStatus"
@@ -206,7 +207,8 @@ const ModalPaymentContract = (props) => {
                 </Option>
               </Select>
             </Form.Item>
-          </Col>
+          </Col> : ""
+          }
         </Row>
 
         <Button

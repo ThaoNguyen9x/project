@@ -30,9 +30,6 @@ public class Subcontractor extends BaseEntity {
     @Column(name = "Phone", nullable = false, length = 100)
     private String phone;
 
-    @Column(name = "ServiceType")
-    private ServiceType serviceType; // bỏ
-
     @Column(name = "ContractStartDate")
     private LocalDate contractStartDate;
 
@@ -45,4 +42,14 @@ public class Subcontractor extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "SystemID", nullable = false)
     private Systems system;
+
+    public Subcontractor(String name, String phone, String contractStartDate, String contractEndDate, int rating, Systems system) {
+        this.name = name;
+        this.phone = phone;
+        this.contractStartDate = LocalDate.parse(contractStartDate);
+        this.contractEndDate = LocalDate.parse(contractEndDate);
+        this.rating = BigDecimal.valueOf(rating);
+        this.system = system;
+    }
+
 }

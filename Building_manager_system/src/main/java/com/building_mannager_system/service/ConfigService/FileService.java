@@ -93,8 +93,9 @@ public class FileService {
         File tmpDir = new File(path.toString());
 
         // file không tồn tại, hoặc file là 1 director => return 0
-        if (!tmpDir.exists() || tmpDir.isDirectory())
+        if (!tmpDir.exists() || tmpDir.isDirectory()) {
             return 0;
+        }
         return tmpDir.length();
     }
 

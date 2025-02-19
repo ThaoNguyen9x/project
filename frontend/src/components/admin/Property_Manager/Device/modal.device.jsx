@@ -62,6 +62,8 @@ const ModalDevice = (props) => {
       lifespan,
       status,
       maintenanceService,
+      x,
+      y,
     } = values;
 
     setIsSubmit(true);
@@ -76,7 +78,9 @@ const ModalDevice = (props) => {
         dayjs(installationDate).startOf("day").format("YYYY-MM-DD"),
         lifespan,
         status,
-        { id: maintenanceService }
+        { id: maintenanceService },
+        x,
+        y
       );
 
       if (res && res.data) {
@@ -98,7 +102,9 @@ const ModalDevice = (props) => {
         dayjs(installationDate).startOf("day").format("YYYY-MM-DD"),
         lifespan,
         status,
-        { id: maintenanceService }
+        { id: maintenanceService },
+        x,
+        y
       );
 
       if (res && res.data) {
@@ -245,6 +251,56 @@ const ModalDevice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
+              label="Tọa độ x"
+              name="x"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng không được để trống",
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Tọa độ y"
+              name="y"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng không được để trống",
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
               label="Vị trí"
               name="location"
               rules={[
@@ -295,49 +351,55 @@ const ModalDevice = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Ngày cài đặt"
-              name="installationDate"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <DatePicker format="YYYY-MM-DD" className="w-full" />
-            </Form.Item>
-          </Col>
+          {data?.deviceId ? (
+            <>
+              <Col lg={12} md={12} sm={24} xs={24}>
+                <Form.Item
+                  label="Ngày cài đặt"
+                  name="installationDate"
+                  rules={[
+                    { required: true, message: "Vui lòng không được để trống" },
+                  ]}
+                >
+                  <DatePicker format="YYYY-MM-DD" className="w-full" />
+                </Form.Item>
+              </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
-                <Option value="ACTIVE" label="Hoạt động">
-                  Hoạt động
-                </Option>
-                <Option value="UNDER_MAINTENANCE" label="Đang bảo trì">
-                  Đang bảo trì
-                </Option>
-                <Option value="FAULTY" label="Lỗi">
-                  Lỗi
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
+              <Col lg={12} md={12} sm={24} xs={24}>
+                <Form.Item
+                  label="Trạng thái"
+                  name="status"
+                  rules={[
+                    { required: true, message: "Vui lòng không được để trống" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Vui lòng chọn"
+                    optionLabelProp="label"
+                    allowClear
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                  >
+                    <Option value="ACTIVE" label="Hoạt động">
+                      Hoạt động
+                    </Option>
+                    <Option value="UNDER_MAINTENANCE" label="Đang bảo trì">
+                      Đang bảo trì
+                    </Option>
+                    <Option value="FAULTY" label="Lỗi">
+                      Lỗi
+                    </Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

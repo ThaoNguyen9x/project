@@ -7,7 +7,6 @@ import {
   Popconfirm,
   message,
   notification,
-  Modal,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
@@ -15,23 +14,19 @@ import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import {
-  callDeleteHandoverStatus,
-  callGetAllHandoverStatus,
-  callGetAllOffices,
-} from "../../services/api";
+import { callDeleteLocation, callGetAllLocations } from "../../services/api";
+
+import ModalLocation from "../../components/admin/Location/modal.location";
+import ViewLocation from "../../components/admin/Location/view.location";
 
 import Access from "../../components/share/Access";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
-import PDFViewer from "../../components/share/PDFViewer";
-import ViewHandoverStatus from "../../components/admin/Property_Manager/Handover_Status/view.handover-status";
-import ModalHandoverStatus from "../../components/admin/Property_Manager/Handover_Status/modal.handover-status";
-import Highlighter from "react-highlight-words";
 import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
+import Highlighter from "react-highlight-words";
 
-const HandoverStatus = () => {
+const Location = () => {
   const { user } = useContext(AuthContext);
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,21 +43,6 @@ const HandoverStatus = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
-
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-
-  const [listOffices, setListOffices] = useState([]);
-
-  useEffect(() => {
-    const init = async () => {
-      const res = await callGetAllOffices();
-      if (res && res.data) {
-        setListOffices(res.data?.result);
-      }
-    };
-    init();
-  }, []);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -169,14 +149,14 @@ const HandoverStatus = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
-      title: "Ngày bàn giao",
-      dataIndex: "handoverDate",
-      sorter: (a, b) => a.handoverDate.localeCompare(b.handoverDate),
-      ...getColumnSearchProps("handoverDate"),
+      title: "Tầng",
+      dataIndex: "floor",
+      sorter: (a, b) => a.floor.localeCompare(b.floor),
+      ...getColumnSearchProps("floor"),
       render: (text, record) => {
         return (
           <a
@@ -185,81 +165,62 @@ const HandoverStatus = () => {
               setOpenViewDetail(true);
             }}
           >
-            {searchedColumn === "handoverDate" ? (
-              <HighlightText
-                text={record?.handoverDate}
-                searchText={searchText}
-              />
+            {searchedColumn === "floor" ? (
+              <HighlightText text={record?.floor} searchText={searchText} />
             ) : (
-              record?.handoverDate
+              FORMAT_TEXT_LENGTH(record?.floor, 20)
             )}
           </a>
         );
       },
     },
     {
-      title: "Bản vẽ",
-      dataIndex: "drawingFile",
-      render: (text, record) => {
-        return record.drawingFile ? (
-          <a
-            onClick={() => {
-              setPdfUrl(
-                `${import.meta.env.VITE_BACKEND_URL}/storage/handover_status/${
-                  record?.drawingFile
-                }`
-              );
-              setPreviewOpen(true);
-            }}
-          >
-            View
-          </a>
-        ) : (
-          "N/A"
-        );
-      },
+      title: "Tổng diện tích",
+      dataIndex: "totalArea",
+      ...getColumnSearchProps("totalArea"),
+      sorter: (a, b) => a.totalArea - b.totalArea,
     },
     {
-      title: "Thiết bị",
-      dataIndex: "equipmentFile",
-      sorter: (a, b) => a.equipmentFile.localeCompare(b.equipmentFile),
-      ...getColumnSearchProps("equipmentFile"),
-      render: (text, record) => {
-        return searchedColumn === "equipmentFile" ? (
-          <HighlightText text={record?.equipmentFile} searchText={searchText} />
-        ) : (
-          FORMAT_TEXT_LENGTH(record?.equipmentFile, 20)
-        );
-      },
+      title: "Khu vực chung",
+      dataIndex: "commonArea",
+      ...getColumnSearchProps("commonArea"),
+      sorter: (a, b) => a.commonArea - b.commonArea,
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      filters: [
-        {
-          text: "Hoạt động",
-          value: "ACTIV",
-        },
-        {
-          text: "Không hoạt động",
-          value: "INACTIV",
-        },
-      ],
-      onFilter: (value, record) => record?.status === value,
-      render: (status, record) => (
-        <span className={`${status === "ACTIV" ? "success" : "danger"} status`}>
-          {status === "ACTIV" ? "Hoạt động" : "Không hoạt động"}
-        </span>
-      ),
+      title: "Diện tích sử dụng",
+      dataIndex: "netArea",
+      ...getColumnSearchProps("netArea"),
+      sorter: (a, b) => a.netArea - b.netArea,
+    },
+    {
+      title: "startX",
+      dataIndex: "startX",
+      ...getColumnSearchProps("startX"),
+      sorter: (a, b) => a.startX - b.startX,
+    },
+    {
+      title: "startY",
+      dataIndex: "startY",
+      ...getColumnSearchProps("startY"),
+      sorter: (a, b) => a.startY - b.startY,
+    },
+    {
+      title: "endX",
+      dataIndex: "endX",
+      ...getColumnSearchProps("endX"),
+      sorter: (a, b) => a.endX - b.endX,
+    },
+    {
+      title: "endY",
+      dataIndex: "endY",
+      ...getColumnSearchProps("endY"),
+      sorter: (a, b) => a.endY - b.endY,
     },
     {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access
-            permission={ALL_PERMISSIONS.HANDOVER_STATUS.UPDATE}
-            hideChildren
-          >
+          <Access permission={ALL_PERMISSIONS.SYSTEMS.UPDATE} hideChildren>
             <div
               onClick={() => {
                 setData(record);
@@ -270,10 +231,7 @@ const HandoverStatus = () => {
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access
-            permission={ALL_PERMISSIONS.HANDOVER_STATUS.DELETE}
-            hideChildren
-          >
+          <Access permission={ALL_PERMISSIONS.SYSTEMS.DELETE} hideChildren>
             <Popconfirm
               placement="leftBottom"
               okText="Có"
@@ -302,10 +260,6 @@ const HandoverStatus = () => {
 
   useEffect(() => {
     fetchData();
-  }, [current, pageSize, sortQuery]);
-
-  useEffect(() => {
-    fetchData();
   }, [searchedColumn, searchText, current, pageSize, sortQuery]);
 
   const fetchData = async () => {
@@ -321,7 +275,7 @@ const HandoverStatus = () => {
       query += `&${sortQuery}`;
     }
 
-    const res = await callGetAllHandoverStatus(query);
+    const res = await callGetAllLocations(query);
     if (res && res.data) {
       setList(
         res.data.result.sort(
@@ -355,7 +309,7 @@ const HandoverStatus = () => {
   };
 
   const handleDelete = async (id) => {
-    const res = await callDeleteHandoverStatus(id);
+    const res = await callDeleteLocation(id);
 
     if (res && res && res.statusCode === 200) {
       message.success(res.message);
@@ -371,12 +325,12 @@ const HandoverStatus = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Tình trạng bàn giao</h2>
-        <Access
-          permission={ALL_PERMISSIONS.HANDOVER_STATUS.CREATE}
-          hideChildren
-        >
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+        <h2 className="text-base xl:text-xl font-bold">Vị trí</h2>
+        <Access permission={ALL_PERMISSIONS.SYSTEMS.CREATE} hideChildren>
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
@@ -399,7 +353,7 @@ const HandoverStatus = () => {
           }}
         />
 
-        <ViewHandoverStatus
+        <ViewLocation
           user={user}
           data={data}
           setData={setData}
@@ -407,34 +361,16 @@ const HandoverStatus = () => {
           setOpenViewDetail={setOpenViewDetail}
         />
 
-        <ModalHandoverStatus
+        <ModalLocation
           data={data}
           setData={setData}
           openModal={openModal}
           setOpenModal={setOpenModal}
           fetchData={fetchData}
-          listOffices={listOffices}
         />
-
-        <Modal
-          title="PDF"
-          open={previewOpen}
-          onCancel={() => {
-            setPreviewOpen(false);
-            setPdfUrl();
-          }}
-          footer={null}
-          width={800}
-          styles={{ body: { height: "600px" } }}
-          style={{
-            top: 20,
-          }}
-        >
-          <PDFViewer fileUrl={pdfUrl} />
-        </Modal>
       </div>
     </div>
   );
 };
 
-export default HandoverStatus;
+export default Location;

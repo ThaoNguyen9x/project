@@ -41,8 +41,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public Permission createPermission(Permission permission) {
-        if (permissionRepository.existsByNameAndApiPathAndMethodAndModule(permission.getName(), permission.getApiPath(), permission.getMethod(), permission.getModule()))
+        if (permissionRepository.existsByNameAndApiPathAndMethodAndModule(permission.getName(), permission.getApiPath(), permission.getMethod(), permission.getModule())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Đã tồn tại một quyền hạn cùng tên, API Path, method hoặc module");
+        }
 
         return permissionRepository.save(permission);
     }
@@ -61,8 +62,9 @@ public class PermissionServiceImpl implements PermissionService {
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Permission not found with ID: " + id));
 
 
-        if (permissionRepository.existsByNameAndApiPathAndMethodAndModuleAndIdNot(permission.getName(), permission.getApiPath(), permission.getMethod(), permission.getModule(), id))
+        if (permissionRepository.existsByNameAndApiPathAndMethodAndModuleAndIdNot(permission.getName(), permission.getApiPath(), permission.getMethod(), permission.getModule(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Đã tồn tại một quyền hạn cùng tên, API Path, method hoặc module");
+        }
 
         ex.setName(permission.getName());
         ex.setApiPath(permission.getApiPath());

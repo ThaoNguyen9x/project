@@ -33,12 +33,16 @@ public class Device extends BaseEntity {
 
     private String deviceName;
 
+    private int x;
+
+    private int y;
+
     private LocalDate installationDate;
 
     private Integer lifespan;
 
     @Enumerated(EnumType.STRING)
-    private DeviceStatus status;
+    private DeviceStatus status = DeviceStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "device_type_id", nullable = false)
@@ -51,4 +55,16 @@ public class Device extends BaseEntity {
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ItemCheck> itemChecks;
+
+    public Device(Systems system, Location location, String deviceName, int x, int y, String installationDate, Integer lifespan, DeviceType deviceType, SystemMaintenanceService maintenanceService) {
+        this.system = system;
+        this.location = location;
+        this.deviceName = deviceName;
+        this.x = x;
+        this.y = y;
+        this.installationDate = LocalDate.parse(installationDate);
+        this.lifespan = lifespan;
+        this.deviceType = deviceType;
+        this.maintenanceService = maintenanceService;
+    }
 }

@@ -15,5 +15,5 @@ public interface MeterRepository extends JpaRepository<Meter, Integer>,
 
     Boolean existsBySerialNumber(String serialNumber);
 
-    Boolean existsBySerialNumberNotAndId(String serialNumber, Integer id);
+    Boolean existsBySerialNumberAndIdNot(String serialNumber, Integer id);
 }

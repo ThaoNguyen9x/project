@@ -52,19 +52,23 @@ const AppHeader = () => {
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
     const client = Stomp.over(sock);
 
-    client.debug = () => {};
+    // client.debug = () => {};
 
     client.connect({}, () => {
       setStompClient(client);
 
       const topics = [
         `/topic/user-status`,
-        `/topic/paymentNotifications/${user.id}`,
+        `/topic/repair-request-notifications/${user.id}`, // Yêu cầu sửa chữa
+        `/topic/due-payment-notifications/${user.id}`, // Thông báo khoản thanh toán còn 1 ngày
+        `/topic/work-registration-notifications/${user.id}`, // Thông báo đăng ký công việc
+        `/topic/paymentNotifications/${user.id}`, // Gửi thông báo thanh toán đến khách hàng
         `/topic/electricityUsageVerification/${user.id}`,
-        `/topic/maintenance/${user.id}`,
-        `/topic/admin/work-registrations/${user.id}`,
+        `/topic/maintenance-task-notifications/${user.id}`,
         `/topic/messages/${user.id}`,
-        `/topic/adminNotifications/${user.id}`,
+        `/topic/birthday-notifications/${user.id}`,
+        `/topic/repair-proposal-notifications/${user.id}`,
+        `/topic/exp-payment-notifications/${user.id}`
       ];
 
       topics.forEach((topic) => {
@@ -175,42 +179,42 @@ const AppHeader = () => {
 
   const fetchData = async () => {
     setLoading(true);
-  
+
     // Fetch Users
     let pageUsers = 1;
     let hasMoreUsers = true;
     let allUsers = [];
-  
+
     while (hasMoreUsers) {
       const query = `page=${pageUsers}&pageSize=20`;
       const res = await callGetChatRoomUsers(query);
-  
+
       if (res && res.data) {
         allUsers = [...allUsers, ...res.data.result];
-        hasMoreUsers = res.data.hasMore; 
+        hasMoreUsers = res.data.hasMore;
         pageUsers += 1;
       } else {
         hasMoreUsers = false;
       }
     }
-  
+
     let pageGroups = 1;
     let hasMoreGroups = true;
     let allGroups = [];
-  
+
     while (hasMoreGroups) {
       const query = `page=${pageGroups}&pageSize=20`;
       const res = await callGetChatRoomGroups(query);
-  
+
       if (res && res.data) {
         allGroups = [...allGroups, ...res.data.result];
-        hasMoreGroups = res.data.hasMore; 
+        hasMoreGroups = res.data.hasMore;
         pageGroups += 1;
       } else {
-        hasMoreGroups = false; 
+        hasMoreGroups = false;
       }
     }
-  
+
     setListChatRoomUsers(allUsers);
     setListChatRoomGroups(allGroups);
     setLoading(false);
@@ -233,9 +237,9 @@ const AppHeader = () => {
             : "N/A";
 
           const formattedAmount = message?.paymentAmount
-            ? message?.paymentAmount.toLocaleString("vi-VN", {
+            ? message?.paymentAmount.toLocaleString("en-US", {
                 style: "currency",
-                currency: "VND",
+                currency: "USD",
               })
             : "N/A";
 
@@ -254,6 +258,14 @@ const AppHeader = () => {
               notificationText = `Khách hàng ${message?.directorName} của công ty ${message?.companyName} sau 3 ngày nữa sẽ đến sinh nhật.`;
             } else if (message.maintenanceDate) {
               notificationText = `Bạn có lịch bảo trì vào ngày ${message?.maintenanceDate}`;
+            } else if (message.requestDate) {
+              notificationText = `Bạn có yêu cầu bảo trì vào ngày ${new Date(
+                message?.requestDate
+              ).toLocaleDateString("vi-VN")}`;
+            } else if (message.registrationID) {
+              notificationText = `Bạn có yêu cầu đăng ký công việc vào ngày ${new Date(
+                message?.registrationDate
+              ).toLocaleDateString("vi-VN")}`;
             }
           }
 
@@ -285,7 +297,11 @@ const AppHeader = () => {
                     : message?.companyName
                     ? "Thông báo sinh nhật"
                     : message?.title
-                    ? "Thông báo bảo trì"
+                    ? "Thông báo"
+                    : message?.requestDate
+                    ? "Thông báo yêu cầu sửa chữa"
+                    : message?.registrationID
+                    ? "Thông báo đăng ký công việc"
                     : "Thông báo không xác định"}
                 </p>
                 <p>

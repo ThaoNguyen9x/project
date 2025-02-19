@@ -17,8 +17,8 @@ public class PaymentContractDto {
     private ContractDto contract;  // ID hợp đồng
     private BigDecimal paymentAmount;  // Số tiền thanh toán
     private LocalDate paymentDate;  // Ngày thanh toán
+    private LocalDate dueDate; // Hạn cuối thanh toán
     private PaymentStatus paymentStatus;  // Trạng thái thanh toán (Paid, Unpaid)
-
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;

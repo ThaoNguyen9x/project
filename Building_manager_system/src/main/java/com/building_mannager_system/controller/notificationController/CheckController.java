@@ -38,7 +38,12 @@ public class CheckController {
     // Endpoint để kiểm tra các hợp đồng và tài liệu không hoạt động (unactive)
 //    @GetMapping("/inactive")
 //    public ApiResponce<List<ContractReminderDto>> checkInactiveContractsAndDocuments() {
-//        List<ContractReminderDto> result = contractService.checkInactiveContractsAndDocuments();
+//        List<ContractReminderDto> result = contractService.checkContractsByDocumentType();
 //        return new ApiResponce<>(200, result, "success");  // Trả về ApiResponse với code 200, dữ liệu và trạng thái "success"
+//    }
+//    @GetMapping ("/check-contract-end-date")
+//    public ApiResponce<List<ContractDto>> checkContractEndDate() {
+//        List<ContractDto> list = contractService.checkEndDateContract();
+//        return new ApiResponce<>(200, list, "success");
 //    }
 }

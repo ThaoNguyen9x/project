@@ -1,58 +1,45 @@
 import React, { useRef, useState, useEffect, useContext } from "react";
 import {
-  Button,
-  Input,
-  Space,
-  Table,
-  Popconfirm,
-  message,
-  notification,
-  Modal,
-} from "antd";
-
-import { AiOutlineDelete } from "react-icons/ai";
-import { IoSearchOutline } from "react-icons/io5";
-import { CiEdit } from "react-icons/ci";
-import { GoPlus } from "react-icons/go";
-import { QuestionCircleOutlined } from "@ant-design/icons";
-import {
-  callDeleteOffice,
-  callGetAllOffices,
   callGetAllLocations,
+  callGetLocation,
 } from "../../services/api";
 
-import ModalOffice from "../../components/admin/Office/modal.office";
+import sensorImg from "../../assets/image/sensor.jpg";
+import fcu from "../../assets/image/enhanced_image.png";
+import pumb from "../../assets/image/pumb.png";
+import electrical_cabinet from "../../assets/image/tu_dien.jpg";
+import water_tank from "../../assets/image/water_tank.jpg";
+import cooling_tower from "../../assets/image/water_tower.jpg";
+import fire_fan from "../../assets/image/Pressurization _Fan.jpg";
+import Sprinkler from "../../assets/image/sprinkler.jpg"
+
+import { TbStairs } from "react-icons/tb";
+import { GiAutoRepair } from "react-icons/gi";
+import { PiElevatorLight } from "react-icons/pi";
+import { GrRestroomMen, GrRestroomWomen } from "react-icons/gr";
+
+import { FaPumpMedical } from "react-icons/fa6";
+import { GiElectricalResistance } from "react-icons/gi";
+import { PiSelectionPlusFill } from "react-icons/pi";
+import { MdOutlineWaterDamage } from "react-icons/md";
+import { SiDwavesystems } from "react-icons/si";
+
+import { Button, Form, Input, Select } from "antd";
 import ViewOffice from "../../components/admin/Office/view.office";
-import Access from "../../components/share/Access";
-import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
-import PDFViewer from "../../components/share/PDFViewer";
-import HighlightText from "../../components/share/HighlightText";
-import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
-import Highlighter from "react-highlight-words";
 import { AuthContext } from "../../components/share/Context";
 
 const Office = () => {
+  const scaleFactor = 10; // Tăng kích thước cho dễ nhìn
+  const maxHeight = 44 * scaleFactor; // Chiều cao tối đa của bản vẽ electrical_cabinet
+
   const { user } = useContext(AuthContext);
-  const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [sortQuery, setSortQuery] = useState();
-  const [current, setCurrent] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
-  const [total, setTotal] = useState(0);
-
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
-  const searchInput = useRef(null);
-
-  const [openViewDetail, setOpenViewDetail] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [data, setData] = useState(null);
-
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-
+  const [location, setLocation] = useState(null);
   const [listLocations, setListLocations] = useState([]);
+  const [form] = Form.useForm();
+  const [filter, setFilter] = useState("");
+  const [data, setData] = useState(null);
+  const [openViewDetail, setOpenViewDetail] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -64,380 +51,256 @@ const Office = () => {
     init();
   }, []);
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText("");
-  };
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Search`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          className="block mb-2"
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<IoSearchOutline />}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <IoSearchOutline
-        style={{
-          color: filtered ? "#1677ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) => {
-      const keys = dataIndex.split(".");
-      let recordValue = record;
-
-      keys.forEach((key) => {
-        if (recordValue) {
-          recordValue = recordValue[key];
-        }
-      });
-
-      return (
-        recordValue &&
-        recordValue.toString().toLowerCase().includes(value.toLowerCase())
-      );
-    },
-    filterDropdownProps: {
-      onOpenChange(open) {
-        if (open) {
-          setTimeout(() => searchInput.current?.select(), 100);
-        }
-      },
-    },
-    render: (text) => {
-      return searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      );
-    },
-  });
-
-  const columns = [
-    {
-      title: "STT",
-      key: "index",
-      fixed: 'left',
-      render: (text, record, index) => (current - 1) * pageSize + index + 1,
-    },
-    {
-      title: "Tên",
-      dataIndex: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      ...getColumnSearchProps("name"),
-      render: (text, record) => {
-        return (
-          <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "name" ? (
-              <HighlightText text={record?.name} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(record?.name, 20)
-            )}
-          </a>
-        );
-      },
-    },
-    {
-      title: "Vị trí",
-      dataIndex: "location",
-      sorter: (a, b) => a.location.floor.localeCompare(b.location.floor),
-      ...getColumnSearchProps("location.floor"),
-      render: (text, record) => {
-        return searchedColumn === "location.floor" ? (
-          <HighlightText
-            text={record?.location?.floor}
-            searchText={searchText}
-          />
-        ) : (
-          FORMAT_TEXT_LENGTH(record?.location?.floor, 20)
-        );
-      },
-    },
-    {
-      title: "Diện tích",
-      dataIndex: "area",
-      sorter: (a, b) => a.area - b.area,
-      ...getColumnSearchProps("area"),
-      render: (text, record) => {
-        const formatted = `${record?.area} m²` || "N/A";
-
-        return searchedColumn === "area" ? (
-          <HighlightText text={formatted} searchText={searchText} />
-        ) : (
-          formatted
-        );
-      },
-    },
-    {
-      title: "Giá thuê",
-      dataIndex: "rentPrice",
-      sorter: (a, b) => a.rentPrice - b.rentPrice,
-      ...getColumnSearchProps("rentPrice"),
-      render: (text, record) => {
-        const formatted =
-          record?.rentPrice.toLocaleString("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          }) || "N/A";
-
-        return searchedColumn === "rentPrice" ? (
-          <HighlightText text={formatted} searchText={searchText} />
-        ) : (
-          formatted
-        );
-      },
-    },
-    {
-      title: "Phí dịch vụ",
-      dataIndex: "serviceFee",
-      sorter: (a, b) => a.serviceFee - b.serviceFee,
-      ...getColumnSearchProps("serviceFee"),
-      render: (text, record) => {
-        const formatted =
-          record?.serviceFee.toLocaleString("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          }) || "N/A";
-
-        return searchedColumn === "serviceFee" ? (
-          <HighlightText text={formatted} searchText={searchText} />
-        ) : (
-          formatted
-        );
-      },
-    },
-    {
-      title: "Bản vẽ",
-      dataIndex: "drawingFile",
-      render: (text, record) => {
-        return record.drawingFile ? (
-          <a
-            onClick={() => {
-              setPdfUrl(
-                `${import.meta.env.VITE_BACKEND_URL}/storage/offices/${
-                  record?.drawingFile
-                }`
-              );
-              setPreviewOpen(true);
-            }}
-          >
-            View
-          </a>
-        ) : (
-          "N/A"
-        );
-      },
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      filters: [
-        {
-          text: "Hoạt động",
-          value: "ACTIV",
-        },
-        {
-          text: "Không hoạt động",
-          value: "INACTIV",
-        },
-      ],
-      onFilter: (value, record) => record?.status === value,
-      render: (status, record) => (
-        <span className={`${status === "ACTIV" ? "success" : "danger"} status`}>
-          {status === "ACTIV" ? "Hoạt động" : "Không hoạt động"}
-        </span>
-      ),
-    },
-    {
-      title: "Thao tác",
-      render: (text, record) => (
-        <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.OFFICES.UPDATE} hideChildren>
-            <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
-              }}
-              className="cursor-pointer text-amber-900"
-            >
-              <CiEdit className="h-5 w-5" />
-            </div>
-          </Access>
-          <Access permission={ALL_PERMISSIONS.OFFICES.DELETE} hideChildren>
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.id)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
-          </Access>
-        </div>
-      ),
-    },
-  ];
-
   useEffect(() => {
     fetchData();
-  }, [searchedColumn, searchText, current, pageSize, sortQuery]);
+  }, [filter]);
 
   const fetchData = async () => {
     setIsLoading(true);
 
-    let query = `page=${current}&size=${pageSize}`;
+    const res = await callGetLocation(filter || 1);
 
-    if (searchText && searchedColumn) {
-      query += `&filter=${searchedColumn}~'${searchText}'`;
-    }
-
-    if (sortQuery) {
-      query += `&${sortQuery}`;
-    }
-
-    const res = await callGetAllOffices(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
-      setTotal(res.data.meta.total);
+      setLocation(res.data);
     }
 
     setIsLoading(false);
   };
 
-  const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+  const deviceImages = {
+    fcu: fcu, // Ảnh cho FCU
+    fire_alarm: sensorImg, // Ảnh cho Sensor
+    pumb: pumb, // Ảnh cho Camera (nếu có)
+    electrical_cabinet: electrical_cabinet,
+    water_tank: water_tank, // Ảnh mặc định nếu không có loại
+    cooling_tower: cooling_tower,
+    fire_fan: fire_fan,
+    sprinkler: Sprinkler,
+  };
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
-    }
+  const getCommonAreas = (area) => {
+    const areaName = area.name.trim().toLowerCase();
 
-    if (sorter && sorter.field) {
-      const sortField = sorter.field;
-      const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+    if (areaName === "thang bộ") {
+      return <TbStairs className="size-4 text-white border" />;
+    } else if (areaName.includes("kỹ thuật")) {
+      return <GiAutoRepair className="size-4 text-white border" />;
+    } else if (areaName.includes("thang máy")) {
+      return <PiElevatorLight className="size-4 text-white border" />;
+    } else if (areaName.includes("vệ sinh nam")) {
+      return <GrRestroomMen className="size-4 text-white border" />;
+    } else if (areaName.includes("vệ sinh nữ")) {
+      return <GrRestroomWomen className="size-4 text-white border" />;
+    } else if (areaName.includes("điện tủ nguồn")) {
+      return <GiElectricalResistance className="size-4 text-white border" />;
+    } else if (areaName.includes("vật tư")) {
+      return <PiSelectionPlusFill className="size-4 text-white border" />;
+    } else if (areaName.includes("xử lý nước")) {
+      return <MdOutlineWaterDamage className="size-4 text-white border" />;
+    } else if (areaName.includes("bơm nước")) {
+      return <FaPumpMedical className="size-4 text-white border" />;
+    } else if (areaName.includes("chiler")) {
+      return <SiDwavesystems className="size-4 text-white border" />;
+    } else if (areaName.includes("sảnh")) {
+      return "";
     } else {
-      setSortQuery("");
+      return area.name;
     }
   };
 
-  const handleDelete = async (id) => {
-    const res = await callDeleteOffice(id);
+  const handleFilter = (values) => {
+    // Use '1' as the default location if no location is selected
+    let query = `${values.location}`;
 
-    if (res && res && res.statusCode === 200) {
-      message.success(res.message);
-      fetchData();
-    } else {
-      notification.error({
-        message: "Có lỗi xảy ra",
-        description: res.error,
-      });
+    if (values.deviceType) {
+      query += `?deviceType=${values.deviceType}`;
     }
+
+    setFilter(query);
   };
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Văn phòng</h2>
-        <Access permission={ALL_PERMISSIONS.OFFICES.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
-        </Access>
-      </div>
-      <div className="relative overflow-x-auto">
-        <Table
-          rowKey={(record) => record.id}
-          loading={isLoading}
-          columns={columns}
-          dataSource={list}
-          onChange={onChange}
-          pagination={{
-            current: current,
-            pageSize: pageSize,
-            showSizeChanger: true,
-            total: total,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`,
+      <div className="flex flex-col gap-5">
+        <h2 className="text-base xl:text-xl font-bold">Sơ đồ văn phòng</h2>
+        <div className="flex flex-col lg:flex-row gap-5 w-full lg:max-w-fit border rounded-md p-5">
+          <div className="flex items-center gap-2">
+            <div className="border border-yellow-400 rounded-md bg-yellow-400 p-2"></div>
+            Khung Location
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="border rounded-md bg-white p-2"></div>
+            Khu vực không sử dụng
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="border border-gray-200 rounded-md bg-gray-200 p-2"></div>
+            Khu vực chung
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="border border-blue-900 rounded-md bg-blue-900 p-2"></div>
+            Văn phòng
+          </div>
+        </div>
+
+        <Form
+          form={form}
+          onFinish={handleFilter}
+          initialValues={{
+            location: 1,
           }}
-        />
+          className="flex items-center gap-3"
+        >
+          <Form.Item name="location" className="w-auto">
+            <Select>
+              {listLocations?.map((location) => (
+                <Select.Option key={location.id} value={location.id}>
+                  {location.floor}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="deviceType">
+            <Input allowClear placeholder="Tìm kiếm loại thiết bị..." />
+          </Form.Item>
+
+          <Form.Item>
+            <Button htmlType="submit">Tìm kiếm</Button>
+          </Form.Item>
+        </Form>
+
+        <div className="flex items-center justify-center w-full">
+          <div
+            className="relative"
+            style={{
+              width: `${location?.endX * scaleFactor}px`,
+              height: `${maxHeight}px`,
+            }}
+          >
+            {/* Vẽ khung Location với viền màu vàng */}
+            <div
+              className="absolute bg-gray-200 border border-yellow-400"
+              style={{
+                left: `${location?.startX * scaleFactor}px`,
+                top: `${maxHeight - location?.endY * scaleFactor}px`,
+                width: `${(location?.endX - location?.startX) * scaleFactor}px`,
+                height: `${
+                  (location?.endY - location?.startY) * scaleFactor
+                }px`,
+              }}
+            />
+
+            {/* Hiển thị tọa độ góc dưới phải */}
+            <div
+              className="absolute text-sm whitespace-nowrap z-10"
+              style={{
+                left: `${location?.startX * scaleFactor + 5}px`,
+                top: `${maxHeight - location?.startY * scaleFactor + 15}px`,
+              }}
+            >
+              ({location?.startX}, {location?.startY})
+            </div>
+
+            {/* Hiển thị tọa độ góc trên trái */}
+            <div
+              className="absolute text-sm whitespace-nowrap z-10"
+              style={{
+                left: `${location?.endX * scaleFactor - 30}px`,
+                top: `${maxHeight - location?.endY * scaleFactor - 5}px`,
+              }}
+            >
+              ({location?.endX}, {location?.endY})
+            </div>
+
+            {/* Vẽ phần không thể sử dụng với màu trắng */}
+            <div
+              className="absolute bg-white border border-b-yellow-400 border-l-yellow-400 border-r-transparent border-t-transparent"
+              style={{
+                left: `${30 * scaleFactor}px`,
+                top: `${maxHeight - 41 * scaleFactor}px`,
+                width: `${(44 - 30) * scaleFactor}px`,
+                height: `${(41 - 19) * scaleFactor}px`,
+              }}
+            />
+
+            {/* Vẽ các CommonArea */}
+            {location?.commonAreas?.map((area, index) => (
+              <div
+                className={`absolute group ${
+                  area.color ? "bg-gray-800" : "bg-gray-400"
+                } hover:bg-black transition-colors duration-500 cursor-pointer`}
+                key={index}
+                style={{
+                  left: `${area.startX * scaleFactor}px`,
+                  top: `${maxHeight - area.endY * scaleFactor}px`,
+                  width: `${(area.endX - area.startX) * scaleFactor}px`,
+                  height: `${(area.endY - area.startY) * scaleFactor}px`,
+                }}
+              >
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  {getCommonAreas(area)}
+                </div>
+
+                <div className="hidden group-hover:block text-white text-center absolute -top-4 p-2 rounded-md bg-gray-600 whitespace-nowrap z-10 w-fit">
+                  {area.name}
+                </div>
+              </div>
+            ))}
+
+            {/* Vẽ các Office */}
+            {location?.offices?.map((office, index) => (
+              <div
+                onClick={() => {
+                  setData(office);
+                  setOpenViewDetail(true);
+                }}
+                className="absolute border-blue-900 bg-blue-900 text-white cursor-pointer"
+                key={index}
+                style={{
+                  left: `${office.startX * scaleFactor}px`,
+                  top: `${maxHeight - office.endY * scaleFactor}px`,
+                  width: `${(office.endX - office.startX) * scaleFactor}px`,
+                  height: `${(office.endY - office.startY) * scaleFactor}px`,
+                }}
+              >
+                {/* Hiển thị tên Office */}
+                <div className="absolute left-1/2  top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  {office.name}
+                </div>
+              </div>
+            ))}
+
+            {/* Vẽ các Device */}
+            {location?.devices
+              ?.sort((a, b) => b.y - a.y)
+              .map((device, index) => {
+                const deviceImage =
+                  deviceImages[device?.deviceType?.typeName] || deviceImages["default"];
+                const imageWidth =
+                  device?.deviceType?.typeName === "fcu" ? 80 : 20;
+                const imageHeight =
+                  device?.deviceType?.typeName === "fcu" ? 60 : 20;
+
+                return (
+                  <div key={index}>
+                    <img
+                      src={deviceImage}
+                      alt={device.deviceName}
+                      style={{
+                        position: "absolute",
+                        left: `${device.x * scaleFactor - imageWidth / 2}px`,
+                        top: `${
+                          maxHeight - device.y * scaleFactor - imageHeight / 2
+                        }px`,
+                        width: `${imageWidth}px`,
+                        height: `${imageHeight}px`,
+                      }}
+                    />
+                  </div>
+                );
+              })}
+          </div>
+        </div>
 
         <ViewOffice
           user={user}
@@ -446,32 +309,6 @@ const Office = () => {
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />
-
-        <ModalOffice
-          data={data}
-          setData={setData}
-          openModal={openModal}
-          setOpenModal={setOpenModal}
-          fetchData={fetchData}
-          listLocations={listLocations}
-        />
-
-        <Modal
-          title="PDF"
-          open={previewOpen}
-          onCancel={() => {
-            setPreviewOpen(false);
-            setPdfUrl();
-          }}
-          footer={null}
-          width={800}
-          styles={{ body: { height: "600px" } }}
-          style={{
-            top: 20,
-          }}
-        >
-          <PDFViewer fileUrl={pdfUrl} />
-        </Modal>
       </div>
     </div>
   );

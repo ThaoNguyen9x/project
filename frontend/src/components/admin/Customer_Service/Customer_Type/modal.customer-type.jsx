@@ -85,7 +85,7 @@ const ModalCustomerType = (props) => {
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}
-      className="w-full lg:!w-1/3"
+      className="w-full"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
         <Row gutter={16}>
@@ -101,34 +101,38 @@ const ModalCustomerType = (props) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+          {data?.id ? (
+            <Col xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
               >
-                <Option value="true" label="Hoạt động">
-                  Hoạt động
-                </Option>
-                <Option value="false" label="Không hoạt động">
-                  Không hoạt động
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="true" label="Hoạt động">
+                    Hoạt động
+                  </Option>
+                  <Option value="false" label="Không hoạt động">
+                    Không hoạt động
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

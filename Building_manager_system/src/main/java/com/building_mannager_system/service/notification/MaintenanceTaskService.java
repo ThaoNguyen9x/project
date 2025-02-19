@@ -2,7 +2,6 @@ package com.building_mannager_system.service.notification;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.notificationDto.MaintenanceTaskDto;
-import com.building_mannager_system.entity.Role;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.property_manager.MaintenanceTask;
 import com.building_mannager_system.repository.UserRepository;
@@ -33,7 +32,7 @@ public class MaintenanceTaskService {
     }
 
     public ResultPaginationDTO getAllMaintenanceTasks(Specification<MaintenanceTask> spec,
-                                              Pageable pageable) {
+                                                      Pageable pageable) {
 
         Page<MaintenanceTask> page = maintenanceTaskRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -59,12 +58,6 @@ public class MaintenanceTaskService {
     }
 
     public MaintenanceTaskDto createMaintenanceTask(MaintenanceTask maintenanceTask) {
-        if (maintenanceTask.getAssignedTo() != null) {
-            User user = userRepository.findById(maintenanceTask.getAssignedTo().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + maintenanceTask.getAssignedTo().getId()));
-            maintenanceTask.setAssignedTo(user);
-        }
-
         return modelMapper.map(maintenanceTaskRepository.save(maintenanceTask), MaintenanceTaskDto.class);
     }
 
@@ -78,12 +71,6 @@ public class MaintenanceTaskService {
     public MaintenanceTaskDto updateMaintenanceTask(Long id, MaintenanceTask maintenanceTask) {
         MaintenanceTask ex = maintenanceTaskRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Maintenance task not found with ID: " + id));
-
-        if (maintenanceTask.getAssignedTo() != null) {
-            User user = userRepository.findById(maintenanceTask.getAssignedTo().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + maintenanceTask.getAssignedTo().getId()));
-            maintenanceTask.setAssignedTo(user);
-        }
 
         ex.setTaskName(maintenanceTask.getTaskName());
         ex.setTaskDescription(maintenanceTask.getTaskDescription());

@@ -25,9 +25,6 @@ public class NotificationMaintenance extends BaseEntity {
     @Column(name = "message", nullable = false)
     private String description;
 
-    @Column(name = "recipient", nullable = false)
-    private String recipient;
-
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private StatusNotifi status = StatusNotifi.PENDING;

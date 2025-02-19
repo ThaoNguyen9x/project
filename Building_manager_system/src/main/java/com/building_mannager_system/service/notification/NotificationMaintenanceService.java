@@ -1,7 +1,6 @@
 package com.building_mannager_system.service.notification;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
-import com.building_mannager_system.dto.requestDto.NotificationDto;
 import com.building_mannager_system.dto.requestDto.notificationDto.NotificationMaintenanceDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.notification.Notification;
@@ -87,18 +86,18 @@ public class NotificationMaintenanceService {
             notificationMaintenance.setMaintenanceTask(maintenanceTask);
         }
 
+        NotificationMaintenance no = notificationMaintenanceRepository.saveAndFlush(notificationMaintenance);
+
         List<String> roles = List.of("Technician_Manager", "Technician_Employee");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-        if (recipients.isEmpty()) {
-            throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles Technician_Manager and Technician_Employee.");
-        }
+        if (recipients.isEmpty()) return null;
 
         String message;
         try {
-            message = JsonUntils.toJson(notificationMaintenance);
+            message = JsonUntils.toJson(no);
         } catch (Exception e) {
-            throw new APIException(HttpStatus.INTERNAL_SERVER_ERROR, "Error serializing notification message", e);
+            throw new RuntimeException(e);
         }
 
         for (User recipientUser : recipients) {
@@ -111,8 +110,8 @@ public class NotificationMaintenanceService {
 
             if (existingRecipient == null) {
                 Recipient rec = new Recipient();
-                rec.setType("Technical");
-                rec.setName("Notification Maintenance");
+                rec.setType("Maintenance_Task_Notification");
+                rec.setName("Send Maintenance Task Notification");
                 rec.setReferenceId(recipientUser.getId());
                 existingRecipient = recipientService.createRecipient(rec);
             }
@@ -132,7 +131,7 @@ public class NotificationMaintenanceService {
             }
         }
 
-        return modelMapper.map(notificationMaintenanceRepository.save(notificationMaintenance), NotificationMaintenanceDto.class);
+        return modelMapper.map(no, NotificationMaintenanceDto.class);
     }
 
     public NotificationMaintenanceDto updateNotification(Long id, NotificationMaintenance notificationMaintenance) {
@@ -145,12 +144,10 @@ public class NotificationMaintenanceService {
             notificationMaintenance.setMaintenanceTask(maintenanceTask);
         }
 
-        List<String> roles = List.of("Technician_Manager", "Technician_Employee");
+        List<String> roles = List.of("Customer");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-        if (recipients.isEmpty()) {
-            throw new APIException(HttpStatus.NOT_FOUND, "No recipients found for the roles Technician_Manager and Technician_Employee.");
-        }
+        if (recipients.isEmpty()) return null;
 
         String message;
         try {
@@ -163,10 +160,9 @@ public class NotificationMaintenanceService {
             List<Recipient> existingRecipients = recipientRepository.findByReferenceId(recipientUser.getId());
 
             if (existingRecipients == null || existingRecipients.isEmpty()) {
-                // If recipient does not exist, create it
                 Recipient rec = new Recipient();
-                rec.setType("Technical");
-                rec.setName("Notification Maintenance");
+                rec.setType("Maintenance_Task_Notification");
+                rec.setName("Send Maintenance Task Notification");
                 rec.setReferenceId(recipientUser.getId());
                 existingRecipients.add(recipientService.createRecipient(rec));
             }
@@ -190,7 +186,6 @@ public class NotificationMaintenanceService {
 
         ex.setTitle(notificationMaintenance.getTitle());
         ex.setDescription(notificationMaintenance.getDescription());
-        ex.setRecipient(notificationMaintenance.getRecipient());
         ex.setStatus(notificationMaintenance.getStatus());
         ex.setMaintenanceDate(notificationMaintenance.getMaintenanceDate());
         ex.setMaintenanceTask(notificationMaintenance.getMaintenanceTask());

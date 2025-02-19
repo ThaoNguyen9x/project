@@ -79,7 +79,6 @@ public class SubcontractorService {
 
         ex.setName(subcontractor.getName());
         ex.setPhone(subcontractor.getPhone());
-        ex.setServiceType(subcontractor.getServiceType());
         ex.setContractStartDate(subcontractor.getContractStartDate());
         ex.setContractEndDate(subcontractor.getContractEndDate());
         ex.setRating(subcontractor.getRating());

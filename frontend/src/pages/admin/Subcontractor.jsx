@@ -192,49 +192,6 @@ const Subcontractor = () => {
       },
     },
     {
-      title: "Dịch vụ",
-      dataIndex: "serviceType",
-      filters: [
-        {
-          text: "Hệ thống Điện",
-          value: "ELECTRICAL",
-        },
-        {
-          text: "Hệ thống Cấp thoát nước",
-          value: "PLUMBING",
-        },
-        {
-          text: "Hệ thống Phòng cháy",
-          value: "FIRE_PROTECTION",
-        },
-        {
-          text: "Hệ thống Điều hòa không khí",
-          value: "HVAC",
-        },
-      ],
-      onFilter: (value, record) => record?.serviceType === value,
-      render: (serviceType, record) => {
-        const serviceNames = {
-          ELECTRICAL: "Hệ thống Điện",
-          PLUMBING: "Hệ thống Cấp thoát nước",
-          FIRE_PROTECTION: "Hệ thống Phòng cháy",
-          HVAC: "Hệ thống Điều hòa không khí",
-        };
-
-        const serviceName = serviceNames[record?.serviceType] || "N/A";
-
-        return (
-          <>
-            {searchedColumn === "serviceType" ? (
-              <HighlightText text={serviceName} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(serviceName, 20)
-            )}
-          </>
-        );
-      },
-    },
-    {
       title: "Ngày bắt đầu",
       dataIndex: "contractStartDate",
       sorter: (a, b) =>

@@ -16,7 +16,10 @@ import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
   callDeleteMaintenanceHistory,
+  callDeleteRiskAssessment,
+  callGetAllDevices,
   callGetAllMaintenanceHistories,
+  callGetAllSubcontracts,
   callGetAllSystemMaintenanceServices,
   callGetAllUsers,
 } from "../../services/api";
@@ -29,6 +32,8 @@ import Highlighter from "react-highlight-words";
 import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
+import Column from "antd/es/table/Column";
+import ColumnGroup from "antd/es/table/ColumnGroup";
 
 const MaintenanceHistory = () => {
   const { user } = useContext(AuthContext);
@@ -51,6 +56,8 @@ const MaintenanceHistory = () => {
   const [listSystemMaintenanceServices, setListSystemMaintenanceServices] =
     useState([]);
   const [listUsers, setListUsers] = useState([]);
+  const [listSubcontractors, setListSubcontractors] = useState([]);
+  const [listDevices, setListDevices] = useState([]);
 
   useEffect(() => {
     const init = async () => {
@@ -63,6 +70,16 @@ const MaintenanceHistory = () => {
       const users = await callGetAllUsers();
       if (users && users.data) {
         setListUsers(users.data?.result);
+      }
+
+      const subcontractors = await callGetAllSubcontracts();
+      if (subcontractors && subcontractors.data) {
+        setListSubcontractors(subcontractors.data?.result);
+      }
+
+      const devices = await callGetAllDevices();
+      if (devices && devices.data) {
+        setListDevices(devices.data?.result);
       }
     };
     init();
@@ -169,141 +186,6 @@ const MaintenanceHistory = () => {
     },
   });
 
-  const columns = [
-    {
-      title: "STT",
-      key: "index",
-      fixed: 'left',
-      render: (text, record, index) => (current - 1) * pageSize + index + 1,
-    },
-    {
-      title: "Ngày thực hiện",
-      dataIndex: "performedDate",
-      sorter: (a, b) => new Date(a.performedDate) - new Date(b.performedDate),
-      ...getColumnSearchProps("performedDate"),
-      render: (text, record, index) => {
-        return (
-          <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "performedDate" ? (
-              <HighlightText
-                text={record?.performedDate}
-                searchText={searchText}
-              />
-            ) : (
-              record?.performedDate
-            )}
-          </a>
-        );
-      },
-    },
-    {
-      title: "Ghi chú",
-      dataIndex: "notes",
-      sorter: (a, b) => a.notes.localeCompare(b.notes),
-      ...getColumnSearchProps("notes"),
-    },
-    {
-      title: "Dịch vụ bảo trì",
-      dataIndex: "maintenanceService",
-      sorter: (a, b) =>
-        a.maintenanceService.serviceType.localeCompare(
-          b.maintenanceService.serviceType
-        ),
-      ...getColumnSearchProps("maintenanceService.serviceType"),
-      render: (text, record) => {
-        const subcontractorName =
-          record?.maintenanceService?.subcontractor?.name || "N/A";
-        const serviceType = record?.maintenanceService?.serviceType;
-        let translatedServiceType = "N/A";
-
-        if (serviceType === "ELECTRICAL") {
-          translatedServiceType = "Hệ thống điện";
-        } else if (serviceType === "PLUMBING") {
-          translatedServiceType = "Hệ thống cấp thoát nước";
-        } else if (serviceType === "HVAC") {
-          translatedServiceType = "Hệ thống điều hòa không khí";
-        } else if (serviceType) {
-          translatedServiceType = "Hệ thống phòng cháy";
-        }
-
-        return `${subcontractorName} - ${translatedServiceType}`;
-      },
-    },
-    {
-      title: "Kỹ thuật viên",
-      dataIndex: "technician",
-      sorter: (a, b) => a.technician.name.localeCompare(b.technician.name),
-      ...getColumnSearchProps("technician.name"),
-      render: (technician) => {
-        return (
-          <a
-            onClick={() => {
-              setData(technician);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "technician.name" ? (
-              <HighlightText text={technician?.name} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(technician?.name, 20)
-            )}
-          </a>
-        );
-      },
-    },
-    {
-      title: "Thao tác",
-      render: (text, record) => (
-        <div className="flex items-center gap-3">
-          <Access
-            permission={ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.UPDATE}
-            hideChildren
-          >
-            <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
-              }}
-              className="cursor-pointer text-amber-900"
-            >
-              <CiEdit className="h-5 w-5" />
-            </div>
-          </Access>
-          <Access
-            permission={ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.DELETE}
-            hideChildren
-          >
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.id)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
-          </Access>
-        </div>
-      ),
-    },
-  ];
-
   useEffect(() => {
     fetchData();
   }, [searchedColumn, searchText, current, pageSize, sortQuery]);
@@ -354,29 +236,44 @@ const MaintenanceHistory = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    const res = await callDeleteMaintenanceHistory(id);
-
-    if (res && res && res.statusCode === 200) {
-      message.success(res.message);
-      fetchData();
-    } else {
-      notification.error({
+  const handleDelete = async (maintenanceHistoryId, riskAssessmentId) => {
+    const resRiskAssessment = await callDeleteRiskAssessment(riskAssessmentId);
+    if (!resRiskAssessment || resRiskAssessment.statusCode !== 200) {
+      return notification.error({
         message: "Có lỗi xảy ra",
-        description: res.error,
+        description: resRiskAssessment?.error || "Không thể đánh giá rủi ro.",
       });
     }
+
+    const resMaintenanceHistory = await callDeleteMaintenanceHistory(
+      maintenanceHistoryId
+    );
+    if (!resMaintenanceHistory || resMaintenanceHistory.statusCode !== 200) {
+      return notification.error({
+        message: "Có lỗi xảy ra",
+        description:
+          resMaintenanceHistory?.error || "Không thể lịch sử bảo trì.",
+      });
+    }
+
+    message.success("Xóa lịch sử bảo trì & đánh giá rủi ro thành công!");
+    fetchData();
   };
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Lịch sử bảo trì</h2>
+        <h2 className="text-base xl:text-xl font-bold">
+          Lịch sử bảo trì & Đánh giá rủi ro
+        </h2>
         <Access
           permission={ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.CREATE}
           hideChildren
         >
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
@@ -384,10 +281,9 @@ const MaintenanceHistory = () => {
       </div>
       <div className="relative overflow-x-auto">
         <Table
-          rowKey={(record) => record.id}
-          loading={isLoading}
-          columns={columns}
           dataSource={list}
+          rowKey={(record) => record?.id}
+          loading={isLoading}
           onChange={onChange}
           pagination={{
             current: current,
@@ -397,7 +293,120 @@ const MaintenanceHistory = () => {
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} items`,
           }}
-        />
+        >
+          <Column
+            title="STT"
+            key="index"
+            fixed="left"
+            render={(text, record, index) =>
+              (current - 1) * pageSize + index + 1
+            }
+          />
+          <ColumnGroup title="Lịch sử bảo trì">
+            <Column
+              title="Ngày thực hiện"
+              dataIndex="performedDate"
+              sorter={(a, b) =>
+                new Date(a.performedDate) - new Date(b.performedDate)
+              }
+              render={(text, record) => {
+                return (
+                  <a
+                    onClick={() => {
+                      setData(record);
+                      setOpenViewDetail(true);
+                    }}
+                  >
+                    {record?.performedDate}
+                  </a>
+                );
+              }}
+            />
+            <Column title="Ghi chú" dataIndex="notes" key="notes" />
+          </ColumnGroup>
+          <ColumnGroup title="Đánh giá rủi ro">
+            <Column
+              title="Ngày đánh giá"
+              key="riskAssessmentsAssessmentDate"
+              sorter={(a, b) => {
+                const dateA = new Date(
+                  a.riskAssessments?.[0]?.assessmentDate || 0
+                );
+                const dateB = new Date(
+                  b.riskAssessments?.[0]?.assessmentDate || 0
+                );
+                return dateA - dateB;
+              }}
+              render={(_, record) => {
+                const assessmentDate =
+                  record.riskAssessments?.[0]?.assessmentDate;
+                return assessmentDate ? (
+                  <a
+                    onClick={() => {
+                      setData(record.riskAssessments?.[0]);
+                      setOpenViewDetail(true);
+                    }}
+                  >
+                    {assessmentDate}
+                  </a>
+                ) : (
+                  "N/A"
+                );
+              }}
+            />
+          </ColumnGroup>
+          <Column
+            title="Thao tác"
+            render={(text, record) => (
+              <div className="flex items-center gap-3">
+                <Access
+                  permission={ALL_PERMISSIONS.CONTRACTS.UPDATE}
+                  hideChildren
+                >
+                  <div
+                    onClick={() => {
+                      setData(record);
+                      setOpenModal(true);
+                    }}
+                    className="cursor-pointer text-amber-900"
+                  >
+                    <CiEdit className="h-5 w-5" />
+                  </div>
+                </Access>
+                <Access
+                  permission={ALL_PERMISSIONS.CONTRACTS.DELETE}
+                  hideChildren
+                >
+                  <Popconfirm
+                    placement="leftBottom"
+                    okText="Có"
+                    cancelText="Không"
+                    title="Xác nhận"
+                    description="Bạn có chắc chắn muốn xóa không?"
+                    onConfirm={() =>
+                      handleDelete(
+                        record?.id,
+                        record.riskAssessments?.[0]?.riskAssessmentID
+                      )
+                    }
+                    icon={
+                      <QuestionCircleOutlined
+                        style={{
+                          color: "red",
+                        }}
+                      />
+                    }
+                    className="cursor-pointer DELETE"
+                  >
+                    <>
+                      <AiOutlineDelete className="h-5 w-5" />
+                    </>
+                  </Popconfirm>
+                </Access>
+              </div>
+            )}
+          />
+        </Table>
 
         <ViewMaintenanceHistory
           user={user}
@@ -415,6 +424,8 @@ const MaintenanceHistory = () => {
           fetchData={fetchData}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
           listUsers={listUsers}
+          listSubcontractors={listSubcontractors}
+          listDevices={listDevices}
         />
       </div>
     </div>

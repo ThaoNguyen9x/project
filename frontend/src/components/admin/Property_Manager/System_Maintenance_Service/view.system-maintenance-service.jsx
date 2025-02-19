@@ -111,20 +111,6 @@ const ViewSystemMaintenanceService = (props) => {
           ),
           span: 2,
         },
-        {
-          label: "Dịch vụ",
-          children:
-            data?.serviceType === "ELECTRICAL"
-              ? "Hệ thống Điện"
-              : data?.serviceType === "PLUMBING"
-              ? "Hệ thống Cấp thoát nước"
-              : data?.serviceType === "FIRE_PROTECTION"
-              ? "Hệ thống Điều hòa không khí"
-              : data?.serviceType === "HVAC"
-              ? "Hệ thống Phòng cháy"
-              : "N/A",
-          span: 2,
-        },
       ];
     } else {
       return [

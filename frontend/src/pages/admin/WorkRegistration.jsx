@@ -29,6 +29,7 @@ import { AuthContext } from "../../components/share/Context";
 import dayjs from "dayjs";
 import ModalWorkRegistration from "../../components/admin/Work_Registration/modal.work-registration";
 import ViewWorkRegistration from "../../components/admin/Work_Registration/view.work-registration";
+import { useLocation } from "react-router-dom";
 
 const WorkRegistration = () => {
   const { user } = useContext(AuthContext);
@@ -212,42 +213,45 @@ const WorkRegistration = () => {
       },
     },
     {
-      title: "Nhân viên phụ trách",
+      title: "Nhân viên phụ trách bảo trì",
       dataIndex: "account",
-      sorter: (a, b) => a.account.typeName.localeCompare(b.account.name),
-      ...getColumnSearchProps("account.name"),
-      render: (account) => {
-        return (
-          <a
-            onClick={() => {
-              setData(account);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "account.name" ? (
-              <HighlightText text={account?.name} searchText={searchText} />
-            ) : (
-              FORMAT_TEXT_LENGTH(account?.name, 20)
-            )}
-          </a>
+      sorter: (a, b) => a.account.localeCompare(b.account),
+      ...getColumnSearchProps("account"),
+      render: (text, record) => {
+        return searchedColumn === "account" ? (
+          <HighlightText text={record?.account} searchText={searchText} />
+        ) : (
+          FORMAT_TEXT_LENGTH(record?.account, 20)
         );
       },
+    },
+    {
+      title: "Ngày dự kiến",
+      dataIndex: "scheduledDate",
+      sorter: (a, b) => a.scheduledDate.localeCompare(b.scheduledDate),
+      ...getColumnSearchProps("scheduledDate"),
+      render: (text, record) =>
+        dayjs(record?.scheduledDate).format(FORMAT_DATE_DISPLAY) || "N/A",
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       filters: [
         {
-          text: "Đang chờ duyệt",
+          text: "Đang chờ xử lý",
           value: "PENDING",
         },
         {
-          text: "Đã được duyệt",
+          text: "Đã chấp nhận",
           value: "APPROVED",
         },
         {
-          text: "Bị từ chối",
+          text: "Đã từ chối",
           value: "REJECTED",
+        },
+        {
+          text: "Đã hoàn thành",
+          value: "COMPLETED",
         },
       ],
       onFilter: (value, record) => record?.status === value,
@@ -258,14 +262,18 @@ const WorkRegistration = () => {
               ? "warning"
               : record.status === "REJECTED"
               ? "danger"
+              : record.status === "COMPLETED"
+              ? "success"
               : "success"
           } status`}
         >
           {record.status === "PENDING"
-            ? "Đang chờ duyệt"
+            ? "Đang chờ xử lý"
             : record.status === "APPROVED"
-            ? "Đã được duyệt"
-            : "Bị từ chối"}
+            ? "Đã chấp nhận"
+            : record.status === "COMPLETED"
+            ? "Đã hoàn thành"
+            : "Đã từ chối"}
         </span>
       ),
     },
@@ -380,6 +388,26 @@ const WorkRegistration = () => {
       });
     }
   };
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const registrationID = queryParams.get("registrationID");
+
+    if (registrationID) {
+      const fetchRequest = async () => {
+        const res = await callGetAllWorkRegistrations(
+          `filter=registrationID~'${registrationID}'`
+        );
+        if (res?.data?.result.length) {
+          setData(res.data.result[0]);
+          setOpenViewDetail(true);
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

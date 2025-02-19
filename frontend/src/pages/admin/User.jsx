@@ -330,7 +330,7 @@ const User = () => {
   const handleDelete = async (id) => {
     const res = await callDeleteUser(id);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {

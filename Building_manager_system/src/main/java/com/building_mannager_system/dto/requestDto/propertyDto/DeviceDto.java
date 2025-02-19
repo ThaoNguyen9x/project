@@ -20,6 +20,8 @@ public class DeviceDto {
     private String deviceName;
     private LocalDate installationDate;
     private Integer lifespan;
+    private int x;
+    private int y;
     private DeviceStatus status;
     private SystemMaintenanceServiceDto maintenanceService;
     private LocalDateTime createdAt;

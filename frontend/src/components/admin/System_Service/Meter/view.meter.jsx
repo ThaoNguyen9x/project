@@ -54,18 +54,18 @@ const ViewMeter = (props) => {
         {
           label: "Giá thuê",
           children:
-            data?.rentPrice?.toLocaleString("vi-VN", {
+            data?.rentPrice?.toLocaleString("en-US", {
               style: "currency",
-              currency: "VND",
+              currency: "USD",
             }) || "N/A",
           span: 2,
         },
         {
           label: "Phí dịch vụ",
           children:
-            data?.serviceFee?.toLocaleString("vi-VN", {
+            data?.serviceFee?.toLocaleString("en-US", {
               style: "currency",
-              currency: "VND",
+              currency: "USD",
             }) || "N/A",
           span: 2,
         },

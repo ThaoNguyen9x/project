@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Getter
@@ -39,17 +40,31 @@ public class Contract extends BaseEntity {
 
     @Lob
     @Column(name = "LeaseStatus")
-    private String leaseStatus;
+    private String leaseStatus = "Active";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "OfficeID")
     private Office office;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "CustomerID")
     private Customer customer;
 
     @OneToMany(mappedBy = "contract", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PaymentContract> paymentContracts;
+
+    public void calculateTotal() {
+        if (office != null && startDate != null && endDate != null) {
+            long months = ChronoUnit.MONTHS.between(startDate, endDate);
+            if (months > 0 && office.getTotalArea() != null && office.getRentPrice() != null && office.getServiceFee() != null) {
+                this.totalAmount = office.getTotalArea()
+                        .multiply(office.getRentPrice())
+                        .multiply(office.getServiceFee())
+                        .multiply(BigDecimal.valueOf(months));
+            } else {
+                this.totalAmount = BigDecimal.ZERO; // Tránh null
+            }
+        }
+    }
 }

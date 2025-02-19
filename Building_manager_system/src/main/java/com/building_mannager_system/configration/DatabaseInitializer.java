@@ -5,15 +5,17 @@ import com.building_mannager_system.entity.Role;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerType;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerTypeDocument;
+import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.CommonArea;
 import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.Location;
-import com.building_mannager_system.entity.property_manager.Systems;
+import com.building_mannager_system.entity.property_manager.*;
 import com.building_mannager_system.repository.Contract.CustomerTypeDocumentRepository;
 import com.building_mannager_system.repository.Contract.CustomerTypeRepository;
 import com.building_mannager_system.repository.PermissionRepository;
 import com.building_mannager_system.repository.RoleRepository;
 import com.building_mannager_system.repository.UserRepository;
+import com.building_mannager_system.repository.office.CommonAreaRepository;
 import com.building_mannager_system.repository.office.LocationRepository;
-import com.building_mannager_system.repository.system_manager.SystemsRepository;
+import com.building_mannager_system.repository.system_manager.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.building_mannager_system.enums.MaintenanceFrequency.MONTHLY;
+import static com.building_mannager_system.enums.ServiceType.FIRE_PROTECTION;
+import static com.building_mannager_system.enums.ServiceType.HVAC;
 
 @Service
 public class DatabaseInitializer implements CommandLineRunner {
@@ -33,15 +39,18 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final CustomerTypeRepository customerTypeRepository;
     private final CustomerTypeDocumentRepository customerTypeDocumentRepository;
     private final SystemsRepository systemsRepository;
+    private final DeviceTypeRepository deviceTypeRepository;
+    private final SubcontractorsRepository subcontractorsRepository;
+    private final SystemMaintenanceServiceRepository systemMaintenanceServiceRepository;
+    private final DeviceRepository deviceRepository;
+    private final CommonAreaRepository commonAreaRepository;
 
-    public DatabaseInitializer(UserRepository userRepository,
-                               RoleRepository roleRepository,
-                               PermissionRepository permissionRepository,
-                               PasswordEncoder passwordEncoder,
-                               LocationRepository locationRepository,
-                               CustomerTypeRepository customerTypeRepository,
-                               CustomerTypeDocumentRepository customerTypeDocumentRepository,
-                               SystemsRepository systemsRepository) {
+    public DatabaseInitializer(UserRepository userRepository, RoleRepository roleRepository,
+                               PermissionRepository permissionRepository, PasswordEncoder passwordEncoder,
+                               LocationRepository locationRepository, CustomerTypeRepository customerTypeRepository,
+                               CustomerTypeDocumentRepository customerTypeDocumentRepository, SystemsRepository systemsRepository,
+                               DeviceTypeRepository deviceTypeRepository, SubcontractorsRepository subcontractorsRepository,
+                               SystemMaintenanceServiceRepository systemMaintenanceServiceRepository, DeviceRepository deviceRepository, CommonAreaRepository commonAreaRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
@@ -50,6 +59,11 @@ public class DatabaseInitializer implements CommandLineRunner {
         this.customerTypeRepository = customerTypeRepository;
         this.customerTypeDocumentRepository = customerTypeDocumentRepository;
         this.systemsRepository = systemsRepository;
+        this.deviceTypeRepository = deviceTypeRepository;
+        this.subcontractorsRepository = subcontractorsRepository;
+        this.systemMaintenanceServiceRepository = systemMaintenanceServiceRepository;
+        this.deviceRepository = deviceRepository;
+        this.commonAreaRepository = commonAreaRepository;
     }
 
     @Override
@@ -57,9 +71,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         initializePermissions();
         initializeRoles();
         initializeUsers();
-        initializeLocations();
-        initializeCustomerTypesAndDocuments();
-        initializeSystems();
+        initialize();
 
         System.out.println(">>> DATABASE INITIALIZATION COMPLETED.");
     }
@@ -243,13 +255,15 @@ public class DatabaseInitializer implements CommandLineRunner {
             Set<String> technicianManagerGetModules = Set.of(
                     "HANDOVER_STATUS", "NOTIFICATION_MAINTENANCES", "DEVICES", "DEVICE_TYPES",
                     "MAINTENANCE_HISTORIES", "SUBCONTRACTS", "SYSTEM_MAINTENANCE_SERVICES",
-                    "SYSTEMS", "ELECTRICITY_USAGES", "METERS"
+                    "SYSTEMS", "ELECTRICITY_USAGES", "METERS", "WORK_REGISTRATIONS"
             );
             Set<String> technicianManagerPostModules = Set.of("REPAIR_PROPOSALS", "SUBCONTRACTS", "SYSTEM_MAINTENANCE_SERVICES");
+            Set<String> technicianManagerPutModules = Set.of("WORK_REGISTRATIONS");
             List<Permission> technicianManagerPermissions = allPermissions.stream()
                     .filter(permission ->
                             ("GET".equals(permission.getMethod()) && technicianManagerGetModules.contains(permission.getModule())) ||
-                                    ("POST".equals(permission.getMethod()) && technicianManagerPostModules.contains(permission.getModule()))
+                                    ("POST".equals(permission.getMethod()) && technicianManagerPostModules.contains(permission.getModule())) ||
+                                    ("PUT".equals(permission.getMethod()) && technicianManagerPutModules.contains(permission.getModule()))
                     )
                     .collect(Collectors.toList());
 
@@ -269,7 +283,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .collect(Collectors.toList());
 
             // Nhà thầu phụ
-            Set<String> subcontractorAllMethodsModules = Set.of("WORK_REGISTRATIONS", "RISK_ASSESSMENTS");
+            Set<String> subcontractorAllMethodsModules = Set.of("RISK_ASSESSMENTS");
             Set<String> subcontractorGetModules = Set.of("DEVICES", "MAINTENANCE_HISTORIES", "SYSTEMS");
             Set<String> subcontractorPostModules = Set.of("MAINTENANCE_HISTORIES");
             Set<String> subcontractorPutModules = Set.of("MAINTENANCE_HISTORIES");
@@ -284,8 +298,8 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .collect(Collectors.toList());
 
             // Khách hàng
-            Set<String> customerGetModules = Set.of("REPAIR_REQUEST", "ELECTRICITY_USAGES", "METERS", "PAYMENT_CONTRACTS");
-            Set<String> customerPostModules = Set.of("REPAIR_REQUEST");
+            Set<String> customerGetModules = Set.of("REPAIR_REQUEST", "ELECTRICITY_USAGES", "METERS", "PAYMENT_CONTRACTS", "WORK_REGISTRATIONS");
+            Set<String> customerPostModules = Set.of("REPAIR_REQUEST", "WORK_REGISTRATIONS");
 
             List<Permission> customerPermissions = allPermissions.stream()
                     .filter(permission ->
@@ -332,55 +346,177 @@ public class DatabaseInitializer implements CommandLineRunner {
         }
     }
 
-    private void initializeLocations() {
+    private void initialize() {
+        // Location
         if (locationRepository.count() == 0) {
-            List<Location> locations = List.of(
-                    new Location("Lầu 1"),
-                    new Location("Lầu 2"),
-                    new Location("Lầu 3"),
-                    new Location("Lầu 4"),
-                    new Location("Lầu 5"),
-                    new Location("Lầu 6"),
-                    new Location("Lầu 7"),
-                    new Location("Lầu 8"),
-                    new Location("Lầu 9"),
-                    new Location("Lầu 10"),
-                    new Location("Lầu 11"),
-                    new Location("Lầu 12")
-            );
-            locationRepository.saveAll(locations);
-        }
-    }
+            List<Location> locations = locationRepository.saveAll(List.of(
+                    new Location("Tầng 1", 1, 100, 900, 0, 0, 44, 41),
+                    new Location("Tầng 2", 2, 663, 0, 0, 0, 44, 41),
+                    new Location("Tầng 3", 3, 0, 0, 0, 0, 44, 41),
+                    new Location("Tầng hầm", 0, 125, 0, 0, 0, 44, 41)
+            ));
 
-    private void initializeCustomerTypesAndDocuments() {
-        if (customerTypeRepository.count() == 0) {
-            List<CustomerType> customerTypes = List.of(
-                    new CustomerType("Customer Type 1"),
-                    new CustomerType("Customer Type 2"),
-                    new CustomerType("Customer Type 3")
-            );
-            customerTypes = customerTypeRepository.saveAll(customerTypes);
+            // Device Type
+            if (deviceTypeRepository.count() == 0) {
+                List<DeviceType> deviceTypes = deviceTypeRepository.saveAll(List.of(
+                        new DeviceType("Sensor trở kháng", "Sensor"),
+                        new DeviceType("Bơm nước", "Pump"),
+                        new DeviceType("Tủ điện điều khiển", "Electrical cabinet"),
+                        new DeviceType("Cụm chiller", "Chiller"),
+                        new DeviceType("Fcu", "Fcu")
+                ));
 
-            if (customerTypeDocumentRepository.count() == 0) {
-                List<CustomerTypeDocument> documents = List.of(
-                        new CustomerTypeDocument("Document Type 1", customerTypes.get(0)),
-                        new CustomerTypeDocument("Document Type 2", customerTypes.get(1)),
-                        new CustomerTypeDocument("Document Type 3", customerTypes.get(2))
-                );
-                customerTypeDocumentRepository.saveAll(documents);
+                if (systemsRepository.count() == 0) {
+                    List<Systems> systems = systemsRepository.saveAll(List.of(
+                            new Systems("Hệ thống Điện", 12),
+                            new Systems("Hệ thống Cấp thoát nước", 12),
+                            new Systems("Hệ thống Điều hòa không khí", 12),
+                            new Systems("Hệ thống Phòng cháy", 12)
+                    ));
+
+                    // Subcontract
+                    if (subcontractorsRepository.count() == 0) {
+                        List<Subcontractor> subcontracts = subcontractorsRepository.saveAll(List.of(
+                                new Subcontractor("Nhà Thầu Điện Máy Xanh", "+126795050", "2023-01-25", "2026-01-17", 2, systems.get(2)),
+                                new Subcontractor("Nhà Thầu Tân Lan", "+123456090", "2023-01-04", "2027-01-30", 2, systems.get(3))
+                        ));
+
+                        if (systemMaintenanceServiceRepository.count() == 0) {
+                            List<SystemMaintenanceService> systemMaintenanceServices = systemMaintenanceServiceRepository.saveAll(List.of(
+                                    new SystemMaintenanceService(subcontracts.get(0), HVAC, "Bảo trì cụm dàn lạnh", MONTHLY, "2023-01-14"),
+                                    new SystemMaintenanceService(subcontracts.get(1), FIRE_PROTECTION, "Bảo Trì Toàn Hệ Thống Pcc", MONTHLY, "2023-01-28")
+                            ));
+
+                            if (deviceRepository.count() == 0) {
+                                deviceRepository.saveAll(List.of(
+                                        new Device(systems.get(3), locations.get(1), "Đầu Báo Nhiệt", 2, 2, "2025-01-29", 2, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 2", 2, 10, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 3", 2, 20, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 4", 2, 32, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 5", 2, 39, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 6", 12, 2, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 7", 22, 2, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 8", 32, 2, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 9", 42, 2, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 10", 12, 10, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 11", 22, 10, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 12", 32, 10, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 13", 40, 10, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 14", 10, 20, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 15", 10, 26, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 16", 10, 26, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 17", 2, 26, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 18", 18, 23, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 19", 27, 24, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 20", 26, 21, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 21", 20, 30, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 22", 20, 37, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 23", 25, 30, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 24", 25, 37, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 25", 10, 32, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 26", 10, 37, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 27", 15, 35, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 28", 15, 26, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 29", 15, 18, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 30", 20, 18, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(1), "Đầu báo khói 31", 25, 18, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(0), locations.get(3), "Bơm nước sinh hoạt 1", 43, 2, "2025-01-29", 4, deviceTypes.get(1), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(1), locations.get(3), "Bơm nước sinh hoạt 2", 42, 2, "2025-01-29", 4, deviceTypes.get(1), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(3), locations.get(3), "Bơm bù tăng áp 1", 41, 2, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(3), "Bơm bù tăng áp 2", 40, 2, "2025-01-29", 4, deviceTypes.get(1), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(3), "Bơm diesel", 39, 2, "2025-01-29", 6, deviceTypes.get(1), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(1), locations.get(3), "Tủ diều khiển nước sinh hoạt", 43, 1, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(3), locations.get(3), "Tủ điều khiển quạt thông gió", 39, 4, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(3), locations.get(3), "Tủ điện điều khiển bơm cứu hỏa", 38, 4, "2025-01-29", 4, deviceTypes.get(2), systemMaintenanceServices.get(1)),
+                                        new Device(systems.get(0), locations.get(3), "Tủ động lực 1", 6, 40, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(0), locations.get(3), "Tủ động lực 2", 6, 39, "2025-01-29", 4, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Tủ điều khiển chiler", 29, 40, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 1", 28, 39, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 2", 27, 39, "2025-01-29", 4, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 3", 26, 39, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 4", 25, 39, "2025-01-29", 4, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước gải nhiệt 1", 28, 40, "2025-01-29", 6, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 2", 27, 40, "2025-01-29", 4, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 3", 26, 40, "2025-01-29", 4, deviceTypes.get(2), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Bơm nước giải nhiệt 4", 25, 40, "2025-01-29", 4, deviceTypes.get(0), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Chiller 1", 23, 39, "2025-01-29", 10, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Chiller 2", 20, 39, "2025-01-29", 10, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(3), "Chiller 3", 17, 39, "2025-01-29", 10, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 1", 41, 2, "2025-01-29", 6, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 2", 41, 17, "2025-01-29", 6, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 3", 32, 17, "2025-01-29", 6, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 4", 32, 2, "2025-01-29", 6, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 5", 27, 2, "2025-01-29", 6, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 6", 27, 14, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 7", 27, 18, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 8", 18, 2, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 9", 18, 14, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 10", 18, 18, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 11", 2, 14, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 12", 2, 2, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 13", 10, 14, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 14", 10, 2, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 15", 5, 23, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 16", 2, 30, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 17", 2, 38, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 18", 10, 30, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 19", 10, 38, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 20", 18, 30, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 21", 18, 38, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 22", 27, 30, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0)),
+                                        new Device(systems.get(2), locations.get(1), "Fcu 23", 27, 38, "2025-01-29", 4, deviceTypes.get(3), systemMaintenanceServices.get(0))
+                                ));
+                            }
+                        }
+
+                        if (commonAreaRepository.count() == 0) {
+                            commonAreaRepository.saveAll(List.of(
+                                    new CommonArea(50, "Sảnh và hành  lang", locations.get(1), 16, 41, 14, 16, null),
+                                    new CommonArea(144, "Sảnh và hành  lang", locations.get(1), 30, 25, 14, 16, null),
+                                    new CommonArea(15, "Nhà vệ sinh nữ", locations.get(1), 30, 22, 25, 20, "pink"),
+                                    new CommonArea(15, "Nhà vệ sinh nam", locations.get(1), 30, 25, 25, 22, "green"),
+                                    new CommonArea(10, "Phòng kỹ thuật", locations.get(1), 24, 25, 22, 20, "purple"),
+                                    new CommonArea(4, "Thang máy 3", locations.get(1), 22, 22, 20, 20, "beige"),
+                                    new CommonArea(4, "Thang máy 2", locations.get(1), 20, 22, 18, 20, "beige"),
+                                    new CommonArea(4, "Thang máy 1", locations.get(1), 18, 22, 16, 20, "beige"),
+                                    new CommonArea(27, "Thang bộ", locations.get(1), 22, 25, 16, 20, "orange"),
+                                    new CommonArea(25, "Kho vật tư", locations.get(3), 4, 41, 0, 38, "brown"),
+                                    new CommonArea(15, "Phòng điện tủ nguồn", locations.get(3), 7, 41, 0, 38, "brown"),
+                                    new CommonArea(20, "Phòng Kỹ thuật", locations.get(3), 11, 41, 7, 38, "brown"),
+                                    new CommonArea(25, "Phòng chiler", locations.get(3), 30, 41, 14, 38, "brown"),
+                                    new CommonArea(20, "Phòng bơm nước sinh hoạt", locations.get(3), 44, 5, 37, 0, "brown"),
+                                    new CommonArea(20, "Phòng bơm Xử lý nước thải", locations.get(3), 4, 5, 0, 0, "brown"),
+                                    new CommonArea(50, "Sảnh và hành  lang", locations.get(2), 16, 41, 14, 16, null),
+                                    new CommonArea(144, "Sảnh và hành  lang", locations.get(2), 30, 25, 14, 16, null),
+                                    new CommonArea(15, "Nhà vệ sinh nữ", locations.get(2), 30, 22, 25, 20, "pink"),
+                                    new CommonArea(15, "Nhà vệ sinh nam", locations.get(2), 30, 25, 25, 22, "green"),
+                                    new CommonArea(10, "Phòng kỹ thuật", locations.get(2), 24, 25, 22, 20, "purple"),
+                                    new CommonArea(4, "Thang máy 3", locations.get(2), 22, 22, 20, 20, "beige"),
+                                    new CommonArea(4, "Thang máy 2", locations.get(2), 20, 22, 18, 20, "beige"),
+                                    new CommonArea(4, "Thang máy 1", locations.get(2), 18, 22, 16, 20, "beige"),
+                                    new CommonArea(27, "Thang bộ", locations.get(2), 22, 25, 16, 20, "orange")
+                            ));
+                        }
+                    }
+                }
             }
         }
-    }
 
-    private void initializeSystems() {
-        if (systemsRepository.count() == 0) {
-            List<Systems> systems = List.of(
-                    new Systems("Hệ thống Điện", 12),
-                    new Systems("Hệ thống Cấp thoát nước", 12),
-                    new Systems("Hệ thống Điều hòa không khí", 12),
-                    new Systems("Hệ thống Phòng cháy", 12)
-            );
-            systemsRepository.saveAll(systems);
+        // Customer Type
+        if (customerTypeRepository.count() == 0) {
+            List<CustomerType> customerTypes = customerTypeRepository.saveAll(List.of(
+                    new CustomerType("Ngắn hạn"),
+                    new CustomerType("Dài hạn")
+            ));
+
+            if (customerTypeDocumentRepository.count() == 0) {
+                customerTypeDocumentRepository.saveAll(List.of(
+                        new CustomerTypeDocument("Giấy chứng minh nhân dân 2 mặt", customerTypes.get(0)),
+                        new CustomerTypeDocument("Giấy đăng ký kinh doanh (đối với doanh nghiệp)", customerTypes.get(0)),
+                        new CustomerTypeDocument("Mã số thuế cá nhân hoặc doanh nghiệp", customerTypes.get(0)),
+                        new CustomerTypeDocument("Hợp đồng lao động hoặc giấy xác nhận thu nhập", customerTypes.get(0))
+                ));
+            }
         }
     }
 }

@@ -13,7 +13,6 @@ public class NotificationMaintenanceDto {
     private Long id;
     private String title;
     private String description;
-    private String recipient;
     private StatusNotifi status = StatusNotifi.PENDING;
     private LocalDateTime maintenanceDate = LocalDateTime.now();
     private MaintenanceTaskDto maintenanceTask;

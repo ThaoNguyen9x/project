@@ -39,7 +39,7 @@ public class FileController {
     public ResponseEntity<List<UploadFileDto>> upload(@RequestParam(name = "file", required = false) List<MultipartFile> file,
                                                 @RequestParam("folder") String folder) throws URISyntaxException, IOException {
 
-        List<String> allowedExtensions = Arrays.asList("pdf", "jpg", "jpeg", "png", "doc", "docx", "xls", "xlsx", "rar");
+        List<String> allowedExtensions = Arrays.asList("pdf", "jpg", "jpeg", "png", "doc", "docx", "xls", "xlsx", "rar", "webp");
         List<UploadFileDto> responses = new ArrayList<>();
 
         fileService.createDirectory(baseURI + folder);

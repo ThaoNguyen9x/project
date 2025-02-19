@@ -7,7 +7,7 @@ const Hero = () => {
       className="w-full min-h-[100vh] bg-center bg-cover flex items-center justify-center"
       style={{
         backgroundImage:
-          'linear-gradient(rgb(110, 181, 255), rgba(255, 255, 255, 0)), url("https://www.rentgrace.com/images/banner-1.jpg")',
+          'linear-gradient(rgb(110, 181, 255), rgba(255, 255, 255, 0)), url("https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
       }}
     >
       <motion.div

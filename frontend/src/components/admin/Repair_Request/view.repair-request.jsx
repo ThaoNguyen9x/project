@@ -11,7 +11,7 @@ const ViewRepairRequest = (props) => {
   const generateItems = () => {
     return [
       {
-        label: "Ngày yêu cầu",
+        label: "Ngày thi công",
         children: dayjs(data?.requestDate).format(FORMAT_DATE_DISPLAY) || "N/A",
         span: 2,
       },

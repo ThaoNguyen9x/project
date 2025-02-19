@@ -31,18 +31,14 @@ import Permission from "./pages/admin/Permission";
 import Loading from "./components/share/Loading";
 import Login from "./pages/Login";
 import PrivateRoute from "./router/PrivateRoute";
-import Customer from "./pages/admin/Customer";
 import CustomerType from "./pages/admin/CustomerType";
 import CustomerTypeDocument from "./pages/admin/CustomerTypeDocument";
 import OfficeAdmin from "./pages/admin/Office";
-import Contract from "./pages/admin/Contract";
 import PaymentContract from "./pages/admin/PaymentContract";
-import HandoverStatus from "./pages/admin/HandoverStatus";
 import System from "./pages/admin/Systems";
 import Subcontractor from "./pages/admin/Subcontractor";
 import Quotation from "./pages/admin/Quotation";
 import RepairProposal from "./pages/admin/RepairProposal";
-import RiskAssessment from "./pages/admin/RiskAssessment";
 import DeviceType from "./pages/admin/DeviceType";
 import SystemMaintenanceService from "./pages/admin/SystemMaintenanceService";
 import MaintenanceHistory from "./pages/admin/MaintenanceHistory";
@@ -54,8 +50,10 @@ import NotificationMaintenance from "./pages/admin/NotificationMaintenance";
 import RepairRequest from "./pages/admin/RepairRequest";
 import WorkRegistration from "./pages/admin/WorkRegistration";
 import ItemCheck from "./pages/admin/ItemCheck";
-import ResultCheck from "./pages/admin/ResultCheck";
 import ElectricityRate from "./pages/admin/ElectricityRate";
+import CustomerContract from "./pages/admin/CustomerContract";
+import Location from "./pages/admin/Location";
+import CommonArea from "./pages/admin/CommonArea";
 
 function App() {
   const { user, setUser, loading, setLoading } = useContext(AuthContext);
@@ -145,17 +143,6 @@ function App() {
           ),
         },
         {
-          path: "customers",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.apiPath
-          ) ? (
-            <Customer />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
           path: "customer-type-documents",
           element: user?.role?.permissions?.some(
             (perm) =>
@@ -191,16 +178,23 @@ function App() {
           ),
         },
         {
-          path: "contracts",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath
-          ) ? (
-            <Contract />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
+          path: "customer-contracts",
+          element: (() => {
+            const hasPermission = user?.role?.permissions?.some(
+              (perm) =>
+                perm.apiPath ===
+                  ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath ||
+                perm.apiPath === ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.apiPath
+            );
+
+            return hasPermission ? (
+              <CustomerContract />
+            ) : (
+              <Navigate to="/dashboard" />
+            );
+          })(),
         },
+
         {
           path: "payment-contracts",
           element: user?.role?.permissions?.some(
@@ -209,18 +203,6 @@ function App() {
               ALL_PERMISSIONS.PAYMENT_CONTRACTS.GET_PAGINATE.apiPath
           ) ? (
             <PaymentContract />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
-          path: "handover-status",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.HANDOVER_STATUS.GET_PAGINATE.apiPath
-          ) ? (
-            <HandoverStatus />
           ) : (
             <Navigate to="/dashboard" />
           ),
@@ -264,7 +246,7 @@ function App() {
           element: user?.role?.permissions?.some(
             (perm) =>
               perm.apiPath ===
-              ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath
+              ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath || ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
           ) ? (
             <MaintenanceHistory />
           ) : (
@@ -340,30 +322,6 @@ function App() {
           ),
         },
         {
-          path: "risk-assessments",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
-          ) ? (
-            <RiskAssessment />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
-          path: "risk-assessments",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
-          ) ? (
-            <RiskAssessment />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
           path: "notifications",
           element: user?.role?.permissions?.some(
             (perm) =>
@@ -422,18 +380,29 @@ function App() {
           ),
         },
         {
-          path: "electricity-rates",
+          path: "locations",
           element: user?.role?.permissions?.some(
             (perm) =>
               perm.apiPath ===
               ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath
           ) ? (
-            <ElectricityRate />
+            <Location />
           ) : (
             <Navigate to="/dashboard" />
           ),
         },
-
+        {
+          path: "common-areas",
+          element: user?.role?.permissions?.some(
+            (perm) =>
+              perm.apiPath ===
+              ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath
+          ) ? (
+            <CommonArea />
+          ) : (
+            <Navigate to="/dashboard" />
+          ),
+        },
       ],
     },
     {

@@ -34,10 +34,6 @@ const ModalWorkRegistration = (props) => {
     if (data?.registrationID) {
       const init = {
         ...data,
-        account: data.account ? data.account?.id : null,
-        registrationDate: data.registrationDate
-          ? dayjs(data.registrationDate)
-          : null,
         scheduledDate: data.scheduledDate ? dayjs(data.scheduledDate) : null,
       };
 
@@ -72,7 +68,6 @@ const ModalWorkRegistration = (props) => {
       const res = await callUpdateWorkRegistration(
         data?.registrationID,
         account,
-        dayjs(registrationDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         dayjs(scheduledDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         note,
         image,
@@ -92,7 +87,6 @@ const ModalWorkRegistration = (props) => {
     } else {
       const res = await callCreateWorkRegistration(
         account,
-        dayjs(registrationDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         dayjs(scheduledDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         note,
         image,
@@ -148,27 +142,13 @@ const ModalWorkRegistration = (props) => {
         <Row gutter={16}>
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Nhân viên phụ trách"
+              label="Nhân viên phụ trách bảo trì"
               name="account"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-              >
-                {listUsers.map((user) => (
-                  <Select.Option
-                    key={user.id}
-                    value={user.id}
-                    label={user.name}
-                  >
-                    {user.name}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Input autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
@@ -210,18 +190,6 @@ const ModalWorkRegistration = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Ngày đăng ký"
-              name="registrationDate"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <DatePicker format="YYYY-MM-DDTHH:mm:ss" className="w-full" />
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
               label="Ngày dự kiến"
               name="scheduledDate"
               rules={[
@@ -232,34 +200,44 @@ const ModalWorkRegistration = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+          {data?.registrationID ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
               >
-                <Option value="PENDING" label="Đang chờ xử lý">
-                  Đang chờ xử lý
-                </Option>
-                <Option value="SUCCESS" label="Đã hoàn thành">
-                  Đã hoàn thành
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="PENDING" label="Đang chờ xử lý">
+                    Đang chờ xử lý
+                  </Option>
+                  <Option value="APPROVED" label="Đã chấp nhận">
+                    Đã chấp nhận
+                  </Option>
+                  <Option value="REJECTED" label="Đã từ chối">
+                    Đã từ chối
+                  </Option>
+                  <Option value="COMPLETED" label="Đã hoàn thành">
+                    Đã hoàn thành
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

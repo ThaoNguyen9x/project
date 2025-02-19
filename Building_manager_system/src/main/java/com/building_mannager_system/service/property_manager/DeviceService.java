@@ -151,6 +151,8 @@ public class DeviceService {
         ex.setLifespan(device.getLifespan());
         ex.setStatus(device.getStatus());
         ex.setMaintenanceService(device.getMaintenanceService());
+        ex.setX(device.getX());
+        ex.setY(device.getY());
 
         return modelMapper.map(deviceRepository.save(ex), DeviceDto.class);
     }

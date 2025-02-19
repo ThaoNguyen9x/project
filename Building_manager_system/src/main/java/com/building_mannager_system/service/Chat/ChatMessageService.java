@@ -39,7 +39,7 @@ public class ChatMessageService {
     }
 
     public ResultPaginationDTO getAllMessages(Specification<ChatMessage> spec,
-                                                 Pageable pageable) {
+                                              Pageable pageable) {
 
         Page<ChatMessage> page = chatMessageRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -65,7 +65,7 @@ public class ChatMessageService {
     }
 
     public ResultPaginationDTO getAllMessagesByRoomId(Long roomId, Specification<ChatMessage> spec,
-                                              Pageable pageable) {
+                                                      Pageable pageable) {
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Room not found with ID: " + roomId));

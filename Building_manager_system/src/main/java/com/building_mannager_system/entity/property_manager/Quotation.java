@@ -41,5 +41,5 @@ public class Quotation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private QuotationStatus status;  // Trạng thái báo giá (Pending, Approved, Rejected)
+    private QuotationStatus status = QuotationStatus.PENDING;  // Trạng thái báo giá (Pending, Approved, Rejected)
 }

@@ -48,5 +48,7 @@ public class ElectricityUsage extends BaseEntity {
 
     @Column(name = "Comments")
     private String comments;  // Ghi chú về việc sử dụng điện (tùy chọn)
+
+    private String status = "PENDING";
 }
 

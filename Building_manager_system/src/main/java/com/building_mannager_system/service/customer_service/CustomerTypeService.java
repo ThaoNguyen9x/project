@@ -13,6 +13,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class CustomerTypeService {
 
@@ -39,14 +42,21 @@ public class CustomerTypeService {
         mt.setTotal(page.getTotalElements());
 
         rs.setMeta(mt);
-        rs.setResult(page.getContent());
+
+        List<CustomerTypeDto> list = page.getContent()
+                .stream()
+                .map(item -> modelMapper.map(item, CustomerTypeDto.class))
+                .collect(Collectors.toList());
+
+        rs.setResult(list);
 
         return rs;
     }
 
     public CustomerTypeDto createCustomerType(CustomerType customerType) {
-        if (customerTypeRepository.existsByTypeName(customerType.getTypeName()))
+        if (customerTypeRepository.existsByTypeName(customerType.getTypeName())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Tên loại khách hàng này đã được sử dụng");
+        }
 
         return modelMapper.map(customerTypeRepository.save(customerType), CustomerTypeDto.class);
     }
@@ -62,8 +72,9 @@ public class CustomerTypeService {
         CustomerType ex = customerTypeRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer type not found with ID: " + id));
 
-        if (customerTypeRepository.existsByTypeNameAndIdNot(customerType.getTypeName(), id))
+        if (customerTypeRepository.existsByTypeNameAndIdNot(customerType.getTypeName(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Tên loại khách hàng này đã được sử dụng");
+        }
 
         ex.setTypeName(customerType.getTypeName());
         ex.setStatus(customerType.isStatus());

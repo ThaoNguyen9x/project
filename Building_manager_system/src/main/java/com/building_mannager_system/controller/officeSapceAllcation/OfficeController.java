@@ -33,9 +33,9 @@ public class OfficeController {
 
     @PostMapping
     @ApiMessage("Tạo văn phòng thành công")
-    public ResponseEntity<OfficesDto> createOffice(@RequestPart(value = "drawing", required = false) MultipartFile drawing,
+    public ResponseEntity<OfficesDto> createOffice(@RequestPart(value = "drawingOffice", required = false) MultipartFile drawingOffice,
                                                    @ModelAttribute Office office) {
-        return new ResponseEntity<>(officeService.createOffice(drawing, office), HttpStatus.CREATED);
+        return new ResponseEntity<>(officeService.createOffice(drawingOffice, office), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -47,13 +47,13 @@ public class OfficeController {
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật văn phòng thành công")
     public ResponseEntity<OfficesDto> updateOffice(@PathVariable(name = "id") int id,
-                                                   @RequestPart(value = "drawing", required = false) MultipartFile drawing,
+                                                   @RequestPart(value = "drawingOffice", required = false) MultipartFile drawingOffice,
                                                    @ModelAttribute Office office) throws URISyntaxException {
-        return ResponseEntity.ok(officeService.updateOffice(id, drawing, office));
+        return ResponseEntity.ok(officeService.updateOffice(id, drawingOffice, office));
     }
 
     @DeleteMapping("/{id}")
-    @ApiMessage("Xóa văn phòng thành công")
+    @ApiMessage("Xóa thành công")
     public ResponseEntity<Void> deleteOffice(@PathVariable(name = "id") int id) throws URISyntaxException {
         officeService.deleteOffice(id);
         return ResponseEntity.ok(null);

@@ -1,22 +1,30 @@
 package com.building_mannager_system.controller.CustomerController;
 
 import com.building_mannager_system.dto.requestDto.customer.CustomerDocumentDto;
+import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.OfficesDto;
+import com.building_mannager_system.entity.customer_service.contact_manager.Office;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerDocument;
 import com.building_mannager_system.service.customer_service.CustomerDocumentService;
-import lombok.RequiredArgsConstructor;
+import com.building_mannager_system.utils.annotation.ApiMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/customer-documents")
-@RequiredArgsConstructor
 public class CustomerDocumentController {
     private final CustomerDocumentService customerDocumentService;
 
+    public CustomerDocumentController(CustomerDocumentService customerDocumentService) {
+        this.customerDocumentService = customerDocumentService;
+    }
+
     /**
      * API lấy danh sách tài liệu còn thiếu của khách hàng
+     *
      * @param customerId ID khách hàng
      * @return Danh sách tài liệu chưa nộp
      */
@@ -28,6 +36,7 @@ public class CustomerDocumentController {
 
     /**
      * API lấy danh sách tài liệu khách hàng đã nộp
+     *
      * @param customerId ID khách hàng
      * @return Danh sách tài liệu đã nộp
      */
@@ -37,13 +46,26 @@ public class CustomerDocumentController {
         List<String> submittedDocuments = customerDocumentService.findSubmittedDocumentsByCustomerId(customerId);
         return ResponseEntity.ok(submittedDocuments);
     }
-    @PostMapping("/add")
-    public ResponseEntity<CustomerDocumentDto> addCustomerDocument(@RequestBody CustomerDocumentDto customerDocumentDto) {
-        CustomerDocumentDto savedDocument = customerDocumentService.saveCustomerDocument(customerDocumentDto);
+
+    @PostMapping
+    @ApiMessage("Tạo tài liệu khách hàng thành công")
+    public ResponseEntity<CustomerDocumentDto> addCustomerDocument(@RequestPart(value = "path", required = false) MultipartFile path,
+                                                                   @ModelAttribute CustomerDocument customerDocument) {
+        CustomerDocumentDto savedDocument = customerDocumentService.saveCustomerDocument(path, customerDocument);
         return ResponseEntity.ok(savedDocument);
     }
+
+    @PutMapping("/{id}")
+    @ApiMessage("Cập nhật tài liệu khách hàng thành công")
+    public ResponseEntity<CustomerDocumentDto> updateCustomerDocument(@PathVariable(name = "id") int id,
+                                                   @RequestPart(value = "path", required = false) MultipartFile path,
+                                                   @ModelAttribute CustomerDocument customerDocument) throws URISyntaxException {
+        return ResponseEntity.ok(customerDocumentService.updateCustomerDocument(id, path, customerDocument));
+    }
+
     /**
      * API cập nhật trạng thái tài liệu (duyệt hoặc từ chối)
+     *
      * @param documentId ID tài liệu
      * @param isApproved Trạng thái (true = đã duyệt, false = từ chối)
      * @return Trả về phản hồi thành công

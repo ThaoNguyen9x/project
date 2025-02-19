@@ -28,12 +28,15 @@ public class PaymentContract extends BaseEntity {
     @Column(name = "PaymentAmount", nullable = false)
     private BigDecimal paymentAmount;  // Số tiền thanh toán
 
-    @Column(name = "PaymentDate", nullable = false)
+    @Column(name = "PaymentDate")
     private LocalDate paymentDate;  // Ngày thanh toán
+
+    @Column(nullable = false)
+    private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "PaymentStatus", nullable = false)
-    private PaymentStatus paymentStatus;  // Trạng thái thanh toán (Paid, Unpaid)
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;  // Trạng thái thanh toán (Paid, Unpaid)
 
     private String sessionId; // Dùng cho stripe
 }

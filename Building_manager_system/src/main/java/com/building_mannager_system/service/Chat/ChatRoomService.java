@@ -42,12 +42,18 @@ public class ChatRoomService {
         Optional<User> account1 = userRepository.findById(accountId1);
         Optional<User> account2 = userRepository.findById(accountId2);
 
-        if (account1.isEmpty()) throw new APIException(HttpStatus.NOT_FOUND, "Tài khoản với ID " + accountId1 + " không tồn tại");
-        if (account2.isEmpty()) throw new APIException(HttpStatus.NOT_FOUND, "Tài khoản với ID " + accountId2 + " không tồn tại");
+        if (account1.isEmpty()) {
+            throw new APIException(HttpStatus.NOT_FOUND, "Tài khoản với ID " + accountId1 + " không tồn tại");
+        }
+        if (account2.isEmpty()) {
+            throw new APIException(HttpStatus.NOT_FOUND, "Tài khoản với ID " + accountId2 + " không tồn tại");
+        }
 
         List<ChatRoom> existingRooms = chatRoomRepository.findPrivateRoomByUserPair(accountId1, accountId2);
 
-        if (!existingRooms.isEmpty()) throw new APIException(HttpStatus.BAD_REQUEST, "Bạn và người này đã có phòng chat chung");
+        if (!existingRooms.isEmpty()) {
+            throw new APIException(HttpStatus.BAD_REQUEST, "Bạn và người này đã có phòng chat chung");
+        }
 
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setName(account1.get().getName() + " & " + account2.get().getName());
@@ -72,7 +78,6 @@ public class ChatRoomService {
 //        List<ChatRoom> rooms = chatRoomRepository.findByUsers_User_Id(userId);
 //        return modelMapper.map(rooms, ChatRoomDto.class);
 //    }
-
     public ChatRoomDto createGroupChatRoom(List<Integer> accountIds) {
         List<User> users = userRepository.findAllById(accountIds);
 
@@ -85,7 +90,9 @@ public class ChatRoomService {
         long count = users.size();
 
         List<ChatRoom> existingRooms = chatRoomRepository.findGroupChatByUsers(accountIds, count);
-        if (!existingRooms.isEmpty()) throw new APIException(HttpStatus.BAD_REQUEST, "Nhóm chat này đã tồn tại");
+        if (!existingRooms.isEmpty()) {
+            throw new APIException(HttpStatus.BAD_REQUEST, "Nhóm chat này đã tồn tại");
+        }
 
         String roomDescription = users.stream()
                 .map(User::getName)
@@ -114,7 +121,7 @@ public class ChatRoomService {
 //    }
 
     public ResultPaginationDTO getAllChatRooms(Specification<ChatRoom> spec,
-                                                 Pageable pageable) {
+                                               Pageable pageable) {
 
         Page<ChatRoom> page = chatRoomRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();

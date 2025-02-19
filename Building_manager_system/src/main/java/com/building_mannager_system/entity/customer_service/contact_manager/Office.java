@@ -1,7 +1,7 @@
 package com.building_mannager_system.entity.customer_service.contact_manager;
 
 import com.building_mannager_system.entity.BaseEntity;
-import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
+import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.CommonArea;
 import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.Location;
 import com.building_mannager_system.entity.customer_service.system_manger.Meter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,12 +25,12 @@ public class Office extends BaseEntity {
 
     private String name;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "LocationId")
     private Location location;
 
     @Column(name = "Area", precision = 15, scale = 2)
-    private BigDecimal area;
+    private BigDecimal totalArea;
 
     @Column(name = "RentPrice", precision = 15, scale = 2)
     private BigDecimal rentPrice;
@@ -38,9 +38,21 @@ public class Office extends BaseEntity {
     @Column(name = "ServiceFee", precision = 15, scale = 2)
     private BigDecimal serviceFee;
 
+    @Column(name = "startX", nullable = false)
+    private double startX;
+
+    @Column(name = "startY", nullable = false)
+    private double startY;
+
+    @Column(name = "endX", nullable = false)
+    private double endX;
+
+    @Column(name = "endY", nullable = false)
+    private double endY;
+
     @Lob
     @Column(name = "Status")
-    private String status;
+    private String status = "ACTIV";
 
     @Column(name = "DrawingFile")
     private String drawingFile;
@@ -52,4 +64,28 @@ public class Office extends BaseEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "office")
     @JsonIgnore
     private List<Contract> contracts;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "office")
+    @JsonIgnore
+    private List<HandoverStatus> handoverStatuses;
+
+    public boolean isValidOffice(List<CommonArea> commonAreas) {
+        for (CommonArea area : commonAreas) {
+            if (!(this.endX <= area.getStartX() || this.startX >= area.getEndX() ||
+                    this.endY <= area.getStartY() || this.startY >= area.getEndY())) {
+
+                System.out.println("❌ Office bị chồng lấn với CommonArea ID: " + area.getId() +
+                        ", Name: " + area.getName());
+
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void calculateArea() {
+        this.totalArea = BigDecimal.valueOf(BigDecimal.valueOf(this.endX - this.startX)
+                .multiply(BigDecimal.valueOf(this.endY - this.startY))
+                .doubleValue());
+    }
 }

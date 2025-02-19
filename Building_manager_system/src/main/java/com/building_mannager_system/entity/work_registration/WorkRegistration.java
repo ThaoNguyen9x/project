@@ -1,7 +1,6 @@
 package com.building_mannager_system.entity.work_registration;
 
-
-import com.building_mannager_system.entity.User;
+import com.building_mannager_system.entity.BaseEntity;
 import com.building_mannager_system.enums.WorkStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,19 +16,16 @@ import java.time.LocalDateTime;
 @Table(name = "WorkRegistration")
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkRegistration {
+public class WorkRegistration extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long registrationID;
 
-    @ManyToOne
-    @JoinColumn(name = "accountID", nullable = false)
-    private User account; // Người đăng ký thi công
+    private String account; // Người đăng ký thi công
 
     @Column(nullable = false)
-    private LocalDateTime registrationDate; // Ngày đăng ký
+    private LocalDateTime registrationDate = LocalDateTime.now(); // Ngày đăng ký
 
-    @Column(nullable = false)
     private LocalDateTime scheduledDate; // Ngày dự kiến thi công
 
     @Enumerated(EnumType.STRING)

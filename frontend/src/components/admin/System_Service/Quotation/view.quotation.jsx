@@ -19,9 +19,9 @@ const ViewQuotation = (props) => {
         {
           label: "Tổng tiền báo giá",
           children:
-            data?.totalAmount.toLocaleString("vi-VN", {
+            data?.totalAmount.toLocaleString("en-US", {
               style: "currency",
-              currency: "VND",
+              currency: "USD",
             }) || "N/A",
           span: 2,
         },

@@ -168,34 +168,39 @@ const ModalPermission = (props) => {
               </Select>
             </Form.Item>
           </Col>
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
               >
-                <Option value="true" label="Hoạt động">
-                  Hoạt động
-                </Option>
-                <Option value="false" label="Không hoạt động">
-                  Không hoạt động
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="true" label="Hoạt động">
+                    Hoạt động
+                  </Option>
+                  <Option value="false" label="Không hoạt động">
+                    Không hoạt động
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

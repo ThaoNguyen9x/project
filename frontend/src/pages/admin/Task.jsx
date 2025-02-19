@@ -14,7 +14,11 @@ import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { callDeleteTask, callGetAllTasks, callGetAllUsers } from "../../services/api";
+import {
+  callDeleteTask,
+  callGetAllTasks,
+  callGetAllUsers,
+} from "../../services/api";
 
 import ModalTask from "../../components/admin/Notification_Manager/Task/modal.task";
 import ViewTask from "../../components/admin/Notification_Manager/Task/view.task";
@@ -45,14 +49,14 @@ const Task = () => {
   const [listUsers, setListUsers] = useState([]);
 
   useEffect(() => {
-      const init = async () => {
-        const res = await callGetAllUsers();
-        if (res && res.data) {
-          setListUsers(res.data?.result);
-        }
-      };
-      init();
-    }, []);
+    const init = async () => {
+      const res = await callGetAllUsers();
+      if (res && res.data) {
+        setListUsers(res.data?.result);
+      }
+    };
+    init();
+  }, []);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -159,7 +163,7 @@ const Task = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -170,7 +174,6 @@ const Task = () => {
       render: (text, record) => {
         return (
           <a
-
             onClick={() => {
               setData(record);
               setOpenViewDetail(true);
@@ -204,29 +207,15 @@ const Task = () => {
       },
     },
     {
-      title: "Nhân viên phụ trách",
+      title: "Người thực hiện bảo trì",
       dataIndex: "assignedTo",
-      sorter: (a, b) =>
-        a.assignedTo.typeName.localeCompare(b.assignedTo.name),
-      ...getColumnSearchProps("assignedTo.name"),
-      render: (assignedTo) => {
-        return (
-          <a
-
-            onClick={() => {
-              setData(assignedTo);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "assignedTo.name" ? (
-              <HighlightText
-                text={assignedTo?.name}
-                searchText={searchText}
-              />
-            ) : (
-              FORMAT_TEXT_LENGTH(assignedTo?.name, 20)
-            )}
-          </a>
+      sorter: (a, b) => a.assignedTo.localeCompare(b.assignedTo),
+      ...getColumnSearchProps("assignedTo"),
+      render: (text, record) => {
+        return searchedColumn === "assignedTo" ? (
+          <HighlightText text={record?.assignedTo} searchText={searchText} />
+        ) : (
+          FORMAT_TEXT_LENGTH(record?.assignedTo, 20)
         );
       },
     },
@@ -245,8 +234,14 @@ const Task = () => {
       ],
       onFilter: (value, record) => record.maintenanceType === value,
       render: (maintenanceType, record) => (
-        <span className={`${maintenanceType == "SCHEDULED" ? "success" : "warning"} status`}>
-          {maintenanceType == "SCHEDULED" ? "Bảo trì định kỳ" : "Bảo trì sự cố đột xuất"}
+        <span
+          className={`${
+            maintenanceType == "SCHEDULED" ? "success" : "warning"
+          } status`}
+        >
+          {maintenanceType == "SCHEDULED"
+            ? "Bảo trì định kỳ"
+            : "Bảo trì sự cố đột xuất"}
         </span>
       ),
     },
@@ -282,8 +277,9 @@ const Task = () => {
               }
               className="cursor-pointer DELETE"
             >
-                            <><AiOutlineDelete className="h-5 w-5" /></>
-
+              <>
+                <AiOutlineDelete className="h-5 w-5" />
+              </>
             </Popconfirm>
           </Access>
         </div>
@@ -360,7 +356,10 @@ const Task = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Nhiệm vụ bảo trì</h2>
         <Access permission={ALL_PERMISSIONS.TASKS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

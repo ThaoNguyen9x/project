@@ -33,9 +33,9 @@ public class ContractController {
 
     @PostMapping
     @ApiMessage("Tạo hợp đồng thành công")
-    public ResponseEntity<ContractDto> createContract(@RequestPart(value = "drawing", required = false) MultipartFile drawing,
+    public ResponseEntity<ContractDto> createContract(@RequestPart(value = "drawingContract", required = false) MultipartFile drawingContract,
                                                       @ModelAttribute Contract contract) {
-        return new ResponseEntity<>(contractService.createContract(drawing, contract), HttpStatus.CREATED);
+        return new ResponseEntity<>(contractService.createContract(drawingContract, contract), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -47,9 +47,9 @@ public class ContractController {
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật hợp đồng thành công")
     public ResponseEntity<ContractDto> updateContract(@PathVariable(name = "id") int id,
-                                                      @RequestPart(value = "drawing", required = false) MultipartFile drawing,
+                                                      @RequestPart(value = "drawingContract", required = false) MultipartFile drawingContract,
                                                       @ModelAttribute Contract contract) throws URISyntaxException {
-        return ResponseEntity.ok(contractService.updateContract(id, drawing, contract));
+        return ResponseEntity.ok(contractService.updateContract(id, drawingContract, contract));
     }
 
     @DeleteMapping("/{id}")

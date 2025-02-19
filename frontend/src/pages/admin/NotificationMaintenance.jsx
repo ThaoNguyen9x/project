@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import {
   Button,
   Input,
@@ -26,8 +26,11 @@ import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import ModalNotificationMaintenance from "../../components/admin/Notification_Manager/Notification_Maintenance/modal.notification-maintenance";
 import ViewNotificationMaintenance from "../../components/admin/Notification_Manager/Notification_Maintenance/view.notification-maintenance";
+import { useLocation } from "react-router-dom";
+import { AuthContext } from "../../components/share/Context";
 
 const NotificationMaintenance = () => {
+  const { user } = useContext(AuthContext);
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -161,7 +164,7 @@ const NotificationMaintenance = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -172,17 +175,13 @@ const NotificationMaintenance = () => {
       render: (text, record) => {
         return (
           <a
-
             onClick={() => {
               setData(record);
               setOpenViewDetail(true);
             }}
           >
             {searchedColumn === "title" ? (
-              <HighlightText
-                text={record?.title}
-                searchText={searchText}
-              />
+              <HighlightText text={record?.title} searchText={searchText} />
             ) : (
               FORMAT_TEXT_LENGTH(record?.title, 20)
             )}
@@ -197,36 +196,18 @@ const NotificationMaintenance = () => {
       sorter: (a, b) => a.description.localeCompare(b.description),
     },
     {
-      title: "Người nhận",
-      dataIndex: "recipient",
-      ...getColumnSearchProps("recipient"),
-      sorter: (a, b) => a.recipient.localeCompare(b.recipient),
-    },
-    {
       title: "Trạng thái",
       dataIndex: "status",
-      filters: [
-        {
-          text: "Chưa đọc",
-          value: "PENDING",
-        },
-        {
-          text: "Đã đọc",
-          value: "READ",
-        },
-      ],
-      onFilter: (value, record) => record.status === value,
-      render: (status, record) => (
-        <span className={`${status == "PENDING" ? "warning" : "success"} status`}>
-          {status == "PENDING" ? "Chưa đọc" : "Đã đọc"}
-        </span>
-      ),
+      render: (text, record) => <span className="success status">Đã gửi</span>,
     },
     {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.UPDATE} hideChildren>
+          <Access
+            permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.UPDATE}
+            hideChildren
+          >
             <div
               onClick={() => {
                 setData(record);
@@ -237,7 +218,10 @@ const NotificationMaintenance = () => {
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.DELETE} hideChildren>
+          <Access
+            permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.DELETE}
+            hideChildren
+          >
             <Popconfirm
               placement="leftBottom"
               okText="Có"
@@ -254,8 +238,9 @@ const NotificationMaintenance = () => {
               }
               className="cursor-pointer DELETE"
             >
-                            <><AiOutlineDelete className="h-5 w-5" /></>
-
+              <>
+                <AiOutlineDelete className="h-5 w-5" />
+              </>
             </Popconfirm>
           </Access>
         </div>
@@ -327,12 +312,40 @@ const NotificationMaintenance = () => {
     }
   };
 
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get("id");
+
+    if (id) {
+      const fetchRequest = async () => {
+        const res = await callGetAllNotificationMaintenances(
+          `filter=id~'${id}'`
+        );
+        if (res?.data?.result.length) {
+          setData(res.data.result[0]);
+          setOpenViewDetail(true);
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search]);
+
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Thông báo bảo trì</h2>
-        <Access permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+        <h2 className="text-base xl:text-xl font-bold">
+          Thông báo sự cố bất thường
+        </h2>
+        <Access
+          permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.CREATE}
+          hideChildren
+        >
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
@@ -356,6 +369,7 @@ const NotificationMaintenance = () => {
         />
 
         <ViewNotificationMaintenance
+          user={user}
           data={data}
           setData={setData}
           openViewDetail={openViewDetail}

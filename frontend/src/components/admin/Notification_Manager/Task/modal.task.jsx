@@ -4,7 +4,6 @@ import {
   Col,
   Form,
   Input,
-  InputNumber,
   message,
   Modal,
   notification,
@@ -28,7 +27,6 @@ const ModalTask = (props) => {
     if (data?.id) {
       const init = {
         ...data,
-        assignedTo: data.assignedTo ? data.assignedTo.id : null,
       };
 
       form.setFieldsValue(init);
@@ -53,9 +51,7 @@ const ModalTask = (props) => {
         taskName,
         taskDescription,
         maintenanceType,
-        {
-          id: assignedTo,
-        },
+        assignedTo,
         assignedToPhone,
         expectedDuration
       );
@@ -75,9 +71,7 @@ const ModalTask = (props) => {
         taskName,
         taskDescription,
         maintenanceType,
-        {
-          id: assignedTo,
-        },
+        assignedTo,
         assignedToPhone,
         expectedDuration
       );
@@ -194,42 +188,34 @@ const ModalTask = (props) => {
 
           <Col xs={24}>
             <Form.Item
-              label="Nhân viên phụ trách"
+              label="Người thực hiện bảo trì"
               name="assignedTo"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
-                {listUsers
-                  ?.filter(
-                    (user) => user.status && user?.role?.name === "Technician_Employee"
-                  )
-                  .map((user) => (
-                    <Select.Option
-                      key={user.id}
-                      value={user.id}
-                      label={user.name}
-                    >
-                      {user.name}
-                    </Select.Option>
-                  ))}
-              </Select>
+              <Input allowClear />
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item label="Số điện thoại khác" name="assignedToPhone">
+          <Col xs={24}>
+            <Form.Item
+              label="Số điện thoại người thực hiện bảo trì"
+              name="assignedToPhone"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng không được để trống",
+                },
+                {
+                  pattern: new RegExp(
+                    /^(\+?[0-9]{1,4})?(\(?\d{3}\)?[\s.-]?)?[\d\s.-]{7,}$/
+                  ),
+                  message:
+                    "Vui lòng nhập số điện thoại hợp lệ (ví dụ: (123) 456-7890 hoặc +1234567890)",
+                },
+              ]}
+            >
               <Input autoComplete="off" allowClear />
             </Form.Item>
           </Col>

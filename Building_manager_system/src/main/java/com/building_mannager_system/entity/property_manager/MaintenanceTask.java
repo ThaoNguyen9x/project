@@ -1,8 +1,6 @@
 package com.building_mannager_system.entity.property_manager;
 
-
 import com.building_mannager_system.entity.BaseEntity;
-import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.notification.NotificationMaintenance;
 import com.building_mannager_system.enums.MaintenanceType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,9 +33,7 @@ import java.util.List;
     @Column(name = "maintenance_type", nullable = false)
     private MaintenanceType maintenanceType; // Loại bảo trì (Định kỳ / Sự cố đột xuất)
 
-    @JoinColumn(name = "assigned_to", nullable = false)
-    @ManyToOne
-    private User assignedTo; // Người thực hiện công việc
+    private String assignedTo; // Người thực hiện công việc
 
     @Column(name = "assigned_to_phone")
     private String assignedToPhone; // Số điện thoại của người thực hiện công việc

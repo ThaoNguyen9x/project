@@ -43,7 +43,7 @@ public class Customer extends BaseEntity {
 
     @Lob
     @Column(name = "Status")
-    private String status;
+    private String status = "ACTIV";
 
     @Column(name = "DirectorName")
     private String directorName;
@@ -51,11 +51,15 @@ public class Customer extends BaseEntity {
     @Column(name = "Birthday")
     private LocalDate birthday;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
     @JsonIgnore
     private List<Contract> contracts;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "customer")
+    @JsonIgnore
+    private List<CustomerDocument> customerDocuments;
 }

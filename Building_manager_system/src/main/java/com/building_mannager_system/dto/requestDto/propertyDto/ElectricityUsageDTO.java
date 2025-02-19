@@ -21,6 +21,7 @@ public class ElectricityUsageDTO {
     private LocalDate readingDate;
     private String imageName;
     private String comments;
+    private String status;
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;

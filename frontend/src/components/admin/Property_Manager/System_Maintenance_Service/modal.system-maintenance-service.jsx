@@ -14,9 +14,12 @@ import {
 
 import {
   callCreateSystemMaintenanceService,
+  callCreateTask,
   callUpdateSystemMaintenanceService,
+  callUpdateTask,
 } from "../../../../services/api";
 import dayjs from "dayjs";
+import TextArea from "antd/es/input/TextArea";
 
 const { Option } = Select;
 
@@ -48,56 +51,66 @@ const ModalSystemMaintenanceService = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const {
-      subcontractor,
-      serviceType,
-      maintenanceScope,
-      frequency,
-      nextScheduledDate,
-      status,
-    } = values;
-
     setIsSubmit(true);
 
     if (data?.id) {
-      const res = await callUpdateSystemMaintenanceService(
+      const res1 = await callUpdateSystemMaintenanceService(
         data?.id,
-        { id: subcontractor },
-        serviceType,
-        maintenanceScope,
-        frequency,
-        dayjs(nextScheduledDate).startOf("day").format("YYYY-MM-DD"),
-        status
+        { id: values.subcontractor },
+        values.serviceType,
+        values.maintenanceScope,
+        values.frequency,
+        dayjs(values.nextScheduledDate).startOf("day").format("YYYY-MM-DD"),
+        values.status
       );
 
-      if (res && res.data) {
-        message.success(res.message);
+      const res2 = await callUpdateTask(
+        data.id,
+        values.taskName,
+        values.taskDescription,
+        values.maintenanceType,
+        values.assignedTo,
+        values.assignedToPhone,
+        values.expectedDuration
+      );
+
+      if (res1 && res1.data) {
+        message.success(res1.message);
         handleReset(false);
         fetchData();
       } else {
         notification.error({
           message: "Có lỗi xảy ra",
-          description: res?.error,
+          description: res1?.error,
         });
       }
     } else {
-      const res = await callCreateSystemMaintenanceService(
-        { id: subcontractor },
-        serviceType,
-        maintenanceScope,
-        frequency,
-        dayjs(nextScheduledDate).startOf("day").format("YYYY-MM-DD"),
-        status
+      const res1 = await callCreateSystemMaintenanceService(
+        { id: values.subcontractor },
+        values.serviceType,
+        values.maintenanceScope,
+        values.frequency,
+        dayjs(values.nextScheduledDate).startOf("day").format("YYYY-MM-DD"),
+        values.status
       );
 
-      if (res && res.data) {
-        message.success(res.message);
+      const res2 = await callCreateTask(
+        values.taskName,
+        values.taskDescription,
+        values.maintenanceType,
+        values.assignedTo,
+        values.assignedToPhone,
+        values.expectedDuration
+      );
+
+      if (res1 && res1.data) {
+        message.success(res1.message);
         handleReset();
         fetchData();
       } else {
         notification.error({
           message: "Có lỗi xảy ra",
-          description: res?.error,
+          description: res1?.error,
         });
       }
     }
@@ -115,8 +128,8 @@ const ModalSystemMaintenanceService = (props) => {
     <Modal
       title={
         data?.id
-          ? "Cập nhật dịch vụ bảo trì hệ thống"
-          : "Tạo dịch vụ bảo trì hệ thống"
+          ? "Cập nhật dịch vụ"
+          : "Tạo dịch vụ"
       }
       open={openModal}
       onCancel={handleReset}
@@ -125,6 +138,10 @@ const ModalSystemMaintenanceService = (props) => {
       className="w-full lg:!w-1/3"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+        <h3 className="font-semibold text-base my-2">
+          Dịch vụ bảo trì hệ thống
+        </h3>
+
         <Row gutter={16}>
           <Col xs={24}>
             <Form.Item
@@ -249,10 +266,74 @@ const ModalSystemMaintenanceService = (props) => {
             </Form.Item>
           </Col>
 
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
+              >
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="PENDING" label="Chưa giải quyết">
+                    Chưa giải quyết
+                  </Option>
+                  <Option value="IN_PROGRESS" label="Đang tiến hành">
+                    Đang tiến hành
+                  </Option>
+                  <Option value="COMPLETED" label="Hoàn thành">
+                    Hoàn thành
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
+        </Row>
+
+        <h3 className="font-semibold text-base my-2">Nhiệm vụ bảo trì</h3>
+
+        <Row gutter={16}>
+          <Col xs={24}>
+            <Form.Item
+              label="Tên"
+              name="taskName"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24}>
+            <Form.Item
+              label="Mô tả"
+              name="taskDescription"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <TextArea autoSize={{ minRows: 3, maxRows: 5 }} />
+            </Form.Item>
+          </Col>
+
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Trạng thái"
-              name="status"
+              label="Chu kỳ bảo trì"
+              name="maintenanceType"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
@@ -268,16 +349,72 @@ const ModalSystemMaintenanceService = (props) => {
                     .includes(input.toLowerCase())
                 }
               >
-                <Option value="PENDING" label="Chưa giải quyết">
-                  Chưa giải quyết
+                <Option value="SCHEDULED" label="Bảo trì định kỳ">
+                  Bảo trì định kỳ
                 </Option>
-                <Option value="IN_PROGRESS" label="Đang tiến hành">
-                  Đang tiến hành
-                </Option>
-                <Option value="COMPLETED" label="Hoàn thành">
-                  Hoàn thành
+                <Option value="EMERGENCY" label="Bảo trì sự cố đột xuất">
+                  Bảo trì sự cố đột xuất
                 </Option>
               </Select>
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Thời gian hoàn thành"
+              name="expectedDuration"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng không được để trống",
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24}>
+            <Form.Item
+              label="Người thực hiện bảo trì"
+              name="assignedTo"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24}>
+            <Form.Item
+              label="Số điện thoại người thực hiện bảo trì"
+              name="assignedToPhone"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng không được để trống",
+                },
+                {
+                  pattern: new RegExp(
+                    /^(\+?[0-9]{1,4})?(\(?\d{3}\)?[\s.-]?)?[\d\s.-]{7,}$/
+                  ),
+                  message:
+                    "Vui lòng nhập số điện thoại hợp lệ (ví dụ: (123) 456-7890 hoặc +1234567890)",
+                },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
             </Form.Item>
           </Col>
         </Row>

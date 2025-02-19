@@ -1,6 +1,5 @@
 package com.building_mannager_system.dto.requestDto.work_registration;
 
-import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class WorkRegistrationDto {
     private Long registrationID;
-    private CustomerDto.User account;
+    private String account;
     private LocalDateTime registrationDate;
     private LocalDateTime scheduledDate;
     private String status;

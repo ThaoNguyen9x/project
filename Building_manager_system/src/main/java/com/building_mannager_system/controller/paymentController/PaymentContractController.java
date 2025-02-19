@@ -36,7 +36,9 @@ public class PaymentContractController {
     @PostMapping
     @ApiMessage("Tạo hợp đồng thanh toán thành công")
     public ResponseEntity<PaymentContractDto> createPaymentContract(@RequestBody PaymentContract paymentContract) {
-        return new ResponseEntity<>(paymentContractService.createPaymentContract(paymentContract), HttpStatus.CREATED);
+        PaymentContractDto res = paymentContractService.createPaymentContract(paymentContract);
+        notificationPaymentContractService.sendPaymentRequestNotificationToCustomer(paymentContractService.getPaymentContract(res.getPaymentId()));
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @GetMapping("/contact")
@@ -78,7 +80,4 @@ public class PaymentContractController {
 //        // Gửi thông báo thanh toán đã hoàn tất
 //        return "Payment confirmed: " + paymentResponse.getPaymentStatus();
 //    }
-
-    @Value("${stripe.secret.key}")
-    private String secretKey;
 }

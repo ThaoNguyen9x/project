@@ -49,8 +49,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role createRole(Role role) {
-        if (roleRepository.existsByName(role.getName()))
+        if (roleRepository.existsByName(role.getName())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Tên vai trò này đã được sử dụng");
+        }
 
         if (role.getPermissions() != null) {
             List<Integer> permissions = role.getPermissions()
@@ -77,8 +78,9 @@ public class RoleServiceImpl implements RoleService {
         Role ex = roleRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Role not found with ID: " + id));
 
-        if (roleRepository.existsByNameAndIdNot(role.getName(), id))
+        if (roleRepository.existsByNameAndIdNot(role.getName(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Tên vai trò này đã được sử dụng");
+        }
 
         if (role.getPermissions() != null) {
             List<Integer> permissions = role.getPermissions()

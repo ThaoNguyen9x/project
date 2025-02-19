@@ -40,9 +40,17 @@ public class SystemMaintenanceService extends BaseEntity {
     private LocalDate nextScheduledDate;
 
     @Enumerated(EnumType.STRING)
-    private MaintenanceStatus status;
+    private MaintenanceStatus status = MaintenanceStatus.PENDING;
 
     @OneToMany(mappedBy = "maintenanceService")
     @JsonIgnore
     private List<Device> devices;
+
+    public SystemMaintenanceService(Subcontractor subcontractor, ServiceType serviceType, String maintenanceScope, MaintenanceFrequency frequency, String nextScheduledDate) {
+        this.subcontractor = subcontractor;
+        this.serviceType = serviceType;
+        this.maintenanceScope = maintenanceScope;
+        this.frequency = frequency;
+        this.nextScheduledDate = LocalDate.parse(nextScheduledDate);
+    }
 }

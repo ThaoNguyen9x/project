@@ -5,31 +5,41 @@ import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
 import com.building_mannager_system.dto.requestDto.work_registration.WorkRegistrationDto;
 import com.building_mannager_system.entity.User;
+import com.building_mannager_system.entity.notification.Notification;
+import com.building_mannager_system.entity.notification.Recipient;
 import com.building_mannager_system.entity.work_registration.RepairRequest;
 import com.building_mannager_system.entity.work_registration.WorkRegistration;
+import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.enums.WorkStatus;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.work_registration.WorkRegistrationRepository;
 import com.building_mannager_system.service.ConfigService.FileService;
+import com.building_mannager_system.service.notification.NotificationService;
+import com.building_mannager_system.service.notification.RecipientService;
+import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class WorkRegistrationService {
-    private final FileService fileService;
-    private final UserRepository userRepository;
+
+    private final NotificationService notificationService;
+    private final RecipientService recipientService;
     @Value("${upload-file.base-uri}")
     private String baseURI;
     private String folder = "work_registrations";
@@ -37,28 +47,66 @@ public class WorkRegistrationService {
 
     private final WorkRegistrationRepository workRegistrationRepository;
     private final ModelMapper modelMapper;
+    private final FileService fileService;
+    private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public WorkRegistrationService(WorkRegistrationRepository workRegistrationRepository,
-                                   ModelMapper modelMapper, FileService fileService, UserRepository userRepository) {
+                                   ModelMapper modelMapper,
+                                   FileService fileService,
+                                   UserRepository userRepository,
+                                   NotificationService notificationService,
+                                   RecipientService recipientService,
+                                   SimpMessagingTemplate messagingTemplate) {
         this.workRegistrationRepository = workRegistrationRepository;
         this.modelMapper = modelMapper;
         this.fileService = fileService;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
+        this.recipientService = recipientService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public WorkRegistrationDto createWorkRegistration(MultipartFile image, WorkRegistration workRegistration) {
-        if (workRegistration.getAccount() != null) {
-            User user = userRepository.findById(workRegistration.getAccount().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + workRegistration.getAccount().getId()));
-            workRegistration.setAccount(user);
-        } else {
-            throw new APIException(HttpStatus.NOT_FOUND, "User not found");
-        }
-
         fileService.validateFile(image, allowedExtensions);
         workRegistration.setDrawingUrl(fileService.storeFile(image, folder));
 
-        return modelMapper.map(workRegistrationRepository.save(workRegistration), WorkRegistrationDto.class);
+        workRegistration = workRegistrationRepository.saveAndFlush(workRegistration);
+
+        // Tạo JSON message
+        String message = null;
+        try {
+            message = JsonUntils.toJson(modelMapper.map(workRegistration, WorkRegistrationDto.class));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<String> roles = List.of("Application_Admin");
+        List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+        if (recipients.isEmpty()) {
+            return null;
+        }
+
+        for (User user : recipients) {
+            Recipient rec = new Recipient();
+            rec.setType("Work_Registration_Notification");
+            rec.setName("Send Work Registration Notification");
+            rec.setReferenceId(user.getId());
+
+            Recipient recipient = recipientService.createRecipient(rec);
+
+            Notification notification = new Notification();
+            notification.setRecipient(recipient);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(LocalDateTime.now());
+
+            notificationService.createNotification(notification);
+            messagingTemplate.convertAndSend("/topic/work-registration-notifications/" + user.getId(), message);
+        }
+
+        return modelMapper.map(workRegistration, WorkRegistrationDto.class);
     }
 
     // ✅ Lấy tất cả
@@ -102,15 +150,6 @@ public class WorkRegistrationService {
         WorkRegistration ex = workRegistrationRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Work registration not found with ID: " + id));
 
-        // Kiểm tra user
-        if (workRegistration.getAccount() != null) {
-            User user = userRepository.findById(workRegistration.getAccount().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found with ID: " + workRegistration.getAccount().getId()));
-            workRegistration.setAccount(user);
-        } else {
-            throw new APIException(HttpStatus.NOT_FOUND, "User not found");
-        }
-
         if (image != null && !image.isEmpty()) {
             fileService.validateFile(image, allowedExtensions);
 
@@ -123,11 +162,10 @@ public class WorkRegistrationService {
             ex.setDrawingUrl(fileService.storeFile(image, folder));
         }
 
-        ex.setStatus(workRegistration.getStatus());
-        ex.setRegistrationDate(workRegistration.getRegistrationDate());
-        ex.setNote(workRegistration.getNote());
         ex.setAccount(workRegistration.getAccount());
         ex.setScheduledDate(workRegistration.getScheduledDate());
+        ex.setStatus(workRegistration.getStatus());
+        ex.setNote(workRegistration.getNote());
 
         return modelMapper.map(workRegistrationRepository.save(ex), WorkRegistrationDto.class);
     }

@@ -30,6 +30,7 @@ import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 import Highlighter from "react-highlight-words";
+import { useLocation } from "react-router-dom";
 
 const ElectricityUsage = () => {
   const { user } = useContext(AuthContext);
@@ -378,6 +379,27 @@ const ElectricityUsage = () => {
       });
     }
   };
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get("id");
+
+    if (id) {
+      const fetchRequest = async () => {
+        const res = await callGetAllElectricityUsages(
+          `filter=id~'${id}'`
+        );
+        if (res?.data?.result.length) {
+          setData(res.data.result[0]);
+          setOpenViewDetail(true);
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search]);
+
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

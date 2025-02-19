@@ -25,9 +25,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,7 +68,7 @@ public class CustomerService {
 
         User user = userRepository.findByEmail(email);
 
-        if (user.getRole().getName().equals("USER")) {
+        if (user.getRole().getName().equals("Customer")) {
             spec = spec.and((root, query, builder) -> builder.equal(root.get("user").get("id"), user.getId()));
         }
 
@@ -90,6 +92,7 @@ public class CustomerService {
         return rs;
     }
 
+    @Transactional
     public CustomerDto createCustomer(Customer customer) {
         // Check customerType
         if (customer.getCustomerType() != null) {
@@ -159,48 +162,42 @@ public class CustomerService {
 
     public List<CustomerBirthdayNotificationDto> checkBirthDay() {
         LocalDate today = LocalDate.now();
+        LocalDate nextThreeDays = today.plusDays(3);
 
-        // Tìm danh sách khách hàng có sinh nhật trong 3 ngày tới
-        List<CustomerBirthdayNotificationDto> customersWithUpcomingBirthdays = customerRepository.findAll().stream()
-                .filter(customer -> customer.getBirthday() != null)
-                .filter(customer -> isBirthdayInNextThreeDays(customer.getBirthday(), today))
-                .filter(customer -> "ACTIV".equals(customer.getStatus()))
+        // Chuyển ngày thành chuỗi 'MM-dd' để truy vấn
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        String todayStr = today.format(formatter);
+        String nextThreeDaysStr = nextThreeDays.format(formatter);
+
+        List<Customer> customersWithUpcomingBirthdays = customerRepository.findCustomersWithBirthdayInRange(todayStr, nextThreeDaysStr);
+
+        List<CustomerBirthdayNotificationDto> birthdayDtos = customersWithUpcomingBirthdays.stream()
                 .map(customer -> modelMapper.map(customer, CustomerBirthdayNotificationDto.class))
                 .collect(Collectors.toList());
 
-        // Gửi thông báo nếu có khách hàng có sinh nhật
-        for (CustomerBirthdayNotificationDto customerDto : customersWithUpcomingBirthdays) {
-            sendBirthdayNotification(customerDto);
+        for (Customer customer : customersWithUpcomingBirthdays) {
+            sendBirthdayNotification(customer);
         }
 
-        return customersWithUpcomingBirthdays;
+        return birthdayDtos;
     }
 
-    // Kiểm tra sinh nhật trong 3 ngày tới
-    private boolean isBirthdayInNextThreeDays(LocalDate birthday, LocalDate today) {
-        LocalDate nextBirthday = birthday.withYear(today.getYear());
-
-        if (nextBirthday.isBefore(today)) {
-            nextBirthday = nextBirthday.withYear(today.getYear() + 1);
-        }
-
-        long daysUntilBirthday = today.until(nextBirthday).getDays();
-        return daysUntilBirthday >= 0 && daysUntilBirthday <= 3;
-    }
-
-    public void sendBirthdayNotification(CustomerBirthdayNotificationDto customerDto) {
+    // Gửi thông báo đến khách hàng có sinh nhật
+    public void sendBirthdayNotification(Customer customer) {
         try {
             List<String> roles = List.of("Application_Admin");
             List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-            if (recipients.isEmpty()) return;
+            if (recipients.isEmpty()) {
+                return;
+            }
 
-            String message = JsonUntils.toJson(customerDto);
+            String message = JsonUntils.toJson(modelMapper.map(customer, CustomerBirthdayNotificationDto.class));
 
             for (User user : recipients) {
                 Recipient rec = new Recipient();
-                rec.setType("Birthday");
-                rec.setName("Send birthday request");
+                rec.setType("Birthday_Notification");
+                rec.setName("Send Birthday Notification");
                 rec.setReferenceId(user.getId());
 
                 Recipient recipient = recipientService.createRecipient(rec);
@@ -213,13 +210,10 @@ public class CustomerService {
 
                 notificationService.createNotification(notification);
 
-                messagingTemplate.convertAndSend("/topic/adminNotifications/" + user.getId(), message);
+                messagingTemplate.convertAndSend("/topic/birthday-notifications/" + user.getId(), message);
             }
-
-            System.out.println("✅ Notification sent to all Admins successfully!");
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("❌ Error sending notification to Admin: " + e.getMessage());
         }
     }
 }

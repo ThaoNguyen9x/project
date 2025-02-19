@@ -25,16 +25,16 @@ public class HandoverStatus extends BaseEntity {
     private Office office;
 
     @Column(name = "HandoverDate")
-    private LocalDate handoverDate;
+    private LocalDate handoverDate = LocalDate.now();
 
     @Lob
     @Column(name = "Status")
-    private String status;
+    private String status = "ACTIV";
 
     @Column(name = "DrawingFile")
     private String drawingFile;
 
     @Column(name = "EquipmentFile")
-    private String equipmentFile; //Ghi
+    private String equipmentFile;
 
 }

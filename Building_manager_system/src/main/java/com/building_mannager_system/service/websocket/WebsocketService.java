@@ -17,7 +17,7 @@ public class WebsocketService {
     public void sendNotificationToRecipients(Integer userId, Object message) {
         try {
             messagingTemplate.convertAndSend(
-                    "/topic/maintenance/" + userId,
+                    "/topic/maintenance-task-notifications/" + userId,
                     message
             );
             System.out.println("Notification sent successfully!");

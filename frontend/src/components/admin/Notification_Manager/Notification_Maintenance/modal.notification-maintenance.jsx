@@ -46,7 +46,6 @@ const ModalNotificationMaintenance = (props) => {
       title,
       description,
       maintenanceTask,
-      recipient
     } = values;
 
     setIsSubmit(true);
@@ -59,7 +58,6 @@ const ModalNotificationMaintenance = (props) => {
         {
           id: maintenanceTask
         },
-        recipient
       );
 
       if (res && res.data) {
@@ -79,7 +77,6 @@ const ModalNotificationMaintenance = (props) => {
         {
           id: maintenanceTask
         },
-        recipient
       );
 
       if (res && res.data) {
@@ -105,7 +102,7 @@ const ModalNotificationMaintenance = (props) => {
 
   return (
     <Modal
-      title={data?.id ? "Cập nhật thông báo bảo trì" : "Tạo thông báo bảo trì"}
+      title={data?.id ? "Cập nhật thông báo sự cố bất thường" : "Tạo thông báo sự cố bất thường"}
       open={openModal}
       onCancel={handleReset}
       footer={null}
@@ -135,18 +132,6 @@ const ModalNotificationMaintenance = (props) => {
               ]}
             >
               <TextArea autoSize={{ minRows: 3, maxRows: 5 }} />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24}>
-            <Form.Item
-              label="Người nhận"
-              name="recipient"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Input autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 

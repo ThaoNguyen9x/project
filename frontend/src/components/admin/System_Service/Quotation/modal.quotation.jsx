@@ -143,12 +143,11 @@ const ModalQuotation = (props) => {
       className="w-full lg:!w-1/2"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
-        
         <Row gutter={16}>
-        <Col lg={12} md={12} sm={24} xs={24}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="File"
-              name={data?.image ? "image" : "fileName"}  
+              name={data?.image ? "image" : "fileName"}
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
@@ -250,37 +249,41 @@ const ModalQuotation = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="status"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="status"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
               >
-                <Option value="PENDING" label="Đang chờ duyệt">
-                  Đang chờ duyệt
-                </Option>
-                <Option value="APPROVED" label="Đã được duyệt">
-                  Đã được duyệt
-                </Option>
-                <Option value="REJECTED" label="Bị từ chối">
-                  Bị từ chối
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col>
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="PENDING" label="Đang chờ duyệt">
+                    Đang chờ duyệt
+                  </Option>
+                  <Option value="APPROVED" label="Đã được duyệt">
+                    Đã được duyệt
+                  </Option>
+                  <Option value="REJECTED" label="Bị từ chối">
+                    Bị từ chối
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

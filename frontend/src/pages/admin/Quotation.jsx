@@ -228,9 +228,9 @@ const Quotation = () => {
       ...getColumnSearchProps("totalAmount"),
       render: (text, record) => {
         const formatted =
-          record?.totalAmount.toLocaleString("vi-VN", {
+          record?.totalAmount.toLocaleString("en-US", {
             style: "currency",
-            currency: "VND",
+            currency: "USD",
           }) || "N/A";
 
         return searchedColumn === "totalAmount" ? (

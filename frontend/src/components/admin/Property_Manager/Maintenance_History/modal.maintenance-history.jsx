@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Col,
-  DatePicker,
   Form,
   Input,
   message,
@@ -10,11 +9,14 @@ import {
   notification,
   Row,
   Select,
+  DatePicker,
 } from "antd";
 
 import {
   callCreateMaintenanceHistory,
+  callCreateRiskAssessment,
   callUpdateMaintenanceHistory,
+  callUpdateRiskAssessment,
 } from "../../../../services/api";
 import dayjs from "dayjs";
 
@@ -29,6 +31,8 @@ const ModalMaintenanceHistory = (props) => {
     fetchData,
     listSystemMaintenanceServices,
     listUsers,
+    listSubcontractors,
+    listDevices,
   } = props;
 
   const [form] = Form.useForm();
@@ -36,13 +40,27 @@ const ModalMaintenanceHistory = (props) => {
 
   useEffect(() => {
     if (data?.id) {
+      const riskAssessment = data?.riskAssessments?.[0] || {};
       const init = {
         ...data,
-        maintenanceService: data.maintenanceService
-          ? data.maintenanceService?.id
+        maintenanceService: data?.maintenanceService?.id || null,
+        technician: data?.technician?.id || null,
+        performedDate: data?.performedDate ? dayjs(data.performedDate) : null,
+
+        status: riskAssessment?.status || null,
+        contractor: riskAssessment?.contractor?.id || null,
+        riskProbability: riskAssessment?.riskProbability || null,
+        riskImpact: riskAssessment?.riskImpact || null,
+        systemType: riskAssessment?.systemType || null,
+        riskDetection: riskAssessment?.riskDetection || null,
+        riskPriorityNumber: riskAssessment?.riskPriorityNumber || null,
+        mitigationAction: riskAssessment?.mitigationAction || null,
+        remarks: riskAssessment?.remarks || null,
+
+        device: riskAssessment?.device?.deviceId || null,
+        assessmentDate: riskAssessment?.assessmentDate
+          ? dayjs(riskAssessment.assessmentDate)
           : null,
-        technician: data.technician ? data.technician?.id : null,
-        performedDate: data.performedDate ? dayjs(data?.performedDate) : null,
       };
 
       form.setFieldsValue(init);
@@ -50,67 +68,92 @@ const ModalMaintenanceHistory = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const {
-      maintenanceService,
-      performedDate,
-      notes,
-      technician,
-      findings,
-      resolution,
-      phone
-    } = values;
-
     setIsSubmit(true);
 
-    if (data?.id) {
-      const res = await callUpdateMaintenanceHistory(
-        data?.id,
-        { id: maintenanceService },
-        dayjs(performedDate).startOf("day").format("YYYY-MM-DD"),
-        notes,
-        { id: technician },
-        findings,
-        resolution,
-        phone
-      );
+    const formattedValues = {
+      ...values,
+      maintenanceService: { id: values.maintenanceService },
+      technician: { id: values.technician },
+      contractor: { id: values.contractor },
+      device: { deviceId: values.device },
+      performedDate: dayjs(values.performedDate)
+        .startOf("day")
+        .format("YYYY-MM-DD"),
+      assessmentDate: dayjs(values.assessmentDate)
+        .startOf("day")
+        .format("YYYY-MM-DD"),
+    };
 
-      if (res && res.data) {
-        message.success(res.message);
-        handleReset(false);
-        fetchData();
-      } else {
-        notification.error({
-          message: "Có lỗi xảy ra",
-          description: res?.error,
-        });
-      }
-    } else {
-      const res = await callCreateMaintenanceHistory(
-        { id: maintenanceService },
-        dayjs(performedDate).startOf("day").format("YYYY-MM-DD"),
-        notes,
-        { id: technician },
-        findings,
-        resolution,
-        phone
-      );
+    try {
+      if (data?.id) {
+        const resMaintenanceHistory = await callUpdateMaintenanceHistory(
+          data.id,
+          formattedValues.maintenanceService,
+          formattedValues.performedDate,
+          formattedValues.notes,
+          formattedValues.technician,
+          formattedValues.findings,
+          formattedValues.resolution,
+          formattedValues.phone
+        );
 
-      if (res && res.data) {
-        message.success(res.message);
-        handleReset();
-        fetchData();
+        const resRiskAssessment = await callUpdateRiskAssessment(
+          resMaintenanceHistory?.data?.riskAssessments?.[0]?.riskAssessmentID,
+          { id: resMaintenanceHistory.data.id },
+          formattedValues.contractor,
+          formattedValues.systemType,
+          formattedValues.device,
+          formattedValues.assessmentDate,
+          formattedValues.riskProbability,
+          formattedValues.riskImpact,
+          formattedValues.riskDetection,
+          formattedValues.mitigationAction,
+          formattedValues.remarks
+        );
+
+        message.success(
+          "Cập nhật lịch sử bảo trì & đánh giá rủi ro thành công"
+        );
       } else {
-        notification.error({
-          message: "Có lỗi xảy ra",
-          description: res?.error,
-        });
+        const resMaintenanceHistory = await callCreateMaintenanceHistory(
+          formattedValues.maintenanceService,
+          formattedValues.performedDate,
+          formattedValues.notes,
+          formattedValues.technician,
+          formattedValues.findings,
+          formattedValues.resolution,
+          formattedValues.phone
+        );
+
+        const resRiskAssessment = await callCreateRiskAssessment(
+          { id: resMaintenanceHistory.data.id },
+          formattedValues.contractor,
+          formattedValues.systemType,
+          formattedValues.device,
+          formattedValues.assessmentDate,
+          formattedValues.riskProbability,
+          formattedValues.riskImpact,
+          formattedValues.riskDetection,
+          formattedValues.mitigationAction,
+          formattedValues.remarks
+        );
+
+        message.success("Tạo lịch sử bảo trì & đánh giá rủi ro thành công");
       }
+
+      handleReset();
+      fetchData();
+    } catch (error) {
+      notification.error({
+        message: "Có lỗi xảy ra",
+        description: error.message,
+      });
     }
 
     setIsSubmit(false);
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     setOpenModal(false);
     setData(null);
     form.resetFields();
@@ -118,16 +161,22 @@ const ModalMaintenanceHistory = (props) => {
 
   return (
     <Modal
-      title={data?.id ? "Cập nhật lịch sử bảo trì" : "Tạo lịch sử bảo trì"}
+      forceRender
+      title={
+        data?.id
+          ? "Cập nhật lịch sử bảo trì và đánh giá rủi ro"
+          : "Tạo lịch sử bảo trì và đánh giá rủi ro"
+      }
       open={openModal}
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}
-      className="w-full lg:!w-1/3"
+      className="w-full lg:!w-1/2"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+        <h3 className="font-semibold text-base my-2">Lịch sử bảo trì</h3>
         <Row gutter={16}>
-          <Col xs={24}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Dịch vụ bảo trì"
               name="maintenanceService"
@@ -160,7 +209,7 @@ const ModalMaintenanceHistory = (props) => {
                         : "Hệ thống Phòng cháy"
                     }`}
                   >
-                    {maintenanceService.subcontractor.name} - {" "}
+                    {maintenanceService.subcontractor.name} -{" "}
                     {maintenanceService.serviceType === "ELECTRICAL"
                       ? "Hệ thống điện"
                       : maintenanceService.serviceType === "PLUMBING"
@@ -174,7 +223,7 @@ const ModalMaintenanceHistory = (props) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Kỹ thuật viên"
               name="technician"
@@ -197,7 +246,7 @@ const ModalMaintenanceHistory = (props) => {
                   ?.filter(
                     (technician) =>
                       technician?.status &&
-                      technician?.role?.name === "ENGINEERING"
+                      technician?.role?.name === "Technician_Employee"
                   )
                   .map((technician) => (
                     <Select.Option
@@ -212,16 +261,13 @@ const ModalMaintenanceHistory = (props) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
-            <Form.Item
-              label="Số điện thoại khác"
-              name="phone"
-            >
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item label="Số điện thoại khác" name="phone">
               <Input autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Ghi chú"
               name="notes"
@@ -233,7 +279,7 @@ const ModalMaintenanceHistory = (props) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Vấn đề"
               name="findings"
@@ -245,7 +291,7 @@ const ModalMaintenanceHistory = (props) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Giải pháp"
               name="resolution"
@@ -257,17 +303,252 @@ const ModalMaintenanceHistory = (props) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24}>
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Ngày thực hiện"
+                name="performedDate"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
+              >
+                <DatePicker format="YYYY-MM-DD" className="w-full" />
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
+        </Row>
+
+        <h3 className="font-semibold text-base my-2">Đánh giá rủi ro</h3>
+
+        <Row gutter={16}>
+          <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Ngày thực hiện"
-              name="performedDate"
+              label="Nhà thầu phụ"
+              name="contractor"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
-              <DatePicker format="YYYY-MM-DD" className="w-full" />
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {listSubcontractors.map((contractor) => (
+                  <Select.Option
+                    key={contractor.id}
+                    value={contractor.id}
+                    label={contractor.name}
+                  >
+                    {contractor.name}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Thiết bị"
+              name="device"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {listDevices.map((device) => (
+                  <Select.Option
+                    key={device.deviceId}
+                    value={device.deviceId}
+                    label={device.deviceName}
+                  >
+                    {device.deviceName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Hành động giảm thiểu"
+              name="mitigationAction"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Nhận xét"
+              name="remarks"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Loại hệ thống"
+              name="systemType"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                <Option value="ELECTRICAL">Hệ thống Điện</Option>
+                <Option value="PLUMBING">Hệ thống Cấp thoát nước</Option>
+                <Option value="HVAC">Hệ thống Điều hòa không khí</Option>
+                <Option value="FIRE_PROTECTION">Hệ thống Phòng cháy</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Xác xuất rủi ro"
+              name="riskProbability"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <Option
+                    key={i + 1}
+                    value={(i + 1).toString()}
+                    label={(i + 1).toString()}
+                  >
+                    {i + 1}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Tác động rủi ro"
+              name="riskImpact"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <Option
+                    key={i + 1}
+                    value={(i + 1).toString()}
+                    label={(i + 1).toString()}
+                  >
+                    {i + 1}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Phát hiện rủi ro"
+              name="riskDetection"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <Option
+                    key={i + 1}
+                    value={(i + 1).toString()}
+                    label={(i + 1).toString()}
+                  >
+                    {i + 1}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Ngày đánh giá"
+                name="assessmentDate"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
+              >
+                <DatePicker format="YYYY-MM-DD" className="w-full" />
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

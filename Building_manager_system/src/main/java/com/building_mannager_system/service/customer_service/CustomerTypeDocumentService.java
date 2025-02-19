@@ -51,8 +51,9 @@ public class CustomerTypeDocumentService {
     }
 
     public CustomerTypeDocumentDto createCustomerTypeDocument(CustomerTypeDocument customerTypeDocument) {
-        if (customerTypeDocumentRepository.existsByDocumentTypeAndCustomerType_Id(customerTypeDocument.getDocumentType(), customerTypeDocument.getCustomerType().getId()))
+        if (customerTypeDocumentRepository.existsByDocumentTypeAndCustomerType_Id(customerTypeDocument.getDocumentType(), customerTypeDocument.getCustomerType().getId())) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Đã tồn tại một hồ sơ phân loại cùng loại tài liệu hoặc loại khách hàng");
+        }
 
         // Check customerType
         if (customerTypeDocument.getCustomerType() != null) {
@@ -75,8 +76,9 @@ public class CustomerTypeDocumentService {
         CustomerTypeDocument ex = customerTypeDocumentRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer type document not found with ID: " + id));
 
-        if (customerTypeDocumentRepository.existsByDocumentTypeAndCustomerType_IdAndIdNot(customerTypeDocument.getDocumentType(), customerTypeDocument.getCustomerType().getId(), id))
+        if (customerTypeDocumentRepository.existsByDocumentTypeAndCustomerType_IdAndIdNot(customerTypeDocument.getDocumentType(), customerTypeDocument.getCustomerType().getId(), id)) {
             throw new APIException(HttpStatus.BAD_REQUEST, "Đã tồn tại một hồ sơ phân loại cùng loại tài liệu hoặc loại khách hàng");
+        }
 
         // Check customerType
         if (customerTypeDocument.getCustomerType() != null) {

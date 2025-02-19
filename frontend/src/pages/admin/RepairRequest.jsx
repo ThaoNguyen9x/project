@@ -1,4 +1,6 @@
+import dayjs from "dayjs";
 import React, { useRef, useState, useEffect, useContext } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Button,
   Input,
@@ -8,6 +10,7 @@ import {
   message,
   notification,
 } from "antd";
+import Highlighter from "react-highlight-words";
 
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoSearchOutline } from "react-icons/io5";
@@ -23,16 +26,15 @@ import {
 import ModalRepairRequest from "../../components/admin/Repair_Request/modal.repair-request";
 import ViewRepairRequest from "../../components/admin/Repair_Request/view.repair-request";
 
-import Access from "../../components/share/Access";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
-import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_DATE_DISPLAY, FORMAT_TEXT_LENGTH } from "../../utils/constant";
-import Highlighter from "react-highlight-words";
 import { AuthContext } from "../../components/share/Context";
-import dayjs from "dayjs";
+import Access from "../../components/share/Access";
+import HighlightText from "../../components/share/HighlightText";
 
 const RepairRequest = () => {
   const { user } = useContext(AuthContext);
+  const location = useLocation();
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -170,7 +172,7 @@ const RepairRequest = () => {
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
-      title: "Ngày yêu cầu",
+      title: "Ngày thi công",
       dataIndex: "requestDate",
       sorter: (a, b) => a.requestDate.localeCompare(b.requestDate),
       ...getColumnSearchProps("requestDate"),
@@ -345,6 +347,24 @@ const RepairRequest = () => {
       });
     }
   };
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const requestID = queryParams.get("requestID");
+
+    if (requestID) {
+      const fetchRequest = async () => {
+        const res = await callGetAllRepairRequests(
+          `filter=requestID~'${requestID}'`
+        );
+        if (res?.data?.result.length) {
+          setData(res.data.result[0]);
+          setOpenViewDetail(true);
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

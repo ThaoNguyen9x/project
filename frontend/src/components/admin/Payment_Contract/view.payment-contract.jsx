@@ -28,11 +28,16 @@ const ViewPaymentContract = (props) => {
         {
           label: "Số tiền thanh toán",
           children: data?.paymentAmount
-            ? data.paymentAmount.toLocaleString("vi-VN", {
+            ? data.paymentAmount.toLocaleString("en-US", {
                 style: "currency",
-                currency: "VND",
+                currency: "USD",
               })
             : "N/A",
+          span: 2,
+        },
+        {
+          label: "Hạn thanh toán",
+          children: data?.dueDate || "N/A",
           span: 2,
         },
         {
@@ -78,9 +83,9 @@ const ViewPaymentContract = (props) => {
         {
           label: "Tổng số tiền",
           children: data?.totalAmount
-            ? data.totalAmount.toLocaleString("vi-VN", {
+            ? data.totalAmount.toLocaleString("en-US", {
                 style: "currency",
-                currency: "VND",
+                currency: "USD",
               })
             : "N/A",
           span: 2,

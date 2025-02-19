@@ -87,8 +87,8 @@ public class NotificationPaymentContractService {
             String message = JsonUntils.toJson(verificationElectricityUsageDto);
             Recipient rec = new Recipient();
 
-            rec.setType("Contact");
-            rec.setName("Electricity usage verification");
+            rec.setName("Contact");
+            rec.setType("Electricity_Usage_Verification");
             rec.setReferenceId(contactId);
 
             Recipient recipient = recipientService.createRecipient(rec);

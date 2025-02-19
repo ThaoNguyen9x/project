@@ -3,9 +3,6 @@ package com.building_mannager_system.controller.paymentController;
 import com.building_mannager_system.entity.pament_entity.PaymentContract;
 import com.building_mannager_system.entity.pament_entity.StripeResponse;
 import com.building_mannager_system.service.payment.StripeService;
-import com.building_mannager_system.utils.annotation.ApiMessage;
-import com.building_mannager_system.utils.exception.APIException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

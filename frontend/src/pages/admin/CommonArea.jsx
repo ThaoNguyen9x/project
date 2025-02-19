@@ -7,7 +7,6 @@ import {
   Popconfirm,
   message,
   notification,
-  Modal,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
@@ -16,23 +15,22 @@ import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
-  callDeleteContract,
-  callGetAllContracts,
-  callGetAllCustomers,
-  callGetAllOffices,
+  callDeleteCommonArea,
+  callGetAllCommonAreas,
+  callGetAllLocations,
 } from "../../services/api";
 
-import ModalContract from "../../components/admin/Customer_Service/Contract/modal.contract";
-import ViewContract from "../../components/admin/Customer_Service/Contract/view.contract";
+import ModalCommonArea from "../../components/admin/Common_Area/modal.common-area";
+import ViewCommonArea from "../../components/admin/Common_Area/view.common-area";
+
 import Access from "../../components/share/Access";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
-import PDFViewer from "../../components/share/PDFViewer";
-import Highlighter from "react-highlight-words";
-import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import HighlightText from "../../components/share/HighlightText";
+import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
+import Highlighter from "react-highlight-words";
 
-const Contract = () => {
+const CommonArea = () => {
   const { user } = useContext(AuthContext);
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,22 +48,13 @@ const Contract = () => {
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
 
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-
-  const [listCustomers, setListCustomers] = useState([]);
-  const [listOffices, setListOffices] = useState([]);
+  const [listLocations, setListLocations] = useState([]);
 
   useEffect(() => {
     const init = async () => {
-      const customer = await callGetAllCustomers();
-      if (customer && customer.data) {
-        setListCustomers(customer.data?.result);
-      }
-
-      const office = await callGetAllOffices();
-      if (office && office.data) {
-        setListOffices(office.data?.result);
+      const res = await callGetAllLocations();
+      if (res && res.data) {
+        setListLocations(res.data?.result);
       }
     };
     init();
@@ -176,14 +165,14 @@ const Contract = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
-      title: "Ngày bắt đầu",
-      dataIndex: "startDate",
-      sorter: (a, b) => new Date(a.startDate) - new Date(b.startDate),
-      ...getColumnSearchProps("startDate"),
+      title: "Tên",
+      dataIndex: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      ...getColumnSearchProps("name"),
       render: (text, record) => {
         return (
           <a
@@ -192,129 +181,66 @@ const Contract = () => {
               setOpenViewDetail(true);
             }}
           >
-            {searchedColumn === "startDate" ? (
-              <HighlightText text={record?.startDate} searchText={searchText} />
+            {searchedColumn === "name" ? (
+              <HighlightText text={record?.name} searchText={searchText} />
             ) : (
-              record?.startDate
+              FORMAT_TEXT_LENGTH(record?.name, 20)
             )}
           </a>
         );
       },
     },
     {
-      title: "Ngày kết thúc",
-      dataIndex: "endDate",
-      sorter: (a, b) => new Date(a.endDate) - new Date(b.endDate),
-      ...getColumnSearchProps("endDate"),
-    },
-    {
-      title: "Khách hàng",
-      dataIndex: "customer",
-      sorter: (a, b) =>
-        a.customer.companyName.localeCompare(b.customer.companyName),
-      ...getColumnSearchProps("customer.companyName"),
-      render: (customer) => {
-        return (
-          <a
-            onClick={() => {
-              setData(customer);
-              setOpenViewDetail(true);
-            }}
-          >
-            {searchedColumn === "customer.companyName" ? (
-              <HighlightText
-                text={customer?.companyName}
-                searchText={searchText}
-              />
-            ) : (
-              FORMAT_TEXT_LENGTH(customer?.companyName, 20)
-            )}
-          </a>
-        );
-      },
-    },
-    {
-      title: "Tổng số tiền",
-      dataIndex: "totalAmount",
-      sorter: (a, b) => a.totalAmount - b.totalAmount,
-      ...getColumnSearchProps("totalAmount"),
-      render: (text, record) => {
-        const formatted =
-          record?.totalAmount.toLocaleString("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          }) || "N/A";
-
-        return searchedColumn === "totalAmount" ? (
-          <HighlightText text={formatted} searchText={searchText} />
-        ) : (
-          formatted
-        );
-      },
-    },
-    {
-      title: "File",
-      dataIndex: "fileName",
-      render: (text, record) => {
-        return record.fileName ? (
-          <a
-            onClick={() => {
-              setPdfUrl(
-                `${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
-                  record?.fileName
-                }`
-              );
-              setPreviewOpen(true);
-            }}
-          >
-            View
-          </a>
-        ) : (
-          "N/A"
-        );
-      },
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "leaseStatus",
-      filters: [
-        {
-          text: "Hoạt động",
-          value: "Active",
+        title: "Vị trí",
+        dataIndex: "location",
+        sorter: (a, b) => a.location.floor.localeCompare(b.location.floor),
+        ...getColumnSearchProps("location.floor"),
+        render: (text, record) => {
+          return searchedColumn === "location.floor" ? (
+            <HighlightText
+              text={record?.location?.floor}
+              searchText={searchText}
+            />
+          ) : (
+            FORMAT_TEXT_LENGTH(record?.location?.floor, 20)
+          );
         },
-        {
-          text: "Đã chấm dứt",
-          value: "Inactive",
-        },
-        {
-          text: "Đang chờ gia hạn",
-          value: "Pending",
-        },
-      ],
-      onFilter: (value, record) => record?.leaseStatus === value,
-      render: (leaseStatus, record) => (
-        <span
-          className={`${
-            leaseStatus === "Active"
-              ? "success"
-              : leaseStatus === "Inactive"
-              ? "danger"
-              : "warning"
-          } status`}
-        >
-          {leaseStatus === "Active"
-            ? "Hoạt động"
-            : leaseStatus === "Inactive"
-            ? "Đã chấm dứt"
-            : "Đang chờ gia hạn"}
-        </span>
-      ),
+      },
+    {
+      title: "Màu đại diện",
+      dataIndex: "color",
+      ...getColumnSearchProps("color"),
+      sorter: (a, b) => a.color.localeCompare(b.color),
+    },
+    {
+      title: "startX",
+      dataIndex: "startX",
+      ...getColumnSearchProps("startX"),
+      sorter: (a, b) => a.startX - b.startX,
+    },
+    {
+      title: "startY",
+      dataIndex: "startY",
+      ...getColumnSearchProps("startY"),
+      sorter: (a, b) => a.startY - b.startY,
+    },
+    {
+      title: "endX",
+      dataIndex: "endX",
+      ...getColumnSearchProps("endX"),
+      sorter: (a, b) => a.endX - b.endX,
+    },
+    {
+      title: "endY",
+      dataIndex: "endY",
+      ...getColumnSearchProps("endY"),
+      sorter: (a, b) => a.endY - b.endY,
     },
     {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.CONTRACTS.UPDATE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.SYSTEMS.UPDATE} hideChildren>
             <div
               onClick={() => {
                 setData(record);
@@ -325,7 +251,7 @@ const Contract = () => {
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access permission={ALL_PERMISSIONS.CONTRACTS.DELETE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.SYSTEMS.DELETE} hideChildren>
             <Popconfirm
               placement="leftBottom"
               okText="Có"
@@ -369,7 +295,7 @@ const Contract = () => {
       query += `&${sortQuery}`;
     }
 
-    const res = await callGetAllContracts(query);
+    const res = await callGetAllCommonAreas(query);
     if (res && res.data) {
       setList(
         res.data.result.sort(
@@ -403,7 +329,7 @@ const Contract = () => {
   };
 
   const handleDelete = async (id) => {
-    const res = await callDeleteContract(id);
+    const res = await callDeleteCommonArea(id);
 
     if (res && res && res.statusCode === 200) {
       message.success(res.message);
@@ -419,9 +345,12 @@ const Contract = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Hợp đồng</h2>
-        <Access permission={ALL_PERMISSIONS.CONTRACTS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+        <h2 className="text-base xl:text-xl font-bold">Khu vực chung</h2>
+        <Access permission={ALL_PERMISSIONS.SYSTEMS.CREATE} hideChildren>
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
@@ -444,7 +373,7 @@ const Contract = () => {
           }}
         />
 
-        <ViewContract
+        <ViewCommonArea
           user={user}
           data={data}
           setData={setData}
@@ -452,35 +381,17 @@ const Contract = () => {
           setOpenViewDetail={setOpenViewDetail}
         />
 
-        <ModalContract
+        <ModalCommonArea
           data={data}
           setData={setData}
           openModal={openModal}
           setOpenModal={setOpenModal}
           fetchData={fetchData}
-          listCustomers={listCustomers}
-          listOffices={listOffices}
+          listLocations={listLocations}
         />
-
-        <Modal
-          title="PDF"
-          open={previewOpen}
-          onCancel={() => {
-            setPreviewOpen(false);
-            setPdfUrl();
-          }}
-          footer={null}
-          width={800}
-          styles={{ body: { height: "600px" } }}
-          style={{
-            top: 20,
-          }}
-        >
-          <PDFViewer fileUrl={pdfUrl} />
-        </Modal>
       </div>
     </div>
   );
 };
 
-export default Contract;
+export default CommonArea;

@@ -36,8 +36,9 @@ public class HandoverStatusController {
     @PostMapping
     @ApiMessage("Tạo tình trạng bàn giao thành công")
     public ResponseEntity<HandoverStatusDto> createHandoverStatus(@ModelAttribute HandoverStatus handoverStatus,
+                                                                  @RequestPart(value = "equipment", required = false) MultipartFile equipment,
                                                                   @RequestPart(value = "drawing", required = false) MultipartFile drawing) throws URISyntaxException, IOException {
-        return new ResponseEntity<>(handoverStatusService.createHandoverStatus(drawing, handoverStatus), HttpStatus.CREATED);
+        return new ResponseEntity<>(handoverStatusService.createHandoverStatus(equipment, drawing, handoverStatus), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -49,9 +50,10 @@ public class HandoverStatusController {
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật tình trạng bàn giao thành công")
     public ResponseEntity<HandoverStatusDto> updateHandoverStatus(@PathVariable(name = "id") int id,
+                                                                  @RequestPart(value = "equipment", required = false) MultipartFile equipment,
                                                                   @RequestPart(value = "drawing", required = false) MultipartFile drawing,
                                                                   @ModelAttribute HandoverStatus handoverStatus) throws URISyntaxException, IOException {
-        return ResponseEntity.ok(handoverStatusService.updateHandoverStatus(id, drawing, handoverStatus));
+        return ResponseEntity.ok(handoverStatusService.updateHandoverStatus(id, equipment, drawing, handoverStatus));
     }
 
     @DeleteMapping("/{id}")

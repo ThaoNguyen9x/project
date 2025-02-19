@@ -37,7 +37,7 @@ public class Meter extends BaseEntity {
     private MeterType meterType;  // Loại đồng hồ (một pha hoặc ba pha)
 
     @Column(name = "InstallationDate")  // Đổi tên trường thành "InstallationDate"
-    private LocalDate installationDate;  // Ngày lắp
+    private LocalDate installationDate = LocalDate.now();  // Ngày lắp
 
     @OneToMany(mappedBy = "meter", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
