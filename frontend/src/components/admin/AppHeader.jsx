@@ -52,7 +52,7 @@ const AppHeader = () => {
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
     const client = Stomp.over(sock);
 
-    // client.debug = () => {};
+    client.debug = () => {};
 
     client.connect({}, () => {
       setStompClient(client);
@@ -68,7 +68,7 @@ const AppHeader = () => {
         `/topic/messages/${user.id}`,
         `/topic/birthday-notifications/${user.id}`,
         `/topic/repair-proposal-notifications/${user.id}`,
-        `/topic/exp-payment-notifications/${user.id}`
+        `/topic/exp-payment-notifications/${user.id}`,
       ];
 
       topics.forEach((topic) => {
@@ -232,6 +232,8 @@ const AppHeader = () => {
             ? JSON.parse(notification?.message)
             : null;
 
+          const recipient = notification?.type || null;
+
           const formattedDate = message?.paymentDate
             ? new Date(message?.paymentDate).toLocaleDateString()
             : "N/A";
@@ -246,26 +248,52 @@ const AppHeader = () => {
           let notificationText = "";
 
           if (message) {
-            if (message.paymentStatus === "UNPAID") {
+            if (notification?.recipient?.type === "Contact") {
               notificationText = `Khách hàng có khoản thanh toán ${formattedAmount} hạn chót thanh toán vào ${formattedDate}.`;
             } else if (message.paymentStatus === "PAID") {
               notificationText = `Khách hàng vừa thanh toán thành công khoản tiền ${formattedAmount} vào ngày ${formattedDate}.`;
-            } else if (message.status === "UNACTIV") {
+            } else if (
+              notification?.recipient?.type === "Electricity_Usage_Verification"
+            ) {
               notificationText = `Khách hàng vui lòng kiểm tra đồng hồ số ${message?.meter?.serialNumber} đã được ghi chỉ số vào ngày ${message?.readingDate}.`;
-            } else if (message.status === "ACTIV") {
-              notificationText = `Đồng hồ số ${message?.meter?.serialNumber} đã được xác nhận vào ngày ${message?.readingDate}.`;
-            } else if (message.companyName) {
+            } else if (
+              notification?.recipient?.type === "Birthday_Notification"
+            ) {
               notificationText = `Khách hàng ${message?.directorName} của công ty ${message?.companyName} sau 3 ngày nữa sẽ đến sinh nhật.`;
-            } else if (message.maintenanceDate) {
-              notificationText = `Bạn có lịch bảo trì vào ngày ${message?.maintenanceDate}`;
-            } else if (message.requestDate) {
+            } else if (
+              notification?.recipient?.type === "Repair_Proposal_Notification"
+            ) {
               notificationText = `Bạn có yêu cầu bảo trì vào ngày ${new Date(
                 message?.requestDate
               ).toLocaleDateString("vi-VN")}`;
-            } else if (message.registrationID) {
+            } else if (
+              notification?.recipient?.type === "Repair_Request_Notification"
+            ) {
+              notificationText = `Bạn có yêu cầu sửa chữa vào ngày ${new Date(
+                message?.requestDate
+              ).toLocaleDateString("vi-VN")}`;
+            } else if (
+              notification?.recipient?.type === "Work_Registration_Notification"
+            ) {
               notificationText = `Bạn có yêu cầu đăng ký công việc vào ngày ${new Date(
                 message?.registrationDate
               ).toLocaleDateString("vi-VN")}`;
+            } else if (
+              notification?.recipient?.type === "Due_Payment_Notification"
+            ) {
+              notificationText = `Khoản thanh toán đến hạn, thời hạn cuối là ngày ${new Date(
+                message?.dueDate
+              ).toLocaleDateString("vi-VN")}`;
+            } else if (
+              notification?.recipient?.type === "Exp_Payment_Notification"
+            ) {
+              notificationText = `Khoản thanh toán hết hạn, ${new Date(
+                message?.dueDate
+              ).toLocaleDateString("vi-VN")}`;
+            } else if (
+              notification?.recipient?.type === "Maintenance_Task_Notification"
+            ) {
+              notificationText = `Bạn có nhiệm vụ bảo trì cần kiểm tra`;
             }
           }
 
@@ -286,22 +314,35 @@ const AppHeader = () => {
                 } hover:text-blue-500 transition duration-300 ease-in-out`}
               >
                 <p className="font-bold">
-                  {message?.paymentStatus === "UNPAID"
+                  {notification?.recipient?.type === "Contact"
                     ? "Thanh toán chờ xử lý"
                     : message?.paymentStatus === "PAID"
                     ? "Thanh toán thành công"
-                    : message?.status === "UNACTIV"
+                    : notification?.recipient?.type ===
+                      "Electricity_Usage_Verification"
                     ? "Chưa được xác nhận"
                     : message?.status === "ACTIV"
                     ? "Đã được xác nhận"
-                    : message?.companyName
+                    : notification?.recipient?.type === "Birthday_Notification"
                     ? "Thông báo sinh nhật"
-                    : message?.title
-                    ? "Thông báo"
-                    : message?.requestDate
+                    : notification?.recipient?.type ===
+                      "Due_Payment_Notification"
+                    ? "Thông báo đến hạn thanh toán"
+                    : notification?.recipient?.type ===
+                      "Exp_Payment_Notification"
+                    ? "Thông báo hết hạn thanh toán"
+                    : notification?.recipient?.type ===
+                      "Repair_Request_Notification"
                     ? "Thông báo yêu cầu sửa chữa"
-                    : message?.registrationID
+                    : notification?.recipient?.type ===
+                      "Work_Registration_Notification"
                     ? "Thông báo đăng ký công việc"
+                    : notification?.recipient?.type ===
+                      "Repair_Proposal_Notification"
+                    ? "Thông báo yêu cầu bảo trì"
+                    : notification?.recipient?.type ===
+                      "Maintenance_Task_Notification"
+                    ? "Thông báo nhiệm vụ bảo trì"
                     : "Thông báo không xác định"}
                 </p>
                 <p>

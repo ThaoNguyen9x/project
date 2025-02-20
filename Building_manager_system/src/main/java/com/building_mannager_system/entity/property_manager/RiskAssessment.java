@@ -36,7 +36,7 @@ public class RiskAssessment extends BaseEntity {
     @JoinColumn(name = "deviceID", nullable = false)
     private Device device;
 
-    private LocalDate assessmentDate; // Date of risk assessment
+    private LocalDate assessmentDate = LocalDate.now(); // Date of risk assessment
 
     @Column(nullable = false)
     private Integer riskProbability; // 1-10

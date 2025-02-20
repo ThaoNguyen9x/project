@@ -31,25 +31,25 @@ public class Scheduler {
         }
     }
 
-////    @Scheduled(cron = "0 0 8 * * ?") // Chạy vào 08:00 AM mỗi ngày
+    @Scheduled(cron = "0 0 8 * * ?") // Chạy vào 08:00 AM mỗi ngày
 //     @Scheduled(cron = "*/1 * * * * *")
-//    public void duePaymentCheckNotifications() {
-//        List<CheckPaymentNotificationDto> payments = paymentContractService.checkDuePayment();
-//        if (!payments.isEmpty()) {
-//            for (CheckPaymentNotificationDto payment : payments) {
-//                System.out.println("Payment due, " + payment.getContract().getCustomer().getId());
-//            }
-//        }
-//    }
-//
-////    @Scheduled(cron = "0 0 8 * * ?") // Chạy vào 08:00 AM mỗi ngày
+    public void duePaymentCheckNotifications() {
+        List<CheckPaymentNotificationDto> payments = paymentContractService.checkDuePayment();
+        if (!payments.isEmpty()) {
+            for (CheckPaymentNotificationDto payment : payments) {
+                System.out.println("Payment due, " + payment.getContract().getCustomer().getId());
+            }
+        }
+    }
+
+    @Scheduled(cron = "0 0 8 * * ?") // Chạy vào 08:00 AM mỗi ngày
 //     @Scheduled(cron = "*/1 * * * * *")
-//    public void expPaymentCheckNotifications() {
-//        List<CheckPaymentNotificationDto> payments = paymentContractService.checkExpPayment();
-//        if (!payments.isEmpty()) {
-//            for (CheckPaymentNotificationDto payment : payments) {
-//                System.out.println("Payment exp, " + payment.getContract().getCustomer().getId());
-//            }
-//        }
-//    }
+    public void expPaymentCheckNotifications() {
+        List<CheckPaymentNotificationDto> payments = paymentContractService.checkExpPayment();
+        if (!payments.isEmpty()) {
+            for (CheckPaymentNotificationDto payment : payments) {
+                System.out.println("Payment exp, " + payment.getContract().getCustomer().getId());
+            }
+        }
+    }
 }

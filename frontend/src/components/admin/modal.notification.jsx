@@ -16,7 +16,7 @@ const ModalNotification = (props) => {
     : "N/A";
 
   const content =
-    notificationDetails?.recipient?.name === "Send payment request" ? (
+    notificationDetails?.recipient?.type === "Contact" ? (
       <div className="flex flex-col gap-2">
         <p>
           Khách hàng có khoản thanh toán tổng số tiền là{" "}
@@ -52,7 +52,7 @@ const ModalNotification = (props) => {
           Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
         </Link>
       </div>
-    ) : notificationDetails?.recipient?.name === "Send birthday request" ? (
+    ) : notificationDetails?.recipient?.type === "Birthday_Notification" ? (
       <div className="flex flex-col gap-2">
         <p>
           Ngày <b>{message?.birthday}</b> là sinh của nhật của khách hàng{" "}
@@ -61,7 +61,7 @@ const ModalNotification = (props) => {
         </p>
 
         <Link
-          to="/dashboard/customers"
+          to="/dashboard/payment-contracts"
           onClick={() => setOpenNotification(false)}
         >
           Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
@@ -71,7 +71,7 @@ const ModalNotification = (props) => {
       "Repair_Request_Notification" ? (
       <div className="flex flex-col gap-2">
         <p>
-          Có một yêu cầu sữa chữa vào ngày{" "}
+          Bạn có một yêu cầu sữa chữa vào ngày{" "}
           <b>{new Date(message?.requestDate).toLocaleDateString("vi-VN")}</b>
         </p>
 
@@ -86,7 +86,7 @@ const ModalNotification = (props) => {
       "Work_Registration_Notification" ? (
       <div className="flex flex-col gap-2">
         <p>
-          Có một đăng ký công việc vào ngày{" "}
+          Bạn có một đăng ký công việc vào ngày{" "}
           <b>
             {new Date(message?.registrationDate).toLocaleDateString("vi-VN")}
           </b>
@@ -94,6 +94,60 @@ const ModalNotification = (props) => {
 
         <Link
           to={`/dashboard/work-registrations?openViewDetail=true&registrationID=${message?.registrationID}`}
+          onClick={() => setOpenNotification(false)}
+        >
+          Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
+        </Link>
+      </div>
+    ) : notificationDetails?.recipient?.type === "Due_Payment_Notification" ? (
+      <div className="flex flex-col gap-2">
+        <p>
+          Khoản thanh toán đến hạn, thời hạn cuối là ngày{" "}
+          <b>{new Date(message?.dueDate).toLocaleDateString("vi-VN")}</b>
+        </p>
+
+        <Link
+          to={`/dashboard/payment-contracts?openViewDetail=true&paymentId=${message?.paymentId}`}
+          onClick={() => setOpenNotification(false)}
+        >
+          Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
+        </Link>
+      </div>
+    ) : notificationDetails?.recipient?.type === "Exp_Payment_Notification" ? (
+      <div className="flex flex-col gap-2">
+        <p>Khoản thanh toán hết hạn</p>
+
+        <Link
+          to={`/dashboard/payment-contracts?openViewDetail=true&paymentId=${message?.paymentId}`}
+          onClick={() => setOpenNotification(false)}
+        >
+          Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
+        </Link>
+      </div>
+    ) : notificationDetails?.recipient?.type ===
+      "Maintenance_Task_Notification" ? (
+      <div className="flex flex-col gap-2">
+        <p>
+          Bạn có nhiệm vụ bảo trì vào ngày{" "}
+          <b>{new Date(message?.notifications).toLocaleDateString("vi-VN")}</b>
+        </p>
+
+        <Link
+          to={`/dashboard/notifications?openViewDetail=true&id=${message?.id}`}
+          onClick={() => setOpenNotification(false)}
+        >
+          Vui lòng kiểm tra thông tin chi tiết trong hệ thống.
+        </Link>
+      </div>
+    ) : notificationDetails?.recipient?.type ===
+      "Repair_Proposal_Notification" ? (
+      <div className="flex flex-col gap-2">
+        <p>
+          Bạn có thông báo yêu cầu sửa chữa ngày{" "}
+          <b>{new Date(message?.requestDate).toLocaleDateString("vi-VN")}</b>
+        </p>
+        <Link
+          to={`/dashboard/repair-proposals?openViewDetail=true&id=${message?.id}`}
           onClick={() => setOpenNotification(false)}
         >
           Vui lòng kiểm tra thông tin chi tiết trong hệ thống.

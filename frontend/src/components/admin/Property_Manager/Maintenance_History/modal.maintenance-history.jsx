@@ -15,6 +15,7 @@ import {
 import {
   callCreateMaintenanceHistory,
   callCreateRiskAssessment,
+  callDeleteMaintenanceHistory,
   callUpdateMaintenanceHistory,
   callUpdateRiskAssessment,
 } from "../../../../services/api";
@@ -70,73 +71,85 @@ const ModalMaintenanceHistory = (props) => {
   const handleFinish = async (values) => {
     setIsSubmit(true);
 
-    const formattedValues = {
-      ...values,
-      maintenanceService: { id: values.maintenanceService },
-      technician: { id: values.technician },
-      contractor: { id: values.contractor },
-      device: { deviceId: values.device },
-      performedDate: dayjs(values.performedDate)
-        .startOf("day")
-        .format("YYYY-MM-DD"),
-      assessmentDate: dayjs(values.assessmentDate)
-        .startOf("day")
-        .format("YYYY-MM-DD"),
-    };
-
     try {
+      let resMaintenanceHistory;
+      let resRiskAssessment;
+
       if (data?.id) {
-        const resMaintenanceHistory = await callUpdateMaintenanceHistory(
+        resMaintenanceHistory = await callUpdateMaintenanceHistory(
           data.id,
-          formattedValues.maintenanceService,
-          formattedValues.performedDate,
-          formattedValues.notes,
-          formattedValues.technician,
-          formattedValues.findings,
-          formattedValues.resolution,
-          formattedValues.phone
+          { id: values.maintenanceService },
+          values.performedDate
+            ? dayjs(values.performedDate).startOf("day").format("YYYY-MM-DD")
+            : null,
+          values.notes,
+          { id: values.technician },
+          values.findings,
+          values.resolution,
+          values.phone
         );
 
-        const resRiskAssessment = await callUpdateRiskAssessment(
+        if (!resMaintenanceHistory || !resMaintenanceHistory.data) {
+          throw new Error(resMaintenanceHistory?.error);
+        }
+
+        resRiskAssessment = await callUpdateRiskAssessment(
           resMaintenanceHistory?.data?.riskAssessments?.[0]?.riskAssessmentID,
           { id: resMaintenanceHistory.data.id },
-          formattedValues.contractor,
-          formattedValues.systemType,
-          formattedValues.device,
-          formattedValues.assessmentDate,
-          formattedValues.riskProbability,
-          formattedValues.riskImpact,
-          formattedValues.riskDetection,
-          formattedValues.mitigationAction,
-          formattedValues.remarks
+          {
+            id: resMaintenanceHistory.data.maintenanceService.subcontractor.id,
+          },
+          values.systemType,
+          { deviceId: values.device },
+          values.assessmentDate
+            ? dayjs(values.assessmentDate).startOf("day").format("YYYY-MM-DD")
+            : null,
+          values.riskProbability,
+          values.riskImpact,
+          values.riskDetection,
+          values.mitigationAction,
+          values.remarks
         );
+
+        if (!resRiskAssessment || !resRiskAssessment.data) {
+          throw new Error(resRiskAssessment?.error);
+        }
 
         message.success(
           "Cập nhật lịch sử bảo trì & đánh giá rủi ro thành công"
         );
       } else {
-        const resMaintenanceHistory = await callCreateMaintenanceHistory(
-          formattedValues.maintenanceService,
-          formattedValues.performedDate,
-          formattedValues.notes,
-          formattedValues.technician,
-          formattedValues.findings,
-          formattedValues.resolution,
-          formattedValues.phone
+        resMaintenanceHistory = await callCreateMaintenanceHistory(
+          { id: values.maintenanceService },
+          values.notes,
+          { id: values.technician },
+          values.findings,
+          values.resolution,
+          values.phone
         );
 
-        const resRiskAssessment = await callCreateRiskAssessment(
+        if (!resMaintenanceHistory || !resMaintenanceHistory.data) {
+          throw new Error(resMaintenanceHistory?.error);
+        }
+
+        resRiskAssessment = await callCreateRiskAssessment(
           { id: resMaintenanceHistory.data.id },
-          formattedValues.contractor,
-          formattedValues.systemType,
-          formattedValues.device,
-          formattedValues.assessmentDate,
-          formattedValues.riskProbability,
-          formattedValues.riskImpact,
-          formattedValues.riskDetection,
-          formattedValues.mitigationAction,
-          formattedValues.remarks
+          {
+            id: resMaintenanceHistory.data.maintenanceService.subcontractor.id,
+          },
+          values.systemType,
+          { deviceId: values.device },
+          values.riskProbability,
+          values.riskImpact,
+          values.riskDetection,
+          values.mitigationAction,
+          values.remarks
         );
+
+        if (!resRiskAssessment || !resRiskAssessment.data) {
+          await callDeleteMaintenanceHistory(resMaintenanceHistory.data.id);
+          throw new Error(resRiskAssessment?.error);
+        }
 
         message.success("Tạo lịch sử bảo trì & đánh giá rủi ro thành công");
       }
@@ -146,7 +159,8 @@ const ModalMaintenanceHistory = (props) => {
     } catch (error) {
       notification.error({
         message: "Có lỗi xảy ra",
-        description: error.message,
+        description:
+          error?.response?.data?.message || error?.message || "Đã xảy ra lỗi",
       });
     }
 
@@ -325,38 +339,6 @@ const ModalMaintenanceHistory = (props) => {
         <Row gutter={16}>
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Nhà thầu phụ"
-              name="contractor"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
-                {listSubcontractors.map((contractor) => (
-                  <Select.Option
-                    key={contractor.id}
-                    value={contractor.id}
-                    label={contractor.name}
-                  >
-                    {contractor.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
               label="Thiết bị"
               name="device"
               rules={[
@@ -430,10 +412,18 @@ const ModalMaintenanceHistory = (props) => {
                     .includes(input.toLowerCase())
                 }
               >
-                <Option value="ELECTRICAL">Hệ thống Điện</Option>
-                <Option value="PLUMBING">Hệ thống Cấp thoát nước</Option>
-                <Option value="HVAC">Hệ thống Điều hòa không khí</Option>
-                <Option value="FIRE_PROTECTION">Hệ thống Phòng cháy</Option>
+                <Option value="ELECTRICAL" label="Hệ thống Điện">
+                  Hệ thống Điện
+                </Option>
+                <Option value="PLUMBING" label="Hệ thống Cấp thoát nước">
+                  Hệ thống Cấp thoát nước
+                </Option>
+                <Option value="HVAC" label="Hệ thống Điều hòa không khí">
+                  Hệ thống Điều hòa không khí
+                </Option>
+                <Option value="FIRE_PROTECTION" label="Hệ thống Phòng cháy">
+                  Hệ thống Phòng cháy
+                </Option>
               </Select>
             </Form.Item>
           </Col>

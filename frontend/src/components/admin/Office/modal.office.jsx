@@ -24,13 +24,19 @@ import {
   callCreateCustomer,
   callCreateCustomerDocument,
   callCreateHandoverStatus,
+  callCreateMeter,
   callCreateOffice,
   callCreateUser,
+  callDeleteCustomer,
   callDeleteHandoverStatus,
+  callDeleteMeter,
+  callDeleteOffice,
+  callDeleteUser,
   callUpdateContract,
   callUpdateCustomer,
   callUpdateCustomerDocument,
   callUpdateHandoverStatus,
+  callUpdateMeter,
   callUpdateOffice,
   callUpdateUser,
 } from "../../../services/api";
@@ -40,7 +46,7 @@ import dayjs from "dayjs";
 
 const { Option } = Select;
 
-const ModalOfficeHandover = (props) => {
+const ModalOffice = (props) => {
   const {
     data,
     setData,
@@ -79,6 +85,9 @@ const ModalOfficeHandover = (props) => {
         endX: data?.office?.endX || 0,
         endY: data?.office?.endY || 0,
         drawingFile: data?.office?.drawingFile || null,
+
+        serialNumber: data?.office?.meters?.[0]?.serialNumber || null,
+        meterType: data?.office?.meters?.[0]?.meterType || null,
 
         handover: handover?.handover || null,
         statusHandover: handover?.status || null,
@@ -144,7 +153,7 @@ const ModalOfficeHandover = (props) => {
                   url: `${
                     import.meta.env.VITE_BACKEND_URL
                   }/storage/customer_documents/${custDoc.filePath}`,
-                  originFileObj: null, 
+                  originFileObj: null,
                 }))
               : [];
             return acc;
@@ -191,6 +200,10 @@ const ModalOfficeHandover = (props) => {
   const handleFinish = async (values) => {
     try {
       let resOffice;
+      let resUser;
+      let resCustomer;
+      let resContract;
+      let resMeter;
 
       if (!data?.id) {
         resOffice = await callCreateOffice(
@@ -208,18 +221,41 @@ const ModalOfficeHandover = (props) => {
             : null
         );
 
-        const resUser = await callCreateUser(
+        if (!resOffice || !resOffice.data) {
+          throw new Error(resOffice?.error);
+        }
+
+        resMeter = await callCreateMeter(
+          values.serialNumber,
+          values.meterType,
+          {
+            id: resOffice.data.id,
+          }
+        );
+
+        if (!resMeter || !resMeter.data) {
+          await callDeleteOffice(resOffice.data.id);
+          throw new Error(resMeter?.error);
+        }
+
+        resUser = await callCreateUser(
           values.nameUser,
           values.emailUser,
           values.mobile,
           values.password,
           values.statusUser,
           {
-            id: (values.role = 8),
+            id: (values.role = 2),
           }
         );
 
-        const resCustomer = await callCreateCustomer(
+        if (!resUser || !resUser.data) {
+          await callDeleteOffice(resOffice.data.id);
+          await callDeleteMeter(resMeter.data.id);
+          throw new Error(resUser?.error);
+        }
+
+        resCustomer = await callCreateCustomer(
           values.companyName,
           { id: values.customerType },
           values.email,
@@ -232,6 +268,13 @@ const ModalOfficeHandover = (props) => {
             : null,
           { id: resUser.data.id }
         );
+
+        if (!resCustomer || !resCustomer.data) {
+          await callDeleteUser(resUser.data.id);
+          await callDeleteOffice(resOffice.data.id);
+          await callDeleteMeter(resMeter.data.id);
+          throw new Error(resCustomer?.error);
+        }
 
         const selectedDocIds = Object.keys(checkedDocuments).filter(
           (key) => checkedDocuments[key]
@@ -248,7 +291,7 @@ const ModalOfficeHandover = (props) => {
           );
         });
 
-        const resContract = await callCreateContract(
+        resContract = await callCreateContract(
           values.startDate
             ? dayjs(values.startDate).startOf("day").format("YYYY-MM-DD")
             : null,
@@ -262,18 +305,30 @@ const ModalOfficeHandover = (props) => {
             ? dataFileContract[0].originFileObj || dataFileContract[0].url
             : null
         );
+
+        if (!resContract || !resContract.data) {
+          await callDeleteCustomer(resCustomer.data.id);
+          await callDeleteUser(resUser.data.id);
+          await callDeleteOffice(resOffice.data.id);
+          await callDeleteMeter(resMeter.data.id);
+          throw new Error(resContract?.error);
+        }
+
       } else {
-        const resUser = await callUpdateUser(
+        resUser = await callUpdateUser(
           data?.customer?.user?.id,
           values.nameUser,
           values.emailUser,
           values.mobile,
-          (values.password = 1),
           values.statusUser,
           {
-            id: (values.role = 8),
+            id: (values.role = 2),
           }
         );
+
+        if (!resUser || !resUser.data) {
+          throw new Error(resUser?.error);
+        }
 
         resOffice = await callUpdateOffice(
           data?.office?.id,
@@ -291,7 +346,24 @@ const ModalOfficeHandover = (props) => {
             : null
         );
 
-        const resCustomer = await callUpdateCustomer(
+        if (!resOffice || !resOffice.data) {
+          throw new Error(resOffice?.error);
+        }
+
+        resMeter = await callUpdateMeter(
+          data?.office?.meters?.[0]?.id,
+          values.serialNumber,
+          values.meterType,
+          {
+            id: resOffice.data.id,
+          }
+        );
+
+        if (!resMeter || !resMeter.data) {
+          throw new Error(resMeter?.error);
+        }
+
+        resCustomer = await callUpdateCustomer(
           data?.customer?.id,
           values.companyName,
           { id: values.customerType },
@@ -305,6 +377,10 @@ const ModalOfficeHandover = (props) => {
             : null,
           { id: resUser.data.id }
         );
+
+        if (!resCustomer || !resCustomer.data) {
+          throw new Error(resCustomer?.error);
+        }
 
         const selectedDocIds = Object.keys(checkedDocuments).filter(
           (key) => checkedDocuments[key]
@@ -336,7 +412,7 @@ const ModalOfficeHandover = (props) => {
           }
         }
 
-        const resContract = await callUpdateContract(
+        resContract = await callUpdateContract(
           data?.id,
           values.startDate
             ? dayjs(values.startDate).startOf("day").format("YYYY-MM-DD")
@@ -351,6 +427,10 @@ const ModalOfficeHandover = (props) => {
             ? dataFileContract[0].originFileObj || dataFileContract[0].url
             : null
         );
+
+        if (!resContract || !resContract.data) {
+          throw new Error(resContract?.error);
+        }
       }
 
       const handoversToCreate = handoverList.filter(
@@ -389,13 +469,14 @@ const ModalOfficeHandover = (props) => {
 
       await Promise.all([...createRequests, ...updateRequests]);
 
-      message.success("Cập nhật hợp đồng thành công");
+      message.success("Thành công");
       fetchData();
       handleReset();
     } catch (error) {
       notification.error({
         message: "Có lỗi xảy ra",
-        description: error.message,
+        description:
+          error?.response?.data?.message || error.message || "Đã xảy ra lỗi",
       });
     }
     setIsSubmit(false);
@@ -642,7 +723,7 @@ const ModalOfficeHandover = (props) => {
                   ?.filter((doc) => {
                     return doc.customerType.id === selectedCustomerType;
                   })
-                  .map((doc) => (
+                  ?.map((doc) => (
                     <li key={doc.id}>
                       <Checkbox
                         checked={checkedDocuments?.[doc.id] || false}
@@ -664,13 +745,16 @@ const ModalOfficeHandover = (props) => {
                                 [doc.id]: fileList,
                               }));
                             }}
-                            fileList={dataFileDocument[doc.id] || []}
+                            fileList={
+                              doc.id && dataFileDocument?.[doc.id]
+                                ? dataFileDocument[doc.id]
+                                : []
+                            }
                             maxCount={1}
                             accept=".pdf"
                             listType="text"
                           >
-                            {(!dataFileDocument[doc.id] ||
-                              dataFileDocument[doc.id].length < 1) && (
+                            {!dataFileDocument?.[doc.id]?.length && (
                               <Button icon={<UploadOutlined />}>
                                 Bấm để tải lên
                               </Button>
@@ -1090,6 +1174,51 @@ const ModalOfficeHandover = (props) => {
           )}
         </Row>
 
+        <h3 className="font-semibold text-base my-2">Đồng hồ đo</h3>
+
+        <Row gutter={16}>
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Serial Number"
+              name="serialNumber"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Loại đồng hồ"
+              name="meterType"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Select
+                placeholder="Vui lòng chọn"
+                optionLabelProp="label"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                <Option value="SINGLE_PHASE" label="1 Phase">
+                  1 Phase
+                </Option>
+                <Option value="THREE_PHASE" label="3 Phase">
+                  3 Phase
+                </Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-base my-2">Tình trạng bàn giao</h3>
           <Access
@@ -1107,7 +1236,7 @@ const ModalOfficeHandover = (props) => {
           </Access>
         </div>
 
-        {handoverList.map((handover, index) => (
+        {handoverList?.map((handover, index) => (
           <Row gutter={16} key={handover.id}>
             <Col lg={7} md={7} sm={12} xs={12}>
               <Form.Item
@@ -1216,4 +1345,4 @@ const ModalOfficeHandover = (props) => {
   );
 };
 
-export default ModalOfficeHandover;
+export default ModalOffice;

@@ -21,6 +21,7 @@ import {
   callDeleteRepairRequest,
   callGetAllRepairRequests,
   callGetAllUsers,
+  callGetRepairRequest,
 } from "../../services/api";
 
 import ModalRepairRequest from "../../components/admin/Repair_Request/modal.repair-request";
@@ -179,9 +180,12 @@ const RepairRequest = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetRepairRequest(record?.requestID);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "requestDate" ? (
@@ -245,9 +249,12 @@ const RepairRequest = () => {
             hideChildren
           >
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetRepairRequest(record?.requestID);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >

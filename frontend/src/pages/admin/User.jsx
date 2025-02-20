@@ -17,6 +17,7 @@ import {
   callDeleteUser,
   callGetAllRoles,
   callGetAllUsers,
+  callGetUser,
 } from "../../services/api";
 
 import ModalUser from "../../components/admin/Access_Control/User/modal.user";
@@ -175,9 +176,12 @@ const User = () => {
       render: (text, record, index) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetUser(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "name" ? (
@@ -241,9 +245,12 @@ const User = () => {
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.USERS.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetUser(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >

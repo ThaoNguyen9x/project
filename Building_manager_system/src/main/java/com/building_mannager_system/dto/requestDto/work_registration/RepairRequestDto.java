@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RepairRequestDto {
     private Long requestID;
-    private CustomerDto.User account;
+    private CustomerDto account;
     private LocalDateTime requestDate;
     private String content;
     private RequestStatus status;
@@ -24,4 +24,13 @@ public class RepairRequestDto {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerDto {
+        private String id;
+        private String name;
+    }
 }

@@ -191,26 +191,20 @@ const CommonArea = () => {
       },
     },
     {
-        title: "Vị trí",
-        dataIndex: "location",
-        sorter: (a, b) => a.location.floor.localeCompare(b.location.floor),
-        ...getColumnSearchProps("location.floor"),
-        render: (text, record) => {
-          return searchedColumn === "location.floor" ? (
-            <HighlightText
-              text={record?.location?.floor}
-              searchText={searchText}
-            />
-          ) : (
-            FORMAT_TEXT_LENGTH(record?.location?.floor, 20)
-          );
-        },
+      title: "Vị trí",
+      dataIndex: "location",
+      sorter: (a, b) => a.location.floor.localeCompare(b.location.floor),
+      ...getColumnSearchProps("location.floor"),
+      render: (text, record) => {
+        return searchedColumn === "location.floor" ? (
+          <HighlightText
+            text={record?.location?.floor}
+            searchText={searchText}
+          />
+        ) : (
+          FORMAT_TEXT_LENGTH(record?.location?.floor, 20)
+        );
       },
-    {
-      title: "Màu đại diện",
-      dataIndex: "color",
-      ...getColumnSearchProps("color"),
-      sorter: (a, b) => a.color.localeCompare(b.color),
     },
     {
       title: "startX",

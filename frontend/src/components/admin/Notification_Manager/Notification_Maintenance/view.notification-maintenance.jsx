@@ -1,9 +1,32 @@
 import dayjs from "dayjs";
-import { Descriptions, Drawer } from "antd";
+import { Button, Descriptions, Drawer, Space } from "antd";
 import { FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
+import { useState } from "react";
+import { callGetTask } from "../../../../services/api";
 
 const ViewNotificationMaintenance = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
+  const [historyStack, setHistoryStack] = useState([]);
+
+  const onClose = () => {
+    setOpenViewDetail(false);
+    setData(null);
+    setHistoryStack([]);
+  };
+
+  const goBack = () => {
+    if (historyStack.length > 0) {
+      const prevData = historyStack[historyStack.length - 1];
+      setHistoryStack(historyStack.slice(0, -1));
+      setData(prevData);
+    }
+  };
+
+  const handleViewDetail = async (newData) => {
+    setHistoryStack([...historyStack, data]);
+    setData(newData);
+    setOpenViewDetail(true);
+  };
 
   const commonItems = [
     {
@@ -53,9 +76,11 @@ const ViewNotificationMaintenance = (props) => {
           label: "Nhiệm vụ bảo trì",
           children: data?.maintenanceTask?.taskName ? (
             <a
-              onClick={() => {
-                setData(data?.maintenanceTask);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetTask(data?.maintenanceTask.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {data?.maintenanceTask?.taskName}
@@ -117,14 +142,21 @@ const ViewNotificationMaintenance = (props) => {
 
   return (
     <Drawer
-    title={`${
-      data?.title
-        ? "Thông tin sự cố bất thường"
-        : "Thông tin nhiệm vụ bảo trì"
-    }`}
-      onClose={() => setOpenViewDetail(false)}
+      title={`${
+        data?.title
+          ? "Thông tin sự cố bất thường"
+          : "Thông tin nhiệm vụ bảo trì"
+      }`}
+      onClose={onClose}
       open={openViewDetail}
       width={window.innerWidth > 900 ? 800 : window.innerWidth}
+      extra={
+        <Space>
+          {historyStack.length > 0 && (
+            <Button onClick={goBack}>Quay lại</Button>
+          )}
+        </Space>
+      }
     >
       <Descriptions
         items={items}

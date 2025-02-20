@@ -1,7 +1,11 @@
 import React, { useRef, useState, useEffect, useContext } from "react";
 import {
+  callGetAllCustomerTypeDocuments,
+  callGetAllCustomerTypes,
   callGetAllLocations,
+  callGetDevice,
   callGetLocation,
+  callGetOffice,
 } from "../../services/api";
 
 import sensorImg from "../../assets/image/sensor.jpg";
@@ -11,7 +15,7 @@ import electrical_cabinet from "../../assets/image/tu_dien.jpg";
 import water_tank from "../../assets/image/water_tank.jpg";
 import cooling_tower from "../../assets/image/water_tower.jpg";
 import fire_fan from "../../assets/image/Pressurization _Fan.jpg";
-import Sprinkler from "../../assets/image/sprinkler.jpg"
+import Sprinkler from "../../assets/image/sprinkler.jpg";
 
 import { TbStairs } from "react-icons/tb";
 import { GiAutoRepair } from "react-icons/gi";
@@ -27,6 +31,10 @@ import { SiDwavesystems } from "react-icons/si";
 import { Button, Form, Input, Select } from "antd";
 import ViewOffice from "../../components/admin/Office/view.office";
 import { AuthContext } from "../../components/share/Context";
+import Access from "../../components/share/Access";
+import { GoPlus } from "react-icons/go";
+import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
+import ModalOffice from "../../components/admin/Office/modal.office";
 
 const Office = () => {
   const scaleFactor = 10; // Tăng kích thước cho dễ nhìn
@@ -35,17 +43,32 @@ const Office = () => {
   const { user } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState(null);
-  const [listLocations, setListLocations] = useState([]);
   const [form] = Form.useForm();
   const [filter, setFilter] = useState("");
-  const [data, setData] = useState(null);
   const [openViewDetail, setOpenViewDetail] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [data, setData] = useState(null);
+  const [listCustomerTypes, setListCustomerTypes] = useState([]);
+  const [listLocations, setListLocations] = useState([]);
+  const [listCustomerTypeDocuments, setListCustomerTypeDocuments] = useState(
+    []
+  );
 
   useEffect(() => {
     const init = async () => {
-      const res = await callGetAllLocations();
-      if (res && res.data) {
-        setListLocations(res.data?.result);
+      const customerTypes = await callGetAllCustomerTypes();
+      if (customerTypes && customerTypes.data) {
+        setListCustomerTypes(customerTypes.data?.result);
+      }
+
+      const locations = await callGetAllLocations();
+      if (locations && locations.data) {
+        setListLocations(locations.data?.result);
+      }
+
+      const customerTypeDocuments = await callGetAllCustomerTypeDocuments();
+      if (customerTypeDocuments && customerTypeDocuments.data) {
+        setListCustomerTypeDocuments(customerTypeDocuments.data?.result);
       }
     };
     init();
@@ -109,7 +132,6 @@ const Office = () => {
   };
 
   const handleFilter = (values) => {
-    // Use '1' as the default location if no location is selected
     let query = `${values.location}`;
 
     if (values.deviceType) {
@@ -122,7 +144,18 @@ const Office = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="flex flex-col gap-5">
-        <h2 className="text-base xl:text-xl font-bold">Sơ đồ văn phòng</h2>
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-base xl:text-xl font-bold">Sơ đồ văn phòng</h2>
+          <Access permission={ALL_PERMISSIONS.OFFICES.CREATE} hideChildren>
+            <Button
+              onClick={() => setOpenModal(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+              Thêm
+            </Button>
+          </Access>
+        </div>
         <div className="flex flex-col lg:flex-row gap-5 w-full lg:max-w-fit border rounded-md p-5">
           <div className="flex items-center gap-2">
             <div className="border border-yellow-400 rounded-md bg-yellow-400 p-2"></div>
@@ -153,7 +186,7 @@ const Office = () => {
           <Form.Item name="location" className="w-auto">
             <Select>
               {listLocations?.map((location) => (
-                <Select.Option key={location.id} value={location.id}>
+                <Select.Option key={location?.id} value={location?.id}>
                   {location.floor}
                 </Select.Option>
               ))}
@@ -250,11 +283,15 @@ const Office = () => {
             {/* Vẽ các Office */}
             {location?.offices?.map((office, index) => (
               <div
-                onClick={() => {
-                  setData(office);
-                  setOpenViewDetail(true);
+                onClick={async () => {
+                  const res = await callGetOffice(office?.id);
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenViewDetail(true);
+                    console.log(res?.data);
+                  }
                 }}
-                className="absolute border-blue-900 bg-blue-900 text-white cursor-pointer"
+                className="absolute border border-red-800 bg-blue-900 text-white cursor-pointer hover:bg-opacity-95"
                 key={index}
                 style={{
                   left: `${office.startX * scaleFactor}px`,
@@ -264,7 +301,7 @@ const Office = () => {
                 }}
               >
                 {/* Hiển thị tên Office */}
-                <div className="absolute left-1/2  top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                   {office.name}
                 </div>
               </div>
@@ -275,27 +312,54 @@ const Office = () => {
               ?.sort((a, b) => b.y - a.y)
               .map((device, index) => {
                 const deviceImage =
-                  deviceImages[device?.deviceType?.typeName] || deviceImages["default"];
+                  deviceImages[device?.deviceType?.typeName] ||
+                  deviceImages["default"];
+
                 const imageWidth =
-                  device?.deviceType?.typeName === "fcu" ? 80 : 20;
+                  device?.deviceType?.typeName === "fcu" ? 20 : 20;
                 const imageHeight =
-                  device?.deviceType?.typeName === "fcu" ? 60 : 20;
+                  device?.deviceType?.typeName === "fcu" ? 20 : 20;
 
                 return (
-                  <div key={index}>
+                  <div
+                    key={index}
+                    onClick={async () => {
+                      const res = await callGetDevice(device?.deviceId);
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenViewDetail(true);
+                      }
+                    }}
+                    className="relative cursor-pointer group transition-all duration-500"
+                  >
                     <img
                       src={deviceImage}
-                      alt={device.deviceName}
+                      alt={device?.deviceName}
                       style={{
-                        position: "absolute",
-                        left: `${device.x * scaleFactor - imageWidth / 2}px`,
+                        left: `${device?.x * scaleFactor - imageWidth / 2}px`,
                         top: `${
-                          maxHeight - device.y * scaleFactor - imageHeight / 2
+                          maxHeight - device?.y * scaleFactor - imageHeight / 2
                         }px`,
                         width: `${imageWidth}px`,
                         height: `${imageHeight}px`,
                       }}
+                      className="absolute"
                     />
+
+                    <div
+                      className="hidden group-hover:block text-white text-center absolute p-2 rounded-md bg-gray-600 whitespace-nowrap z-10 w-fit"
+                      style={{
+                        left: `${device?.x * scaleFactor - imageWidth / 2}px`,
+                        top: `${
+                          maxHeight -
+                          device?.y * scaleFactor +
+                          imageHeight / 2 +
+                          5
+                        }px`,
+                      }}
+                    >
+                      {device?.deviceName}
+                    </div>
                   </div>
                 );
               })}
@@ -308,6 +372,18 @@ const Office = () => {
           setData={setData}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
+          setOpenModal={setOpenModal}
+        />
+
+        <ModalOffice
+          data={data}
+          setData={setData}
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+          fetchData={fetchData}
+          listCustomerTypes={listCustomerTypes}
+          listLocations={listLocations}
+          listCustomerTypeDocuments={listCustomerTypeDocuments}
         />
       </div>
     </div>

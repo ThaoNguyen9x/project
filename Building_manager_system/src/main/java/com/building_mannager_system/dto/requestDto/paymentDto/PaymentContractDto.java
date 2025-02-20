@@ -1,6 +1,6 @@
 package com.building_mannager_system.dto.requestDto.paymentDto;
 
-import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
+import com.building_mannager_system.dto.requestDto.customer.CustomerTypeDto;
 import com.building_mannager_system.enums.PaymentStatus;
 import lombok.*;
 
@@ -23,4 +23,57 @@ public class PaymentContractDto {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ContractDto {
+        private Integer id;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private String leaseStatus;
+        private CustomerDto customer;
+        private BigDecimal totalAmount;
+        private String fileName;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerDto {
+        private Integer id;
+        private String companyName;
+        private String email;
+        private String phone;
+        private String address;
+        private String status;
+        private String directorName;
+        private LocalDate birthday;
+        private User user;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class User {
+        private Integer id;
+        private String name;
+        private String email;
+        private String mobile;
+        private Role role;
+        private boolean status;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Role {
+        private Integer id;
+        private String name;
+        private boolean status;
+    }
 }

@@ -25,7 +25,7 @@ public class MaintenanceHistory extends BaseEntity {
     @JoinColumn(name = "maintenance_id")
     private SystemMaintenanceService maintenanceService;
 
-    private LocalDate performedDate;
+    private LocalDate performedDate = LocalDate.now();
 
     private String notes;
 

@@ -18,6 +18,7 @@ import {
   callDeleteNotificationMaintenance,
   callGetAllNotificationMaintenances,
   callGetAllTasks,
+  callGetNotificationMaintenance,
 } from "../../services/api";
 
 import Access from "../../components/share/Access";
@@ -175,9 +176,12 @@ const NotificationMaintenance = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetNotificationMaintenance(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "title" ? (

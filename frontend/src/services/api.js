@@ -58,6 +58,10 @@ export const callGetAllUsers = (query) => {
   return axios.get(`/api/users?${query}`);
 };
 
+export const callGetUser = (id) => {
+  return axios.get(`/api/users/${id}`);
+};
+
 export const callGetAllUsersUsed = (query) => {
   return axios.get(`/api/users/used?${query}`);
 };
@@ -73,20 +77,11 @@ export const callCreateUser = (name, email, mobile, password, status, role) => {
   });
 };
 
-export const callUpdateUser = (
-  id,
-  name,
-  email,
-  mobile,
-  password,
-  status,
-  role
-) => {
+export const callUpdateUser = (id, name, email, mobile, status, role) => {
   return axios.put(`/api/users/${id}`, {
     name,
     email,
     mobile,
-    password,
     status,
     role,
   });
@@ -189,6 +184,10 @@ export const callGetAllCustomers = (query) => {
   return axios.get(`/api/customers?${query}`);
 };
 
+export const callGetCustomer = (id) => {
+  return axios.get(`/api/customers/${id}`);
+};
+
 export const callCreateCustomer = (
   companyName,
   customerType,
@@ -281,6 +280,10 @@ export const callGetAllCustomerTypes = (query) => {
   return axios.get(`/api/customer-types?${query}`);
 };
 
+export const callGetCustomerType = (id) => {
+  return axios.get(`/api/customer-types/${id}`);
+};
+
 export const callCreateCustomerType = (typeName, status) => {
   return axios.post("/api/customer-types", {
     typeName,
@@ -302,6 +305,10 @@ export const callDeleteCustomerType = (id) => {
 /**************** OFFICE ****************/
 export const callGetAllOffices = (query) => {
   return axios.get(`/api/offices?${query}`);
+};
+
+export const callGetOffice = (id) => {
+  return axios.get(`/api/offices/${id}`);
 };
 
 export const callCreateOffice = (
@@ -436,6 +443,10 @@ export const callGetAllContracts = (query) => {
   return axios.get(`/api/contracts?${query}`);
 };
 
+export const callGetContract = (id) => {
+  return axios.get(`/api/contracts/${id}`);
+};
+
 export const callCreateContract = (
   startDate,
   endDate,
@@ -492,6 +503,10 @@ export const callDeleteContract = (id) => {
 /**************** PAYMENT CONTRACT ****************/
 export const callGetAllPaymentContracts = (query) => {
   return axios.get(`/api/payments?${query}`);
+};
+
+export const callGetPaymentContract = (paymentId) => {
+  return axios.get(`/api/payments/${paymentId}`);
 };
 
 export const callCreatePaymentContract = (
@@ -586,6 +601,10 @@ export const callGetAllSystems = (query) => {
   return axios.get(`/api/systems?${query}`);
 };
 
+export const callGetSystem = (id) => {
+  return axios.get(`/api/systems/${id}`);
+};
+
 export const callCreateSystem = (systemName, description, maintenanceCycle) => {
   return axios.post("/api/systems", {
     systemName,
@@ -614,6 +633,10 @@ export const callDeleteSystem = (id) => {
 /**************** SUBCONTRACT ****************/
 export const callGetAllSubcontracts = (query) => {
   return axios.get(`/api/subcontractors?${query}`);
+};
+
+export const callGetSubcontract = (id) => {
+  return axios.get(`/api/subcontractors/${id}`);
 };
 
 export const callCreateSubcontract = (
@@ -710,7 +733,6 @@ export const callGetAllMaintenanceHistories = (query) => {
 
 export const callCreateMaintenanceHistory = (
   maintenanceService,
-  performedDate,
   notes,
   technician,
   findings,
@@ -719,7 +741,6 @@ export const callCreateMaintenanceHistory = (
 ) => {
   return axios.post("/api/maintenance-histories", {
     maintenanceService,
-    performedDate,
     notes,
     technician,
     findings,
@@ -756,6 +777,10 @@ export const callDeleteMaintenanceHistory = (id) => {
 /**************** DEVICE TYPES ****************/
 export const callGetAllDeviceTypes = (query) => {
   return axios.get(`/api/device-types?${query}`);
+};
+
+export const callGetDeviceType = (id) => {
+  return axios.get(`/api/device-types/${id}`);
 };
 
 export const callCreateDeviceType = (typeName, description) => {
@@ -817,6 +842,10 @@ export const callDeleteElectricityRate = (id) => {
 /**************** DEVICES ****************/
 export const callGetAllDevices = (query) => {
   return axios.get(`/api/devices?${query}`);
+};
+
+export const callGetDevice = (id) => {
+  return axios.get(`/api/devices/${id}`);
 };
 
 export const callCreateDevice = (
@@ -1081,7 +1110,6 @@ export const callCreateRiskAssessment = (
   contractor,
   systemType,
   device,
-  assessmentDate,
   riskProbability,
   riskImpact,
   riskDetection,
@@ -1093,7 +1121,6 @@ export const callCreateRiskAssessment = (
     contractor,
     systemType,
     device,
-    assessmentDate,
     riskProbability,
     riskImpact,
     riskDetection,
@@ -1147,6 +1174,10 @@ export const callGetAllNotificationMaintenances = (query) => {
   return axios.get(`/api/notifications?${query}`);
 };
 
+export const callGetNotificationMaintenance = (id) => {
+  return axios.get(`/api/notifications/${id}`);
+};
+
 export const callCreateNotificationMaintenance = (
   title,
   description,
@@ -1183,6 +1214,10 @@ export const callReadNotificationMaintenance = (id) => {
 /**************** TASKS ****************/
 export const callGetAllTasks = (query) => {
   return axios.get(`/api/tasks?${query}`);
+};
+
+export const callGetTask = (id) => {
+  return axios.get(`/api/tasks/${id}`);
 };
 
 export const callCreateTask = (
@@ -1229,6 +1264,10 @@ export const callDeleteTask = (id) => {
 /**************** REPAIR REQUESTS ****************/
 export const callGetAllRepairRequests = (query) => {
   return axios.get(`/api/repair-requests?${query}`);
+};
+
+export const callGetRepairRequest = (id) => {
+  return axios.get(`/api/repair-requests/${id}`);
 };
 
 export const callCreateRepairRequest = (

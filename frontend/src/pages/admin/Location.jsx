@@ -187,36 +187,6 @@ const Location = () => {
       sorter: (a, b) => a.commonArea - b.commonArea,
     },
     {
-      title: "Diện tích sử dụng",
-      dataIndex: "netArea",
-      ...getColumnSearchProps("netArea"),
-      sorter: (a, b) => a.netArea - b.netArea,
-    },
-    {
-      title: "startX",
-      dataIndex: "startX",
-      ...getColumnSearchProps("startX"),
-      sorter: (a, b) => a.startX - b.startX,
-    },
-    {
-      title: "startY",
-      dataIndex: "startY",
-      ...getColumnSearchProps("startY"),
-      sorter: (a, b) => a.startY - b.startY,
-    },
-    {
-      title: "endX",
-      dataIndex: "endX",
-      ...getColumnSearchProps("endX"),
-      sorter: (a, b) => a.endX - b.endX,
-    },
-    {
-      title: "endY",
-      dataIndex: "endY",
-      ...getColumnSearchProps("endY"),
-      sorter: (a, b) => a.endY - b.endY,
-    },
-    {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">

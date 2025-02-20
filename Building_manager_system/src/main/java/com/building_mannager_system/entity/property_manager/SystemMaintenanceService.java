@@ -42,7 +42,7 @@ public class SystemMaintenanceService extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MaintenanceStatus status = MaintenanceStatus.PENDING;
 
-    @OneToMany(mappedBy = "maintenanceService")
+    @OneToMany(mappedBy = "maintenanceService", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Device> devices;
 

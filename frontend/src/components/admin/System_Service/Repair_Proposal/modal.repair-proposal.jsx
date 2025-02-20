@@ -145,9 +145,9 @@ const ModalRepairProposal = (props) => {
                   <Select.Option
                     key={riskAssessment.riskAssessmentID}
                     value={riskAssessment.riskAssessmentID}
-                    label={`${riskAssessment.contractor.name} - ${riskAssessment.assessmentDate}`}
+                    label={`${riskAssessment.contractor.name}`}
                   >
-                    {`${riskAssessment.contractor.name} - ${riskAssessment.assessmentDate}`}
+                    {`${riskAssessment.contractor.name}`}
                   </Select.Option>
                 ))}
               </Select>

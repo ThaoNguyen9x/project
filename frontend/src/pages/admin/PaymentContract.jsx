@@ -22,6 +22,8 @@ import {
   callSendPaymentRequest,
   callPaymentStripe,
   callPaymentStatus,
+  callGetPaymentContract,
+  callGetContract,
 } from "../../services/api";
 
 import Access from "../../components/share/Access";
@@ -181,9 +183,12 @@ const PaymentContract = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetPaymentContract(record?.paymentId);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "paymentAmount" ? (
@@ -202,7 +207,7 @@ const PaymentContract = () => {
       },
     },
     {
-      title: "Hợp đồng",
+      title: "Khách hàng",
       dataIndex: "contract",
       sorter: (a, b) =>
         a.contract.customer.companyName.localeCompare(
@@ -212,9 +217,12 @@ const PaymentContract = () => {
       render: (contract) => {
         return (
           <a
-            onClick={() => {
-              setData(contract);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetContract(contract?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "contract.customer.companyName" ? (
@@ -290,27 +298,6 @@ const PaymentContract = () => {
             ) : (
               ""
             )}
-            {record?.paymentStatus === "UNPAID" ? (
-              <Tooltip title="Gửi thông báo">
-                <>
-                  <Access
-                    permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.SEND_PAYMENT}
-                    hideChildren
-                  >
-                    <div
-                      onClick={() => handleNotification(record?.paymentId)}
-                      className="cursor-pointer text-blue-900"
-                    >
-                      <>
-                        <TbNotification className="h-5 w-5" />
-                      </>
-                    </div>
-                  </Access>
-                </>
-              </Tooltip>
-            ) : (
-              ""
-            )}
             <Tooltip title="Chỉnh sửa">
               <>
                 <Access
@@ -318,9 +305,14 @@ const PaymentContract = () => {
                   hideChildren
                 >
                   <div
-                    onClick={() => {
-                      setData(record);
-                      setOpenModal(true);
+                    onClick={async () => {
+                      const res = await callGetPaymentContract(
+                        record?.paymentId
+                      );
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenModal(true);
+                      }
                     }}
                     className="cursor-pointer text-amber-900"
                   >

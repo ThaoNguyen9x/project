@@ -41,11 +41,10 @@ public class PaymentContractController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @GetMapping("/contact")
+    @GetMapping("/{paymentId}")
     @ApiMessage("Lấy hợp đồng thanh toán thành công")
-    public ResponseEntity<ResultPaginationDTO> getPaymentContractByCustomer(Pageable pageable) {
-
-        return ResponseEntity.ok().body(paymentContractService.getPaymentContractByCustomer(pageable));
+    public ResponseEntity<PaymentContractDto> getPaymentContract(@PathVariable int paymentId) {
+        return ResponseEntity.ok(paymentContractService.getPaymentContract(paymentId));
     }
 
     @PutMapping("/{paymentId}")

@@ -19,6 +19,7 @@ import com.building_mannager_system.service.notification.NotificationService;
 import com.building_mannager_system.service.notification.RecipientService;
 import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.turkraft.springfilter.converter.FilterSpecification;
 import com.turkraft.springfilter.converter.FilterSpecificationConverter;
 import com.turkraft.springfilter.parser.FilterParser;
@@ -154,47 +155,49 @@ public class PaymentContractService {
         return modelMapper.map(paymentContract, PaymentContractDto.class);
     }
 
-    public ResultPaginationDTO getPaymentContractByCustomer(Pageable pageable) {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true
-                ? SecurityUtil.getCurrentUserLogin().get()
-                : "";
-
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new APIException(HttpStatus.NOT_FOUND, "User not found for email: " + email);
+    // Thanh toán còn 1 ngày thì hết hạn
+    private void sendPaymentNotification(PaymentContract payment, String type, String name) throws JsonProcessingException {
+        if (payment == null || payment.getContract() == null || payment.getContract().getCustomer() == null) {
+            return;
         }
 
-        // Lấy customer từ user
-        Customer customer = user.getCustomer();
+        User customer = payment.getContract().getCustomer().getUser();
         if (customer == null) {
-            throw new APIException(HttpStatus.NOT_FOUND, "No customer associated with user email: " + email);
+            return;
         }
 
-        FilterNode node = filterParser.parse("email='" + email + "'");
-        FilterSpecification<PaymentContract> spec = filterSpecificationConverter.convert(node);
-        Page<PaymentContract> pageResume = paymentContractRepository.findAll(spec, pageable);
+        String message = JsonUntils.toJson(modelMapper.map(payment, PaymentContractDto.class));
 
-        ResultPaginationDTO rs = new ResultPaginationDTO();
-        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+        // Gửi cho admin
+        List<String> roles = List.of("Application_Admin");
+        List<User> admins = userRepository.findByRole_NameIn(roles);
+        admins.forEach(admin -> sendNotification(admin, message, type, name));
 
-        mt.setPage(pageable.getPageNumber() + 1);
-        mt.setPageSize(pageable.getPageSize());
-
-        mt.setPages(pageResume.getTotalPages());
-        mt.setTotal(pageResume.getTotalElements());
-
-        rs.setMeta(mt);
-
-        List<PaymentContractDto> listResume = pageResume.getContent()
-                .stream().map(item -> modelMapper.map(item, PaymentContractDto.class))
-                .collect(Collectors.toList());
-
-        rs.setResult(listResume);
-
-        return rs;
+        // Gửi cho khách hàng
+        sendNotification(customer, message, type, name);
     }
 
-    // Thanh toán còn 1 ngày thì hết hạn
+    public List<CheckPaymentNotificationDto> checkExpPayment() {
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1); // Đúng là ngày đã quá hạn
+
+        List<PaymentContract> overduePayments = paymentContractRepository.findByDueDateAndPaymentStatus(yesterday, PaymentStatus.UNPAID);
+
+        List<CheckPaymentNotificationDto> overduePaymentDtos = overduePayments.stream()
+                .map(payment -> modelMapper.map(payment, CheckPaymentNotificationDto.class))
+                .collect(Collectors.toList());
+
+        overduePayments.forEach(payment -> {
+            try {
+                sendPaymentNotification(payment, "Exp_Payment_Notification", "Send Exp Payment Notifications");
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return overduePaymentDtos;
+    }
+
     public List<CheckPaymentNotificationDto> checkDuePayment() {
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
@@ -205,35 +208,20 @@ public class PaymentContractService {
                 .map(payment -> modelMapper.map(payment, CheckPaymentNotificationDto.class))
                 .collect(Collectors.toList());
 
-        duePayments.forEach(this::sendDuePaymentNotification);
+        duePayments.forEach(payment -> {
+            try {
+                sendPaymentNotification(payment, "Due_Payment_Notification", "Send Due Payment Notifications");
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         return duePaymentDtos;
     }
 
-    public void sendDuePaymentNotification(PaymentContract payment) {
-        try {
-            if (payment == null || payment.getContract() == null || payment.getContract().getCustomer() == null) {
-                return;
-            }
+    private void sendNotification(User user, String message, String type, String name) {
+        if (user == null) return;
 
-            User customer = payment.getContract().getCustomer().getUser();
-            if (customer == null) {
-                return;
-            }
-
-            String message = JsonUntils.toJson(modelMapper.map(payment, PaymentContractDto.class));
-
-            List<String> roles = List.of("Application_Admin");
-            List<User> admins = userRepository.findByRole_NameIn(roles);
-            admins.forEach(admin -> sendDuePaymentNotification(admin, message, "Due_Payment_Notification", "Send Due Payment Notifications"));
-
-            sendDuePaymentNotification(customer, message, "Due_Payment_Notification", "Send Due Payment Notifications");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendDuePaymentNotification(User user, String message, String type, String name) {
         Recipient rec = new Recipient();
         rec.setType(type);
         rec.setName(name);
@@ -249,64 +237,6 @@ public class PaymentContractService {
 
         notificationService.createNotification(notification);
 
-        messagingTemplate.convertAndSend("/topic/due-payment-notifications/" + user.getId(), message);
-    }
-
-    // Thanh toán quá hạn
-    public List<CheckPaymentNotificationDto> checkExpPayment() {
-        LocalDate today = LocalDate.now();
-        LocalDate tomorrow = today.plusDays(2);
-
-        List<PaymentContract> duePayments = paymentContractRepository.findByDueDateAndPaymentStatus(tomorrow, PaymentStatus.UNPAID);
-
-        List<CheckPaymentNotificationDto> duePaymentDtos = duePayments.stream()
-                .map(payment -> modelMapper.map(payment, CheckPaymentNotificationDto.class))
-                .collect(Collectors.toList());
-
-        duePayments.forEach(this::sendExpPaymentNotification);
-
-        return duePaymentDtos;
-    }
-
-    public void sendExpPaymentNotification(PaymentContract payment) {
-        try {
-            if (payment == null || payment.getContract() == null || payment.getContract().getCustomer() == null) {
-                return;
-            }
-
-            User customer = payment.getContract().getCustomer().getUser();
-            if (customer == null) {
-                return;
-            }
-
-            String message = JsonUntils.toJson(modelMapper.map(payment, PaymentContractDto.class));
-
-            List<String> roles = List.of("Application_Admin");
-            List<User> admins = userRepository.findByRole_NameIn(roles);
-            admins.forEach(admin -> sendExpPaymentNotification(admin, message, "Exp_Payment_Notification", "Send Exp Payment Notifications"));
-
-            sendExpPaymentNotification(customer, message, "Exp_Payment_Notification", "Send Exp Payment Notifications");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendExpPaymentNotification(User user, String message, String type, String name) {
-        Recipient rec = new Recipient();
-        rec.setType(type);
-        rec.setName(name);
-        rec.setReferenceId(user.getId());
-
-        Recipient recipient = recipientService.createRecipient(rec);
-
-        Notification notification = new Notification();
-        notification.setRecipient(recipient);
-        notification.setMessage(message);
-        notification.setStatus(StatusNotifi.PENDING);
-        notification.setCreatedAt(LocalDateTime.now());
-
-        notificationService.createNotification(notification);
-
-        messagingTemplate.convertAndSend("/topic/exp-payment-notifications/" + user.getId(), message);
+        messagingTemplate.convertAndSend("/topic/" + type.toLowerCase() + "/" + user.getId(), message);
     }
 }

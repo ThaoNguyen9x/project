@@ -81,4 +81,36 @@ public class FileController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
+
+    @GetMapping("/view")
+    @ApiMessage("View an image")
+    public ResponseEntity<Resource> viewImage(@RequestParam(name = "fileName", required = false) String fileName,
+                                              @RequestParam(name = "folder", required = false) String folder) throws URISyntaxException, FileNotFoundException {
+        if (fileName == null || folder == null)
+            throw new APIException(HttpStatus.BAD_REQUEST, "Missing required params: (fileName or folder) in query params.");
+
+        // Check if file exists
+        long fileLength = fileService.getFileLength(fileName, folder);
+        if (fileLength == 0)
+            throw new APIException(HttpStatus.NOT_FOUND, "File with name = " + fileName + " not found.");
+
+        // Load the file
+        InputStreamResource resource = fileService.getResource(fileName, folder);
+
+        // Determine content type based on file extension
+        String contentType;
+        if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")) {
+            contentType = MediaType.IMAGE_JPEG_VALUE;
+        } else if (fileName.toLowerCase().endsWith(".png")) {
+            contentType = MediaType.IMAGE_PNG_VALUE;
+        } else {
+            throw new APIException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported file type for viewing.");
+        }
+
+        // Return image without forcing download
+        return ResponseEntity.ok()
+                .contentLength(fileLength)
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
+    }
 }

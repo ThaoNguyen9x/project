@@ -24,7 +24,7 @@ public class Notification extends BaseEntity {
     @JoinColumn(name = "recipient_id", nullable = false)
     private Recipient recipient; // Liên kết với đối tượng Recipient
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String message;
 
     @Enumerated(EnumType.STRING)

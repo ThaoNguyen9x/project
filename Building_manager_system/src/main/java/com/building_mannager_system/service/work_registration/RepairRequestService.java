@@ -178,7 +178,6 @@ public class RepairRequestService {
             ex.setImageUrl(fileService.storeFile(image, folder));
         }
 
-        ex.setAccount(user);
         ex.setContent(repairRequest.getContent());
         ex.setStatus(repairRequest.getStatus());
         ex.setRequestDate(repairRequest.getRequestDate());

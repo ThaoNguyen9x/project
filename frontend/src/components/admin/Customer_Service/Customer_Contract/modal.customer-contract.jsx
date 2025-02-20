@@ -245,7 +245,7 @@ const ModalCustomerContract = (props) => {
           values.password,
           values.statusUser,
           {
-            id: (values.role = 8),
+            id: (values.role = 2),
           }
         );
 
@@ -319,10 +319,9 @@ const ModalCustomerContract = (props) => {
           values.nameUser,
           values.emailUser,
           values.mobile,
-          (values.password = 1),
           values.statusUser,
           {
-            id: (values.role = 8),
+            id: (values.role = 2),
           }
         );
 
@@ -469,7 +468,7 @@ const ModalCustomerContract = (props) => {
 
       await Promise.all([...createRequests, ...updateRequests]);
 
-      message.success("Cập nhật hợp đồng khách hàng thành công");
+      message.success("Thành công");
       fetchData();
       handleReset();
     } catch (error) {

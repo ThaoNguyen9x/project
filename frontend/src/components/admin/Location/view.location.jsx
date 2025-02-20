@@ -6,13 +6,26 @@ const ViewLocation = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
 
   const items = [
-    { label: "Tên", children: data?.systemName || "N/A", span: 2 },
-    { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+    { label: "Tên", children: data?.floor || "N/A", span: 2 },
     {
-      label: "Chu kỳ bảo trì",
-      children: data?.maintenanceCycle || "N/A",
+      label: "Tổng diện tích",
+      children: data?.totalArea + " m²" || "N/A",
       span: 2,
     },
+    {
+      label: "Khu vực chung",
+      children: data?.commonArea + " m²" || "N/A",
+      span: 2,
+    },
+    {
+      label: "Diện tích ròng",
+      children: data?.netArea + " m²" || "N/A",
+      span: 2,
+    },
+    { label: "startX", children: data?.startX || 0 },
+    { label: "startY", children: data?.startY || 0 },
+    { label: "endX", children: data?.endX || 0 },
+    { label: "endY", children: data?.endY || 0 },
   ];
 
   if (user?.role?.name === "Application_Admin") {

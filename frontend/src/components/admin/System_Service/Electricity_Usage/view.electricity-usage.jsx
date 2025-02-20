@@ -46,18 +46,18 @@ const ViewElectricityUsage = (props) => {
         },
         {
           label: "Bắt đầu đọc",
-          children: data?.startReading || "N/A",
+          children: data?.startReading || 0,
           span: 2,
         },
-        { label: "Kết thúc đọc", children: data?.endReading || "N/A", span: 2 },
+        { label: "Kết thúc đọc", children: data?.endReading || 0, span: 2 },
         {
           label: "Giá điện",
-          children: data?.electricityRate || "N/A",
+          children: data?.electricityRate || 0,
           span: 2,
         },
         {
           label: "Chi phí điện",
-          children: data?.electricityCost || "N/A",
+          children: data?.electricityCost || 0,
           span: 2,
         },
         { label: "Ngày đọc", children: data?.readingDate || "N/A", span: 2 },

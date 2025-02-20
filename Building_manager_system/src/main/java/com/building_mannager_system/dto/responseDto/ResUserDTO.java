@@ -1,6 +1,5 @@
 package com.building_mannager_system.dto.responseDto;
 
-import com.building_mannager_system.entity.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -33,4 +32,14 @@ public class ResUserDTO {
     private String updatedBy;
 
     private Role role;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Role {
+        private int id;
+        private String name;
+        private boolean status;
+    }
 }

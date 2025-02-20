@@ -223,12 +223,6 @@ const MenuItem = ({ activeMenu, permissions }) => {
                 ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.method,
               path: "/dashboard/notifications",
             },
-            {
-              label: "Nhiệm vụ bảo trì",
-              apiPath: ALL_PERMISSIONS.TASKS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.TASKS.GET_PAGINATE.method,
-              path: "/dashboard/tasks",
-            },
           ]
         ),
 
@@ -291,24 +285,12 @@ const MenuItem = ({ activeMenu, permissions }) => {
           <MergeOutlined />,
           permissions,
           ACL_ENABLE,
-          [
-            {
-              label: "Giá điện",
-              apiPath: ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.method,
-              path: "/dashboard/electricity-rates",
-            },
+          [ 
             {
               label: "Mức tiêu thụ điện",
               apiPath: ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.apiPath,
               method: ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.method,
               path: "/dashboard/electricity-usages",
-            },
-            {
-              label: "Đồng hồ đo",
-              apiPath: ALL_PERMISSIONS.METERS.GET_PAGINATE.apiPath,
-              method: ALL_PERMISSIONS.METERS.GET_PAGINATE.method,
-              path: "/dashboard/meters",
             },
           ]
         ),

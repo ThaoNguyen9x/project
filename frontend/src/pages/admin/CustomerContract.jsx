@@ -21,6 +21,8 @@ import {
   callGetAllLocations,
   callGetAllCustomerTypes,
   callGetAllCustomerTypeDocuments,
+  callGetContract,
+  callGetCustomer,
 } from "../../services/api";
 
 import ModalCustomerContract from "../../components/admin/Customer_Service/Customer_Contract/modal.customer-contract";
@@ -294,9 +296,12 @@ const CustomerContract = () => {
               render={(text, record) => {
                 return (
                   <a
-                    onClick={() => {
-                      setData(record);
-                      setOpenViewDetail(true);
+                    onClick={async () => {
+                      const res = await callGetCustomer(record?.id);
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenViewDetail(true);
+                      }
                     }}
                   >
                     {searchedColumn === "customer.companyName" ? (
@@ -410,9 +415,12 @@ const CustomerContract = () => {
                   hideChildren
                 >
                   <div
-                    onClick={() => {
-                      setData(record);
-                      setOpenModal(true);
+                    onClick={async () => {
+                      const res = await callGetContract(record?.id);
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenModal(true);
+                      }
                     }}
                     className="cursor-pointer text-amber-900"
                   >
