@@ -23,6 +23,8 @@ import {
   callDeleteCustomerTypeDocument,
   callGetAllCustomerTypeDocuments,
   callGetAllCustomerTypes,
+  callGetCustomerType,
+  callGetCustomerTypeDocument,
 } from "../../services/api";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import HighlightText from "../../components/share/HighlightText";
@@ -164,7 +166,7 @@ const CustomerTypeDocument = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -175,9 +177,12 @@ const CustomerTypeDocument = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetCustomerTypeDocument(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "documentType" ? (
@@ -201,9 +206,12 @@ const CustomerTypeDocument = () => {
       render: (customerType) => {
         return (
           <a
-            onClick={() => {
-              setData(customerType);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetCustomerType(customerType?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "customerType.typeName" ? (
@@ -247,9 +255,12 @@ const CustomerTypeDocument = () => {
             hideChildren
           >
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetCustomerTypeDocument(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -358,7 +369,10 @@ const CustomerTypeDocument = () => {
           permission={ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.CREATE}
           hideChildren
         >
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

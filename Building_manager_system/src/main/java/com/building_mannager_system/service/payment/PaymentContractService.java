@@ -5,7 +5,6 @@ import com.building_mannager_system.dto.requestDto.CheckPaymentNotificationDto;
 import com.building_mannager_system.dto.requestDto.paymentDto.PaymentContractDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
-import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
 import com.building_mannager_system.entity.notification.Notification;
 import com.building_mannager_system.entity.notification.Recipient;
 import com.building_mannager_system.entity.pament_entity.PaymentContract;
@@ -20,10 +19,6 @@ import com.building_mannager_system.service.notification.RecipientService;
 import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.turkraft.springfilter.converter.FilterSpecification;
-import com.turkraft.springfilter.converter.FilterSpecificationConverter;
-import com.turkraft.springfilter.parser.FilterParser;
-import com.turkraft.springfilter.parser.node.FilterNode;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,8 +39,6 @@ public class PaymentContractService {
     private final ModelMapper modelMapper;
     private final ContractRepository contractRepository;
     private final UserRepository userRepository;
-    private final FilterParser filterParser;
-    private final FilterSpecificationConverter filterSpecificationConverter;
     private final RecipientService recipientService;
     private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
@@ -54,8 +47,6 @@ public class PaymentContractService {
                                   ModelMapper modelMapper,
                                   ContractRepository contractRepository,
                                   UserRepository userRepository,
-                                  FilterParser filterParser,
-                                  FilterSpecificationConverter filterSpecificationConverter,
                                   RecipientService recipientService,
                                   NotificationService notificationService,
                                   SimpMessagingTemplate messagingTemplate) {
@@ -63,8 +54,6 @@ public class PaymentContractService {
         this.modelMapper = modelMapper;
         this.contractRepository = contractRepository;
         this.userRepository = userRepository;
-        this.filterParser = filterParser;
-        this.filterSpecificationConverter = filterSpecificationConverter;
         this.recipientService = recipientService;
         this.notificationService = notificationService;
         this.messagingTemplate = messagingTemplate;
@@ -139,7 +128,6 @@ public class PaymentContractService {
         PaymentContract updatedContract = paymentContractRepository.save(existingContract);
         return modelMapper.map(updatedContract, PaymentContractDto.class);
     }
-
 
     public void deletePaymentContract(int paymentId) {
         PaymentContract paymentContract = paymentContractRepository.findById(paymentId)

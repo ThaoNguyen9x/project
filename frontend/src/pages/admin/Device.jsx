@@ -21,6 +21,9 @@ import {
   callGetAllLocations,
   callGetAllSystemMaintenanceServices,
   callGetAllSystems,
+  callGetDevice,
+  callGetDeviceType,
+  callGetSystem,
 } from "../../services/api";
 
 import ModalDevice from "../../components/admin/Property_Manager/Device/modal.device";
@@ -47,7 +50,7 @@ const Device = () => {
   const searchInput = useRef(null);
 
   const [openViewDetail, setOpenViewDetail] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
+  const [openModalDevice, setOpenModalDevice] = useState(false);
   const [data, setData] = useState(null);
 
   const [listSystems, setListSystems] = useState([]);
@@ -200,9 +203,12 @@ const Device = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetDevice(record?.deviceId);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "deviceName" ? (
@@ -226,9 +232,12 @@ const Device = () => {
       render: (deviceType) => {
         return (
           <a
-            onClick={() => {
-              setData(deviceType);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetDeviceType(deviceType?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "deviceType.typeName" ? (
@@ -264,9 +273,12 @@ const Device = () => {
       render: (system) => {
         return (
           <a
-            onClick={() => {
-              setData(system);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetSystem(system?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "system.systemName" ? (
@@ -323,9 +335,12 @@ const Device = () => {
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.DEVICES.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetDevice(record?.deviceId);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModalDevice(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -429,7 +444,7 @@ const Device = () => {
         <h2 className="text-base xl:text-xl font-bold">Thiết bị</h2>
         <Access permission={ALL_PERMISSIONS.DEVICES.CREATE} hideChildren>
           <Button
-            onClick={() => setOpenModal(true)}
+            onClick={() => setOpenModalDevice(true)}
             className="p-2 xl:p-3 gap-1 xl:gap-2"
           >
             <GoPlus className="h-4 w-4" />
@@ -465,8 +480,8 @@ const Device = () => {
         <ModalDevice
           data={data}
           setData={setData}
-          openModal={openModal}
-          setOpenModal={setOpenModal}
+          openModalDevice={openModalDevice}
+          setOpenModalDevice={setOpenModalDevice}
           fetchData={fetchData}
           listSystems={listSystems}
           listLocations={listLocations}

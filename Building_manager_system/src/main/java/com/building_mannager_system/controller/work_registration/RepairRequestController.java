@@ -1,9 +1,11 @@
 package com.building_mannager_system.controller.work_registration;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.paymentDto.PaymentContractDto;
 import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
 import com.building_mannager_system.entity.work_registration.RepairRequest;
 import com.building_mannager_system.repository.UserRepository;
+import com.building_mannager_system.service.notification.NotificationPaymentContractService;
 import com.building_mannager_system.service.work_registration.RepairRequestService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
@@ -20,17 +22,21 @@ import java.net.URISyntaxException;
 @RequestMapping("/api/repair-requests")
 public class RepairRequestController {
     private final RepairRequestService repairRequestService;
+    private final NotificationPaymentContractService notificationPaymentContractService;
 
-    public RepairRequestController(RepairRequestService repairRequestService) {
+    public RepairRequestController(RepairRequestService repairRequestService, NotificationPaymentContractService notificationPaymentContractService) {
         this.repairRequestService = repairRequestService;
+        this.notificationPaymentContractService = notificationPaymentContractService;
     }
 
     @PutMapping("/{id}")
     @ApiMessage("Cập nhật yêu cầu sửa chữa thành công")
-    public ResponseEntity<RepairRequestDto> updateRepairRequest(@PathVariable(name = "id") int id,
+    public ResponseEntity<RepairRequestDto> updateRepairRequest(@PathVariable(name = "id") Long id,
                                                                 @RequestPart(value = "image", required = false) MultipartFile image,
                                                                 @ModelAttribute RepairRequest repairRequest) throws URISyntaxException {
-        return ResponseEntity.ok(repairRequestService.updateRepairRequest(id, image, repairRequest));
+        RepairRequestDto res = repairRequestService.updateRepairRequest(id, image, repairRequest);
+        notificationPaymentContractService.sendRepairRequestToCustomer(res);
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping
@@ -42,7 +48,7 @@ public class RepairRequestController {
 
     @GetMapping("/{id}")
     @ApiMessage("Lấy yêu cầu sửa chữa thành công")
-    public ResponseEntity<RepairRequestDto> getRepairRequest(@PathVariable(name = "id") int id) {
+    public ResponseEntity<RepairRequestDto> getRepairRequest(@PathVariable(name = "id") Long id) {
         return ResponseEntity.ok(repairRequestService.getRepairRequest(id));
     }
 
@@ -56,7 +62,7 @@ public class RepairRequestController {
 
     @DeleteMapping("/{id}")
     @ApiMessage("Xóa yêu cầu sửa chữa thành công")
-    public ResponseEntity<Void> deleteRepairRequest(@PathVariable(name = "id") int id) throws URISyntaxException {
+    public ResponseEntity<Void> deleteRepairRequest(@PathVariable(name = "id") Long id) throws URISyntaxException {
         repairRequestService.deleteRepairRequest(id);
         return ResponseEntity.ok(null);
     }

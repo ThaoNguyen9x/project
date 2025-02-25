@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Col,
-  DatePicker,
   Form,
   Input,
   message,
@@ -10,10 +9,14 @@ import {
   notification,
   Row,
   Select,
+  Upload,
 } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 
 import {
+  callCreateQuotation,
   callCreateRepairProposal,
+  callUpdateQuotation,
   callUpdateRepairProposal,
 } from "../../../../services/api";
 import dayjs from "dayjs";
@@ -33,6 +36,7 @@ const ModalRepairProposal = (props) => {
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
+  const [dataFile, setDataFile] = useState([]);
 
   useEffect(() => {
     if (data?.id) {
@@ -44,59 +48,92 @@ const ModalRepairProposal = (props) => {
         requestDate: data.requestDate ? dayjs(data?.requestDate) : null,
       };
 
+      if (data.fileName) {
+        setDataFile([
+          {
+            uid: "-1",
+            name: data.fileName,
+            status: "done",
+            url: `${import.meta.env.VITE_BACKEND_URL}/storage/quotations/${
+              data.fileName
+            }`,
+          },
+        ]);
+      }
+
       form.setFieldsValue(init);
     }
   }, [data]);
 
   const handleFinish = async (values) => {
-    const {
-      title,
-      description,
-      priority,
-      proposalType,
-      riskAssessment,
-      status,
-    } = values;
-
     setIsSubmit(true);
 
     if (data?.id) {
-      const res = await callUpdateRepairProposal(
+      const resRepairProposal = await callUpdateRepairProposal(
         data?.id,
-        title,
-        description,
-        priority,
-        proposalType,
-        { riskAssessmentID: riskAssessment },
-        status
+        values.title,
+        values.description,
+        values.priority,
+        values.proposalType,
+        { riskAssessmentID: values.riskAssessment },
+        values.statusRepairProposal
       );
 
-      if (res && res.data) {
-        message.success(res.message);
+      const resQuotation = await callUpdateQuotation(
+        data?.id,
+        values.supplierName,
+        values.totalAmount,
+        values.details,
+        values.image,
+        values.statusQuotation,
+        resRepairProposal.data.id
+      );
+
+      if (
+        resRepairProposal &&
+        resRepairProposal.data &&
+        resQuotation &&
+        resQuotation.data
+      ) {
+        message.success("Thành công");
         handleReset(false);
       } else {
         notification.error({
           message: "Có lỗi xảy ra",
-          description: res?.error,
+          description: resRepairProposal?.error || resQuotation?.error,
         });
       }
     } else {
-      const res = await callCreateRepairProposal(
-        title,
-        description,
-        priority,
-        proposalType,
-        { riskAssessmentID: riskAssessment },
-        status
+      const resRepairProposal = await callCreateRepairProposal(
+        values.title,
+        values.description,
+        values.priority,
+        values.proposalType,
+        { riskAssessmentID: values.riskAssessment },
+        values.statusRepairProposal
       );
 
-      if (res && res.data) {
-        message.success(res.message);
-        handleReset();
+      const resQuotation = await callCreateQuotation(
+        values.supplierName,
+        values.totalAmount,
+        values.details,
+        values.image,
+        values.statusQuotation,
+        resRepairProposal.data.id
+      );
+
+      if (
+        resRepairProposal &&
+        resRepairProposal.data &&
+        resQuotation &&
+        resQuotation.data
+      ) {
+        message.success("Thành công");
+        handleReset(false);
       } else {
         notification.error({
           message: "Có lỗi xảy ra",
-          description: res?.error,
+          description: resRepairProposal?.error || resQuotation?.error,
         });
       }
     }
@@ -109,6 +146,17 @@ const ModalRepairProposal = (props) => {
     setOpenModal(false);
     setData(null);
     form.resetFields();
+    setDataFile([]);
+  };
+
+  const beforeUpload = (file) => {
+    const isPdf = file.type === "application/pdf";
+
+    if (!isPdf) {
+      message.error("Bạn chỉ có thể upload file pdf!");
+    }
+
+    return isPdf || Upload.LIST_IGNORE;
   };
 
   return (
@@ -121,6 +169,7 @@ const ModalRepairProposal = (props) => {
       className="w-full lg:!w-1/3"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+        <h3>Đề xuất bảo trì</h3>
         <Row gutter={16}>
           <Col xs={24}>
             <Form.Item
@@ -236,7 +285,7 @@ const ModalRepairProposal = (props) => {
             <Col lg={12} md={12} sm={24} xs={24}>
               <Form.Item
                 label="Trạng thái"
-                name="status"
+                name="statusRepairProposal"
                 rules={[
                   { required: true, message: "Vui lòng không được để trống" },
                 ]}
@@ -266,6 +315,118 @@ const ModalRepairProposal = (props) => {
                   </Option>
                   <Option value="COMPLETED" label="Đã hoàn thành">
                     Đã hoàn thành
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
+        </Row>
+
+        <h3>Báo giá</h3>
+        <Row gutter={16}>
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="File"
+              name={data?.image ? "image" : "fileName"}
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Upload
+                name="image"
+                beforeUpload={beforeUpload}
+                onChange={({ fileList }) => setDataFile(fileList)}
+                fileList={dataFile}
+                maxCount={1}
+                accept=".pdf"
+                listType="text"
+              >
+                {dataFile.length < 1 ? (
+                  <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                ) : null}
+              </Upload>
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Nhà cung cấp"
+              name="supplierName"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Tổng tiền báo giá"
+              name="totalAmount"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng không được để trống",
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col lg={12} md={12} sm={24} xs={24}>
+            <Form.Item
+              label="Chi tiết"
+              name="details"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="statusQuotation"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
+              >
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="PENDING" label="Đang chờ duyệt">
+                    Đang chờ duyệt
+                  </Option>
+                  <Option value="APPROVED" label="Đã được duyệt">
+                    Đã được duyệt
+                  </Option>
+                  <Option value="REJECTED" label="Bị từ chối">
+                    Bị từ chối
                   </Option>
                 </Select>
               </Form.Item>

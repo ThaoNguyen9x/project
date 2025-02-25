@@ -2,6 +2,10 @@ package com.building_mannager_system.service.notification;
 
 import com.building_mannager_system.component.WebSocketEventListener;
 import com.building_mannager_system.dto.requestDto.paymentDto.PaymentContractDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.QuotationDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.RepairProposalDto;
+import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
+import com.building_mannager_system.dto.requestDto.work_registration.WorkRegistrationDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.notification.Notification;
 import com.building_mannager_system.entity.notification.Recipient;
@@ -11,11 +15,13 @@ import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class NotificationPaymentContractService {
@@ -105,6 +111,156 @@ public class NotificationPaymentContractService {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error sending electricity usage verification notification to customer: " + e.getMessage());
+        }
+    }
+
+    public void sendRepairRequestToCustomer(RepairRequestDto repairRequestDto) {
+        User user = userRepository.findById(repairRequestDto.getAccount().getId())
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found"));
+
+        try {
+            String message = JsonUntils.toJson(repairRequestDto);
+            Recipient rec = new Recipient();
+
+            rec.setType("Repair_Request_Notification_Customer");
+            rec.setName("Send Repair Request Notification");
+            rec.setReferenceId(user.getId());
+
+            Recipient recipient = recipientService.createRecipient(rec);
+
+            Notification notification = new Notification();
+            notification.setRecipient(recipient);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(LocalDateTime.now());
+
+            notificationService.createNotification(notification);
+
+            messagingTemplate.convertAndSend(
+                    "/topic/repair-request-notifications/" + user.getId(),
+                    repairRequestDto
+            );
+            System.out.println("Notification sent successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error sending notification to customer: " + e.getMessage());
+        }
+    }
+
+    public void sendWorkRegistrationToCustomer(WorkRegistrationDto workRegistrationDto) {
+        User user = userRepository.findById(workRegistrationDto.getAccount().getId())
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "User not found"));
+
+        try {
+            String message = JsonUntils.toJson(workRegistrationDto);
+            Recipient rec = new Recipient();
+
+            rec.setType("Work_Register_Notification_Customer");
+            rec.setName("Send Work RegisterNotification");
+            rec.setReferenceId(user.getId());
+
+            Recipient recipient = recipientService.createRecipient(rec);
+
+            Notification notification = new Notification();
+            notification.setRecipient(recipient);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(LocalDateTime.now());
+
+            notificationService.createNotification(notification);
+
+            messagingTemplate.convertAndSend(
+                    "/topic/work-registration-notifications/" + user.getId(),
+                    workRegistrationDto
+            );
+            System.out.println("Notification sent successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error sending notification to customer: " + e.getMessage());
+        }
+    }
+
+    public void sendRepairProposal(QuotationDto quotationDto) {
+        try {
+            List<String> roles = List.of("Technician_Employee");
+            List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+            if (recipients.isEmpty()) {
+                return;
+            }
+
+            String message;
+            try {
+                message = JsonUntils.toJson(quotationDto);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error converting quotationDto to JSON", e);
+            }
+
+            LocalDateTime timestamp = LocalDateTime.now();
+
+            for (User user : recipients) {
+                Recipient recipient = new Recipient();
+                recipient.setType("Repair_Proposal_Notification_Verification");
+                recipient.setName("Send Repair Proposal Notification Verification");
+                recipient.setReferenceId(user.getId());
+
+                recipient = recipientService.createRecipient(recipient);
+
+                Notification notification = new Notification();
+                notification.setRecipient(recipient);
+                notification.setMessage(message);
+                notification.setStatus(StatusNotifi.PENDING);
+                notification.setCreatedAt(timestamp);
+
+                notificationService.createNotification(notification);
+
+                messagingTemplate.convertAndSend("/topic/repair-proposal-notifications/" + user.getId(), message);
+            }
+        } catch (Exception e) {
+            System.err.println("Error sending notification to technicians: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPaymentSuccess(PaymentContractDto paymentContractDto) {
+        try {
+            List<String> roles = List.of("Application_Admin");
+            List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+            if (recipients.isEmpty()) {
+                return;
+            }
+
+            String message;
+            try {
+                message = JsonUntils.toJson(paymentContractDto);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error converting quotationDto to JSON", e);
+            }
+
+            LocalDateTime timestamp = LocalDateTime.now();
+
+            for (User user : recipients) {
+                Recipient recipient = new Recipient();
+                recipient.setType("Payment_Notification_Success");
+                recipient.setName("Send Payment Notification Success");
+                recipient.setReferenceId(user.getId());
+
+                recipient = recipientService.createRecipient(recipient);
+
+                Notification notification = new Notification();
+                notification.setRecipient(recipient);
+                notification.setMessage(message);
+                notification.setStatus(StatusNotifi.PENDING);
+                notification.setCreatedAt(timestamp);
+
+                notificationService.createNotification(notification);
+
+                messagingTemplate.convertAndSend("/topic/payment-notifications/" + user.getId(), message);
+            }
+        } catch (Exception e) {
+            System.err.println("Error sending notification to technicians: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

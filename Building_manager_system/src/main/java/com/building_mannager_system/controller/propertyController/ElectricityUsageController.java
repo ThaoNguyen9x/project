@@ -58,4 +58,11 @@ public class ElectricityUsageController {
         electricityUsageService.deleteElectricityUsage(id);
         return ResponseEntity.ok(null);
     }
+
+    @PutMapping("/change/{id}")
+    @ApiMessage("Cập nhật trạng thái thành công")
+    public ResponseEntity<ElectricityUsageDTO> updateStatus(@PathVariable(name = "id") int id,
+                                                                      @RequestBody ElectricityUsage electricityUsage) {
+        return ResponseEntity.ok(electricityUsageService.updateStatus(id, electricityUsage));
+    }
 }

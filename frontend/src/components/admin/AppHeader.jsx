@@ -66,6 +66,7 @@ const AppHeader = () => {
         `/topic/electricityUsageVerification/${user.id}`,
         `/topic/maintenance-task-notifications/${user.id}`,
         `/topic/messages/${user.id}`,
+        `/topic/payment-notifications/${user.id}`,
         `/topic/birthday-notifications/${user.id}`,
         `/topic/repair-proposal-notifications/${user.id}`,
         `/topic/exp-payment-notifications/${user.id}`,
@@ -249,13 +250,25 @@ const AppHeader = () => {
 
           if (message) {
             if (notification?.recipient?.type === "Contact") {
-              notificationText = `Khách hàng có khoản thanh toán ${formattedAmount} hạn chót thanh toán vào ${formattedDate}.`;
-            } else if (message.paymentStatus === "PAID") {
+              notificationText = `Khách hàng có một khoản thanh toán với tổng số tiền ${formattedAmount}, hạn chót thanh toán vào ngày ${formattedDate}.`;
+            } else if (
+              notification?.recipient?.type === "Payment_Notification_Success"
+            ) {
               notificationText = `Khách hàng vừa thanh toán thành công khoản tiền ${formattedAmount} vào ngày ${formattedDate}.`;
             } else if (
               notification?.recipient?.type === "Electricity_Usage_Verification"
             ) {
               notificationText = `Khách hàng vui lòng kiểm tra đồng hồ số ${message?.meter?.serialNumber} đã được ghi chỉ số vào ngày ${message?.readingDate}.`;
+            } else if (
+              notification?.recipient?.type === "Electricity_Usage_Customer" &&
+              message?.status === "NO"
+            ) {
+              notificationText = `Khách hàng không chấp nhận số điện đã ghi. Vui lòng kiểm tra lại và liên hệ để xác nhận.`;
+            } else if (
+              notification?.recipient?.type === "Electricity_Usage_Customer" &&
+              message?.status === "YES"
+            ) {
+              notificationText = `Khách hàng đã đồng ý với số điện đã ghi. Vui lòng tiến hành tạo hóa đơn thanh toán.`;
             } else if (
               notification?.recipient?.type === "Birthday_Notification"
             ) {
@@ -273,9 +286,27 @@ const AppHeader = () => {
                 message?.requestDate
               ).toLocaleDateString("vi-VN")}`;
             } else if (
+              (notification?.recipient?.type ===
+                "Repair_Request_Notification_Customer" &&
+                message.status === "SUCCESS") ||
+              message.status === "FAILED"
+            ) {
+              notificationText = `Yêu cầu sửa chữa của bạn đã ${
+                message?.status === "SUCCESS" ? "hoàn thành" : "thất bại"
+              }, đơn yêu cầu của bạn vào ngày ${new Date(
+                message?.requestDate
+              ).toLocaleDateString("vi-VN")}`;
+            } else if (
               notification?.recipient?.type === "Work_Registration_Notification"
             ) {
-              notificationText = `Bạn có yêu cầu đăng ký công việc vào ngày ${new Date(
+              notificationText = `Bạn có yêu cầu đăng ký thi công vào ngày ${new Date(
+                message?.registrationDate
+              ).toLocaleDateString("vi-VN")}`;
+            } else if (
+              notification?.recipient?.type ===
+              "Work_Register_Notification_Customer"
+            ) {
+              notificationText = `Yêu cầu đăng ký thi công của bạn vào ngày ${new Date(
                 message?.registrationDate
               ).toLocaleDateString("vi-VN")}`;
             } else if (
@@ -316,11 +347,19 @@ const AppHeader = () => {
                 <p className="font-bold">
                   {notification?.recipient?.type === "Contact"
                     ? "Thanh toán chờ xử lý"
-                    : message?.paymentStatus === "PAID"
+                    : notification?.recipient?.type ===
+                      "Payment_Notification_Success"
                     ? "Thanh toán thành công"
                     : notification?.recipient?.type ===
                       "Electricity_Usage_Verification"
                     ? "Chưa được xác nhận"
+                    : notification?.recipient?.type ===
+                        "Electricity_Usage_Customer" && message?.status === "NO"
+                    ? "Không chấp nhận"
+                    : notification?.recipient?.type ===
+                        "Electricity_Usage_Customer" &&
+                      message?.status === "YES"
+                    ? "Đã chấp nhận"
                     : message?.status === "ACTIV"
                     ? "Đã được xác nhận"
                     : notification?.recipient?.type === "Birthday_Notification"
@@ -332,11 +371,15 @@ const AppHeader = () => {
                       "Exp_Payment_Notification"
                     ? "Thông báo hết hạn thanh toán"
                     : notification?.recipient?.type ===
-                      "Repair_Request_Notification"
+                        "Repair_Request_Notification" ||
+                      notification?.recipient?.type ===
+                        "Repair_Request_Notification_Customer"
                     ? "Thông báo yêu cầu sửa chữa"
                     : notification?.recipient?.type ===
-                      "Work_Registration_Notification"
-                    ? "Thông báo đăng ký công việc"
+                        "Work_Registration_Notification" ||
+                      notification?.recipient?.type ===
+                        "Work_Register_Notification_Customer"
+                    ? "Thông báo đăng ký thi công"
                     : notification?.recipient?.type ===
                       "Repair_Proposal_Notification"
                     ? "Thông báo yêu cầu bảo trì"

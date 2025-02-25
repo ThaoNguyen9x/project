@@ -1,7 +1,5 @@
 package com.building_mannager_system.dto.requestDto.propertyDto;
 
-import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
-import com.building_mannager_system.dto.requestDto.systemDto.SubcontractorDto;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,7 +15,7 @@ public class MaintenanceHistoryDto {
     private SystemMaintenanceServiceDto maintenanceService;
     private LocalDate performedDate;
     private String notes;
-    private CustomerDto.User technician;
+    private User technician;
     private List<RiskAssessmentDto> riskAssessments;
     private String findings;
     private String resolution;
@@ -27,6 +25,24 @@ public class MaintenanceHistoryDto {
     private LocalDateTime updatedAt;
     private String updatedBy;
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SystemMaintenanceServiceDto {
+        private Long id;
+        private SubcontractorDto subcontractor;
+        private String serviceType;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class User {
+        private Integer id;
+        private String name;
+    }
 
     @Setter
     @Getter
@@ -34,19 +50,26 @@ public class MaintenanceHistoryDto {
     @AllArgsConstructor
     public static class RiskAssessmentDto {
         private Integer riskAssessmentID;
+        private LocalDate assessmentDate;
         private SubcontractorDto contractor;
         private String systemType;
         private DeviceDto device;
-        private LocalDate assessmentDate;
-        private Integer riskProbability;
-        private Integer riskImpact;
-        private Integer riskDetection;
-        private Integer riskPriorityNumber;
-        private String mitigationAction;
-        private String remarks;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime updatedAt;
-        private String updatedBy;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeviceDto {
+        private Long deviceId;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SubcontractorDto {
+        private Integer id;
+        private String name;
     }
 }

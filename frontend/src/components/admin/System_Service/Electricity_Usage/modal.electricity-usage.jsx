@@ -57,15 +57,7 @@ const ModalElectricityUsage = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const {
-      meter,
-      startReading,
-      endReading,
-      electricityRate,
-      electricityCost,
-      readingDate,
-      comments,
-    } = values;
+    const { meter, startReading, endReading, readingDate, comments } = values;
 
     const image =
       dataFile[0]?.originFileObj || (dataFile[0] && dataFile[0]?.name);
@@ -76,10 +68,7 @@ const ModalElectricityUsage = (props) => {
       const res = await callUpdateElectricityUsage(
         data?.id,
         meter,
-        startReading,
         endReading,
-        electricityRate,
-        electricityCost,
         dayjs(readingDate).startOf("day").format("YYYY-MM-DD"),
         image,
         comments
@@ -98,11 +87,7 @@ const ModalElectricityUsage = (props) => {
     } else {
       const res = await callCreateElectricityUsage(
         meter,
-        startReading,
         endReading,
-        electricityRate,
-        electricityCost,
-        dayjs(readingDate).startOf("day").format("YYYY-MM-DD"),
         image,
         comments
       );
@@ -199,31 +184,6 @@ const ModalElectricityUsage = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Bắt đầu đọc"
-              name="startReading"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng không được để trống",
-                },
-                {
-                  validator: (_, value) => {
-                    if (value && isNaN(value)) {
-                      return Promise.reject(
-                        new Error("Vui lòng nhập số hợp lệ")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <Input allowClear />
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
               label="Kết thúc đọc"
               name="endReading"
               rules={[
@@ -247,67 +207,21 @@ const ModalElectricityUsage = (props) => {
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Giá điện"
-              name="electricityRate"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng không được để trống",
-                },
-                {
-                  validator: (_, value) => {
-                    if (value && isNaN(value)) {
-                      return Promise.reject(
-                        new Error("Vui lòng nhập số hợp lệ")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <Input allowClear />
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Chi phí điện"
-              name="electricityCost"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng không được để trống",
-                },
-                {
-                  validator: (_, value) => {
-                    if (value && isNaN(value)) {
-                      return Promise.reject(
-                        new Error("Vui lòng nhập số hợp lệ")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <Input allowClear />
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Ngày đọc"
-              name="readingDate"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <DatePicker format="YYYY-MM-DD" className="w-full" />
-            </Form.Item>
-          </Col>
+          {data?.id ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Ngày đọc"
+                name="readingDate"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
+              >
+                <DatePicker format="YYYY-MM-DD" className="w-full" />
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item

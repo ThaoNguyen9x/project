@@ -36,6 +36,7 @@ import Highlighter from "react-highlight-words";
 import { AuthContext } from "../../components/share/Context";
 import Column from "antd/es/table/Column";
 import ColumnGroup from "antd/es/table/ColumnGroup";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const CustomerContract = () => {
   const { user } = useContext(AuthContext);
@@ -248,11 +249,32 @@ const CustomerContract = () => {
     }
   };
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get("id");
+
+    if (id) {
+      const fetchRequest = async () => {
+        const res = await callGetCustomer(id);
+        if (res?.data) {
+          setData(res?.data);
+          setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search, navigate]);
+
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Hợp đồng khách hàng</h2>
-        <Access permission={ALL_PERMISSIONS.OFFICES.CREATE} hideChildren>
+        <Access permission={ALL_PERMISSIONS.CONTRACTS.CREATE} hideChildren>
           <Button
             onClick={() => setOpenModal(true)}
             className="p-2 xl:p-3 gap-1 xl:gap-2"
@@ -297,7 +319,7 @@ const CustomerContract = () => {
                 return (
                   <a
                     onClick={async () => {
-                      const res = await callGetCustomer(record?.id);
+                      const res = await callGetCustomer(record?.customer?.id);
                       if (res?.data) {
                         setData(res?.data);
                         setOpenViewDetail(true);
@@ -317,16 +339,58 @@ const CustomerContract = () => {
             <Column
               title="Giám đốc"
               dataIndex={["customer", "directorName"]}
-              key="customerDirectorName"
+              sorter={(a, b) =>
+                a.customer?.directorName.localeCompare(b.customer?.directorName)
+              }
+              {...getColumnSearchProps("customer.directorName")}
+              render={(text, record) => {
+                return searchedColumn === "customer.directorName" ? (
+                  <HighlightText text={text} searchText={searchText} />
+                ) : (
+                  FORMAT_TEXT_LENGTH(text, 20)
+                );
+              }}
             />
           </ColumnGroup>
           <ColumnGroup title="Hợp đồng">
             <Column
               title="Ngày bắt đầu"
               dataIndex="startDate"
-              key="startDate"
+              sorter={(a, b) => a.startDate.localeCompare(b.startDate)}
+              {...getColumnSearchProps("startDate")}
+              render={(text, record) => {
+                return (
+                  <a
+                    onClick={async () => {
+                      const res = await callGetContract(record?.id);
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenViewDetail(true);
+                      }
+                    }}
+                  >
+                    {searchedColumn === "startDate" ? (
+                      <HighlightText text={text} searchText={searchText} />
+                    ) : (
+                      FORMAT_TEXT_LENGTH(text, 20)
+                    )}
+                  </a>
+                );
+              }}
             />
-            <Column title="Ngày kết thúc" dataIndex="endDate" key="endDate" />
+            <Column
+              title="Ngày kết thúc"
+              dataIndex="endDate"
+              sorter={(a, b) => a.endDate.localeCompare(b.endDate)}
+              {...getColumnSearchProps("endDate")}
+              render={(text, record) => {
+                return searchedColumn === "endDate" ? (
+                  <HighlightText text={text} searchText={searchText} />
+                ) : (
+                  FORMAT_TEXT_LENGTH(text, 20)
+                );
+              }}
+            />
             <Column
               title="Tổng số tiền"
               dataIndex="totalAmount"
@@ -362,7 +426,7 @@ const CustomerContract = () => {
                       setPreviewOpen(true);
                     }}
                   >
-                    View
+                    Xem
                   </a>
                 ) : (
                   "N/A"

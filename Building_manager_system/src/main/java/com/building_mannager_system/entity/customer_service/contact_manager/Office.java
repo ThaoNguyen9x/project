@@ -59,7 +59,7 @@ public class Office extends BaseEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "office")
     @JsonIgnore
-    private List<Meter> meters = new ArrayList<>();
+    private List<Meter> meters;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "office")
     @JsonIgnore

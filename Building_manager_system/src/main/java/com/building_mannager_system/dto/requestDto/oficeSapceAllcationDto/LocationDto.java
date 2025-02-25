@@ -1,12 +1,8 @@
 package com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto;
 
-import com.building_mannager_system.dto.requestDto.propertyDto.DeviceTypeDto;
-import com.building_mannager_system.dto.requestDto.propertyDto.SystemMaintenanceServiceDto;
-import com.building_mannager_system.dto.requestDto.systemDto.SystemDto;
 import com.building_mannager_system.enums.DeviceStatus;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,19 +52,16 @@ public class LocationDto {
     @AllArgsConstructor
     public static class DeviceDto {
         private Long deviceId;
-        private SystemDto system;
-        private DeviceTypeDto deviceType;
+        private com.building_mannager_system.dto.requestDto.propertyDto.DeviceDto.SystemDto system;
+        private com.building_mannager_system.dto.requestDto.propertyDto.DeviceDto.DeviceTypeDto deviceType;
         private String deviceName;
         private LocalDate installationDate;
         private Integer lifespan;
         private DeviceStatus status;
         private int x;
         private int y;
-        private SystemMaintenanceServiceDto maintenanceService;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime updatedAt;
-        private String updatedBy;
+        private com.building_mannager_system.dto.requestDto.propertyDto.DeviceDto.SystemMaintenanceServiceDto maintenanceService;
+        private List<com.building_mannager_system.dto.requestDto.propertyDto.DeviceDto.RiskAssessment> riskAssessments;
     }
 
     @Getter
@@ -78,14 +71,9 @@ public class LocationDto {
     public static class OfficesDto {
         private Integer id;
         private String name;
-        private BigDecimal totalArea;
-        private BigDecimal rentPrice;
-        private BigDecimal serviceFee;
         private double startX;
         private double startY;
         private double endX;
         private double endY;
-        private String status;
-        private String drawingFile;
     }
 }

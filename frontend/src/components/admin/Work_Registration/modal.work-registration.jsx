@@ -55,7 +55,7 @@ const ModalWorkRegistration = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const { account, registrationDate, scheduledDate, note, status } = values;
+    const { scheduledDate, note, status } = values;
 
     const image =
       dataFile.length > 0
@@ -67,7 +67,6 @@ const ModalWorkRegistration = (props) => {
     if (data?.registrationID) {
       const res = await callUpdateWorkRegistration(
         data?.registrationID,
-        account,
         dayjs(scheduledDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         note,
         image,
@@ -86,7 +85,6 @@ const ModalWorkRegistration = (props) => {
       }
     } else {
       const res = await callCreateWorkRegistration(
-        account,
         dayjs(scheduledDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         note,
         image,
@@ -129,8 +127,8 @@ const ModalWorkRegistration = (props) => {
     <Modal
       title={
         data?.registrationID
-          ? "Cập nhật đăng ký công việc"
-          : "Tạo đăng ký công việc"
+          ? "Cập nhật đăng ký thi công"
+          : "Tạo đăng ký thi công"
       }
       open={openModal}
       onCancel={handleReset}
@@ -140,18 +138,6 @@ const ModalWorkRegistration = (props) => {
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
         <Row gutter={16}>
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Nhân viên phụ trách bảo trì"
-              name="account"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Input autoComplete="off" allowClear />
-            </Form.Item>
-          </Col>
-
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
               label="Ghi chú"

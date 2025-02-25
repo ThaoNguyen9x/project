@@ -19,6 +19,7 @@ import {
   callDeleteRepairProposal,
   callGetAllRepairProposals,
   callGetAllRiskAssessments,
+  callGetRepairProposal,
 } from "../../services/api";
 
 import ModalRepairProposal from "../../components/admin/System_Service/Repair_Proposal/modal.repair-proposal";
@@ -154,7 +155,7 @@ const RepairProposal = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -165,9 +166,12 @@ const RepairProposal = () => {
       render: (text, record, index) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetRepairProposal(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "title" ? (
@@ -296,9 +300,12 @@ const RepairProposal = () => {
             hideChildren
           >
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetRepairProposal(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -407,9 +414,7 @@ const RepairProposal = () => {
 
     if (id) {
       const fetchRequest = async () => {
-        const res = await callGetAllRepairProposals(
-          `filter=id~'${id}'`
-        );
+        const res = await callGetAllRepairProposals(`filter=id~'${id}'`);
         if (res?.data?.result.length) {
           setData(res.data.result[0]);
           setOpenViewDetail(true);
@@ -427,7 +432,10 @@ const RepairProposal = () => {
           permission={ALL_PERMISSIONS.REPAIR_PROPOSALS.CREATE}
           hideChildren
         >
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Add
           </Button>

@@ -81,7 +81,7 @@ const ViewRepairRequest = (props) => {
           span: 2,
         },
         {
-          label: "Bản vẽ",
+          label: "Hình ảnh",
           children:
             (
               <a
@@ -91,7 +91,7 @@ const ViewRepairRequest = (props) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {data?.imageUrl}
+                Xem
               </a>
             ) || "N/A",
           span: 2,
@@ -103,16 +103,16 @@ const ViewRepairRequest = (props) => {
               className={`status ${
                 data?.status === "PENDING"
                   ? "warning"
-                  : data?.status === "REJECTED"
+                  : data?.status === "FAILED"
                   ? "danger"
                   : "success"
               }`}
             >
               {data?.status === "PENDING"
                 ? "Đang chờ duyệt"
-                : data?.status === "APPROVED"
-                ? "Đã được duyệt"
-                : "Bị từ chối"}
+                : data?.status === "FAILED"
+                ? "Đã thất bại"
+                : "Đã hoàn thành"}
             </span>
           ),
           span: 2,

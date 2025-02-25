@@ -20,6 +20,7 @@ import {
   callDeleteElectricityUsage,
   callGetAllElectricityUsages,
   callGetAllMeters,
+  callGetElectricityUsage,
 } from "../../services/api";
 
 import ModalElectricityUsage from "../../components/admin/System_Service/Electricity_Usage/modal.electricity-usage";
@@ -30,7 +31,7 @@ import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 import Highlighter from "react-highlight-words";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ElectricityUsage = () => {
   const { user } = useContext(AuthContext);
@@ -181,9 +182,12 @@ const ElectricityUsage = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetElectricityUsage(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "serialNumber" ? (
@@ -204,8 +208,7 @@ const ElectricityUsage = () => {
       sorter: (a, b) => a.startReading - b.startReading,
       ...getColumnSearchProps("startReading"),
       render: (text, record) => {
-        const formatted =
-          `${record?.startReading}` || "N/A";
+        const formatted = `${record?.startReading}` || "N/A";
 
         return searchedColumn === "startReading" ? (
           <HighlightText text={formatted} searchText={searchText} />
@@ -269,6 +272,42 @@ const ElectricityUsage = () => {
       ),
     },
     {
+      title: "Trạng thái",
+      dataIndex: "status",
+      filters: [
+        {
+          text: "Chấp nhận",
+          value: "YES",
+        },
+        {
+          text: "Từ chối",
+          value: "NO",
+        },
+        {
+          text: "Chưa xác nhận",
+          value: "PENDING",
+        },
+      ],
+      onFilter: (value, record) => record.status === value,
+      render: (status, record) => (
+        <span
+          className={`${
+            status === "YES"
+              ? "success"
+              : status === "PENDING"
+              ? "warning"
+              : "danger"
+          } status`}
+        >
+          {status === "YES"
+            ? "Chấp nhận"
+            : status === "PENDING"
+            ? "Chưa xác nhận"
+            : "Từ chối"}
+        </span>
+      ),
+    },
+    {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
@@ -277,9 +316,12 @@ const ElectricityUsage = () => {
             hideChildren
           >
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetElectricityUsage(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -381,6 +423,7 @@ const ElectricityUsage = () => {
   };
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -388,18 +431,17 @@ const ElectricityUsage = () => {
 
     if (id) {
       const fetchRequest = async () => {
-        const res = await callGetAllElectricityUsages(
-          `filter=id~'${id}'`
-        );
-        if (res?.data?.result.length) {
-          setData(res.data.result[0]);
+        const res = await callGetElectricityUsage(id);
+        if (res?.data) {
+          setData(res?.data);
           setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
         }
       };
       fetchRequest();
     }
-  }, [location.search]);
-
+  }, [location.search, navigate]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
@@ -409,12 +451,14 @@ const ElectricityUsage = () => {
           permission={ALL_PERMISSIONS.ELECTRICITY_USAGES.CREATE}
           hideChildren
         >
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
         </Access>
-        
       </div>
       <div className="relative overflow-x-auto">
         <Table
@@ -439,6 +483,7 @@ const ElectricityUsage = () => {
           setData={setData}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
+          fetchData={fetchData}
         />
 
         <ModalElectricityUsage

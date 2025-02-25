@@ -26,4 +26,38 @@ public class ElectricityUsageDTO {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+
+    private Integer electricityId;
+    private BigDecimal previousMonthElectricityCost;
+    private BigDecimal previousMonthUsageAmount;
+    private LocalDate previousMonthReadingDate;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MeterDto {
+        private Integer id;
+        private String serialNumber;
+        private OfficesDto office; // Id của văn phòng (nếu có)
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OfficesDto {
+        private Integer id;
+        private String name;
+        private LocationDto location;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LocationDto {
+        private int id;
+        private String floor;
+    }
 }

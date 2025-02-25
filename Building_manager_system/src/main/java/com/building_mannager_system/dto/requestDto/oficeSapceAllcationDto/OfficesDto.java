@@ -1,7 +1,5 @@
 package com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto;
 
-import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
-import com.building_mannager_system.dto.requestDto.propertyDto.MeterDto;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -28,10 +26,20 @@ public class OfficesDto {
     private String drawingFile;
     private List<ContractDto> contracts;
     private List<HandoverStatusDto> handoverStatuses;
+    private List<MeterDto> meters;
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LocationDto {
+        private Integer id;
+        private String floor;
+    }
 
     @Getter
     @Setter
@@ -43,10 +51,6 @@ public class OfficesDto {
         private String status;
         private String drawingFile;
         private String equipmentFile;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime updatedAt;
-        private String updatedBy;
     }
 
     @Setter
@@ -55,16 +59,24 @@ public class OfficesDto {
     @AllArgsConstructor
     public static class ContractDto {
         private Integer id;
-        private LocalDate startDate;
-        private LocalDate endDate;
-        private String leaseStatus;
         private CustomerDto customer;
-        private BigDecimal totalAmount;
-        private String fileName;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime updatedAt;
-        private String updatedBy;
     }
 
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerDto {
+        private Integer id;
+        private String companyName;
+    }
+
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MeterDto {
+        private Integer id;
+        private String serialNumber;
+    }
 }

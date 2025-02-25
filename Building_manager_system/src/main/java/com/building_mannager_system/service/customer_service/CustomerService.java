@@ -1,6 +1,7 @@
 package com.building_mannager_system.service.customer_service;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
 import com.building_mannager_system.dto.requestDto.CustomerBirthdayNotificationDto;
 import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
 import com.building_mannager_system.entity.User;
@@ -88,6 +89,21 @@ public class CustomerService {
                 .map(item -> modelMapper.map(item, CustomerDto.class))
                 .collect(Collectors.toList());
 
+        for (CustomerDto customer : list) {
+            if (customer.getCustomerType() != null && customer.getCustomerType().getCustomerTypeDocuments() != null) {
+                customer.getCustomerType().getCustomerTypeDocuments().forEach(customerTypeDocumentDto -> {
+                    if (customerTypeDocumentDto.getCustomerDocuments() != null) {
+                        customerTypeDocumentDto.setCustomerDocuments(
+                                customerTypeDocumentDto.getCustomerDocuments().stream()
+                                        .filter(customerDocumentDto -> customerDocumentDto.getCustomerId() != null
+                                                && customerDocumentDto.getCustomerId().equals(customer.getId()))
+                                        .collect(Collectors.toList())
+                        );
+                    }
+                });
+            }
+        }
+
         rs.setResult(list);
         return rs;
     }
@@ -114,6 +130,19 @@ public class CustomerService {
     public CustomerDto getCustomer(int id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Customer not found with ID: " + id));
+
+        if (customer.getCustomerType() != null && customer.getCustomerType().getCustomerTypeDocuments() != null) {
+            customer.getCustomerType().getCustomerTypeDocuments().forEach(customerTypeDocumentDto -> {
+                if (customerTypeDocumentDto.getCustomerDocuments() != null) {
+                    customerTypeDocumentDto.setCustomerDocuments(
+                            customerTypeDocumentDto.getCustomerDocuments().stream()
+                                    .filter(customerDocumentDto -> customerDocumentDto.getCustomer() != null
+                                            && customerDocumentDto.getCustomer().getId().equals(customer.getId()))
+                                    .collect(Collectors.toList())
+                    );
+                }
+            });
+        }
 
         return modelMapper.map(customer, CustomerDto.class);
     }

@@ -15,4 +15,13 @@ public class CommonAreaDto {
     private double startY;
     private double endX;
     private double endY;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LocationDto {
+        private int id;
+        private String floor;
+    }
 }

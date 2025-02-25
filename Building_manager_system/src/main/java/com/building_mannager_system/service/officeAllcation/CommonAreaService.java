@@ -3,7 +3,9 @@ package com.building_mannager_system.service.officeAllcation;
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.CommonAreaDto;
 import com.building_mannager_system.dto.requestDto.systemDto.SystemDto;
+import com.building_mannager_system.dto.responseDto.ResUserDTO;
 import com.building_mannager_system.entity.Role;
+import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.CommonArea;
 import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.Location;
 import com.building_mannager_system.entity.property_manager.Systems;
@@ -133,5 +135,12 @@ public class CommonAreaService {
         locationRepository.save(location);
 
         commonAreaRepository.delete(commonArea);
+    }
+
+    public CommonAreaDto getCommonArea(int id) {
+        CommonArea ex = commonAreaRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Không tìm thấy khu vực chung với ID: " + id));
+
+        return modelMapper.map(ex, CommonAreaDto.class);
     }
 }

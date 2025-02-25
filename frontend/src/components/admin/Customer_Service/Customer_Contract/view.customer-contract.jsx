@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Button, Descriptions, Drawer, Space } from "antd";
+import { Button, Descriptions, Drawer, Space, Steps } from "antd";
 import {
   FORMAT_DATE_DISPLAY,
   FORMAT_DATE_TIME_DISPLAY,
@@ -77,7 +77,7 @@ const ViewCustomerContract = (props) => {
           span: 2,
         },
         {
-          label: "File",
+          label: "File hợp đồng",
           children:
             (
               <a
@@ -87,7 +87,7 @@ const ViewCustomerContract = (props) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {data?.fileName}
+                Xem
               </a>
             ) || "N/A",
           span: 2,
@@ -137,8 +137,9 @@ const ViewCustomerContract = (props) => {
         {
           label: "Hồ sơ",
           children:
-            data?.customerTypeDocuments?.map((x) => <p>{x.documentType}</p>) ||
-            "N/A",
+            data?.customerTypeDocuments?.map((x) => (
+              <p key={x?.id}>{x?.documentType}</p>
+            )) || "N/A",
           span: 2,
         },
         {
@@ -208,6 +209,39 @@ const ViewCustomerContract = (props) => {
             </a>
           ) : (
             "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Hồ sơ",
+          children: (
+            <Steps
+              direction="vertical"
+              size="small"
+              current={1}
+              items={
+                data?.customerType?.customerTypeDocuments?.map((x) => {
+                  const filePath = x?.customerDocuments?.[0]?.filePath;
+                  return {
+                    title: x?.documentType,
+                    description: filePath ? (
+                      <a
+                        href={`${
+                          import.meta.env.VITE_BACKEND_URL
+                        }/storage/customer_documents/${filePath}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Xem
+                      </a>
+                    ) : (
+                      <span className="text-red-600 font-bold">Đang thiếu</span>
+                    ),
+                    status: filePath ? "finish" : "error",
+                  };
+                }) || []
+              }
+            />
           ),
           span: 2,
         },

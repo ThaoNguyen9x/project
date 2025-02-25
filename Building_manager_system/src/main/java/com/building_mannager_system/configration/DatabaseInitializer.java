@@ -109,11 +109,6 @@ public class DatabaseInitializer implements CommandLineRunner {
                     new Permission("Delete a customer type document", "/api/customer-type-documents/{id}", "DELETE", "CUSTOMER_TYPE_DOCUMENTS"),
                     new Permission("Get customer type documents with pagination", "/api/customer-type-documents", "GET", "CUSTOMER_TYPE_DOCUMENTS"),
 
-                    new Permission("Create a customer", "/api/customers", "POST", "CUSTOMERS"),
-                    new Permission("Update a customer", "/api/customers/{id}", "PUT", "CUSTOMERS"),
-                    new Permission("Delete a customer", "/api/customers/{id}", "DELETE", "CUSTOMERS"),
-                    new Permission("Get customers with pagination", "/api/customers", "GET", "CUSTOMERS"),
-
                     new Permission("Create a office", "/api/offices", "POST", "OFFICES"),
                     new Permission("Update a office", "/api/offices/{id}", "PUT", "OFFICES"),
                     new Permission("Delete a office", "/api/offices/{id}", "DELETE", "OFFICES"),
@@ -129,11 +124,6 @@ public class DatabaseInitializer implements CommandLineRunner {
                     new Permission("Delete a payment contract", "/api/payments/{id}", "DELETE", "PAYMENT_CONTRACTS"),
                     new Permission("Get payment contracts with pagination", "/api/payments", "GET", "PAYMENT_CONTRACTS"),
                     new Permission("Send payment request", "/api/payments/sendPaymentRequest/{paymentId}", "POST", "PAYMENT_CONTRACTS"),
-
-                    new Permission("Create a handover status", "/api/handover-status", "POST", "HANDOVER_STATUS"),
-                    new Permission("Update a handover status", "/api/handover-status/{id}", "PUT", "HANDOVER_STATUS"),
-                    new Permission("Delete a handover status", "/api/handover-status/{id}", "DELETE", "HANDOVER_STATUS"),
-                    new Permission("Get handover status with pagination", "/api/handover-status", "GET", "HANDOVER_STATUS"),
 
                     new Permission("Create a system", "/api/systems", "POST", "SYSTEMS"),
                     new Permission("Update a system", "/api/systems/{id}", "PUT", "SYSTEMS"),
@@ -175,20 +165,20 @@ public class DatabaseInitializer implements CommandLineRunner {
                     new Permission("Delete a quotation", "/api/quotations/{id}", "DELETE", "QUOTATIONS"),
                     new Permission("Get quotations with pagination", "/api/quotations", "GET", "QUOTATIONS"),
 
-                    new Permission("Create a repair proposal", "/api/repair-proposals", "POST", "REPAIR_PROPOSALS"),
-                    new Permission("Update a repair proposal", "/api/repair-proposals/{id}", "PUT", "REPAIR_PROPOSALS"),
-                    new Permission("Delete a repair proposal", "/api/repair-proposals/{id}", "DELETE", "REPAIR_PROPOSALS"),
-                    new Permission("Get repair proposals with pagination", "/api/repair-proposals", "GET", "REPAIR_PROPOSALS"),
-
                     new Permission("Create a notification maintenance", "/api/notifications", "POST", "NOTIFICATION_MAINTENANCES"),
                     new Permission("Update a notification maintenance", "/api/notifications/{id}", "PUT", "NOTIFICATION_MAINTENANCES"),
                     new Permission("Delete a notification maintenance", "/api/notifications/{id}", "DELETE", "NOTIFICATION_MAINTENANCES"),
                     new Permission("Get notification maintenances with pagination", "/api/notifications", "GET", "NOTIFICATION_MAINTENANCES"),
 
-                    new Permission("Create a task", "/api/tasks", "POST", "TASKS"),
-                    new Permission("Update a task", "/api/tasks/{id}", "PUT", "TASKS"),
-                    new Permission("Delete a task", "/api/tasks/{id}", "DELETE", "TASKS"),
-                    new Permission("Get tasks with pagination", "/api/tasks", "GET", "TASKS"),
+                    new Permission("Create a location", "/api/locations", "POST", "LOCATIONS"),
+                    new Permission("Update a location", "/api/locations/{id}", "PUT", "LOCATIONS"),
+                    new Permission("Delete a location", "/api/locations/{id}", "DELETE", "LOCATIONS"),
+                    new Permission("Get locations with pagination", "/api/locations", "GET", "LOCATIONS"),
+
+                    new Permission("Create a common area", "/api/common-areas", "POST", "COMMON_AREAS"),
+                    new Permission("Update a common area", "/api/common-areas/{id}", "PUT", "COMMON_AREAS"),
+                    new Permission("Delete a common area", "/api/common-areas/{id}", "DELETE", "COMMON_AREAS"),
+                    new Permission("Get common areas with pagination", "/api/common-areas", "GET", "COMMON_AREAS"),
 
                     new Permission("Create a task", "/api/tasks", "POST", "TASKS"),
                     new Permission("Update a task", "/api/tasks/{id}", "PUT", "TASKS"),
@@ -204,21 +194,6 @@ public class DatabaseInitializer implements CommandLineRunner {
                     new Permission("Update a work registration", "/api/work-registrations/{id}", "PUT", "WORK_REGISTRATIONS"),
                     new Permission("Delete a work registration", "/api/work-registrations/{id}", "DELETE", "WORK_REGISTRATIONS"),
                     new Permission("Get work registrations with pagination", "/api/work-registrations", "GET", "WORK_REGISTRATIONS"),
-
-                    new Permission("Create a risk assessment", "/api/risk-assessments", "POST", "RISK_ASSESSMENTS"),
-                    new Permission("Update a risk assessment", "/api/risk-assessments/{id}", "PUT", "RISK_ASSESSMENTS"),
-                    new Permission("Delete a risk assessment", "/api/risk-assessments/{id}", "DELETE", "RISK_ASSESSMENTS"),
-                    new Permission("Get risk assessments with pagination", "/api/risk-assessments", "GET", "RISK_ASSESSMENTS"),
-
-                    new Permission("Create a item check", "/api/item-checks", "POST", "ITEM_CHECKS"),
-                    new Permission("Update a item check", "/api/item-checks/{id}", "PUT", "ITEM_CHECKS"),
-                    new Permission("Delete a item check", "/api/item-checks/{id}", "DELETE", "ITEM_CHECKS"),
-                    new Permission("Get item checks with pagination", "/api/item-checks", "GET", "ITEM_CHECKS"),
-
-                    new Permission("Create a result check", "/api/result-checks", "POST", "RESULT_CHECKS"),
-                    new Permission("Update a result check", "/api/result-checks/{id}", "PUT", "RESULT_CHECKS"),
-                    new Permission("Delete a result check", "/api/result-checks/{id}", "DELETE", "RESULT_CHECKS"),
-                    new Permission("Get result checks with pagination", "/api/result-checks", "GET", "RESULT_CHECKS"),
 
                     new Permission("Create a electricity rate", "/api/electricity-rates", "POST", "ELECTRICITY_RATES"),
                     new Permission("Update a electricity rate", "/api/electricity-rates/{id}", "PUT", "ELECTRICITY_RATES"),
@@ -240,25 +215,25 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .collect(Collectors.toList());
 
             // Quản lý dịch vụ khách hàng
-            Set<String> customerServiceManagerAllMethodsModules = Set.of("CONTRACTS", "CUSTOMER_TYPE_DOCUMENTS", "CUSTOMER_TYPES", "OFFICES", "HANDOVER_STATUS");
+            Set<String> customerServiceManagerAllMethodsModules = Set.of("CONTRACTS", "CUSTOMER_TYPE_DOCUMENTS", "CUSTOMER_TYPES", "OFFICES");
             List<Permission> customerServiceManagerPermissions = allPermissions.stream()
                     .filter(permission -> customerServiceManagerAllMethodsModules.contains(permission.getModule()))
                     .collect(Collectors.toList());
 
             // Nhân viên chăm sóc khách hàng
-            Set<String> customerServiceEmployeeAllMethodsModules = Set.of("CONTRACTS", "CUSTOMER_TYPE_DOCUMENTS", "CUSTOMER_TYPES", "OFFICES", "HANDOVER_STATUS", "NOTIFICATION_MAINTENANCES", "TASKS");
+            Set<String> customerServiceEmployeeAllMethodsModules = Set.of("CONTRACTS", "CUSTOMER_TYPE_DOCUMENTS", "CUSTOMER_TYPES", "OFFICES", "NOTIFICATION_MAINTENANCES");
             List<Permission> customerServiceEmployeePermissions = allPermissions.stream()
                     .filter(permission -> customerServiceEmployeeAllMethodsModules.contains(permission.getModule()))
                     .collect(Collectors.toList());
 
             // Quản lý kỹ thuật viên
             Set<String> technicianManagerGetModules = Set.of(
-                    "HANDOVER_STATUS", "NOTIFICATION_MAINTENANCES", "DEVICES", "DEVICE_TYPES",
+                    "NOTIFICATION_MAINTENANCES", "DEVICES", "DEVICE_TYPES",
                     "MAINTENANCE_HISTORIES", "SUBCONTRACTS", "SYSTEM_MAINTENANCE_SERVICES",
-                    "SYSTEMS", "ELECTRICITY_USAGES", "METERS", "WORK_REGISTRATIONS"
+                    "SYSTEMS", "ELECTRICITY_USAGES", "WORK_REGISTRATIONS", "REPAIR_REQUEST", "OFFICES"
             );
             Set<String> technicianManagerPostModules = Set.of("REPAIR_PROPOSALS", "SUBCONTRACTS", "SYSTEM_MAINTENANCE_SERVICES");
-            Set<String> technicianManagerPutModules = Set.of("WORK_REGISTRATIONS");
+            Set<String> technicianManagerPutModules = Set.of("WORK_REGISTRATIONS", "REPAIR_REQUEST");
             List<Permission> technicianManagerPermissions = allPermissions.stream()
                     .filter(permission ->
                             ("GET".equals(permission.getMethod()) && technicianManagerGetModules.contains(permission.getModule())) ||
@@ -268,10 +243,10 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .collect(Collectors.toList());
 
             // Kỹ thuật viên
-            Set<String> technicianEmployeeAllMethodsModules = Set.of("QUOTATIONS", "REPAIR_PROPOSALS", "DEVICES", "DEVICE_TYPES", "ELECTRICITY_USAGES", "METERS", "ITEM_CHECKS", "RESULT_CHECKS");
+            Set<String> technicianEmployeeAllMethodsModules = Set.of("REPAIR_REQUEST", "OFFICES", "QUOTATIONS", "REPAIR_PROPOSALS", "DEVICES", "DEVICE_TYPES", "ELECTRICITY_USAGES");
             Set<String> technicianEmployeeGetModules = Set.of("NOTIFICATION_MAINTENANCES", "SYSTEM_MAINTENANCE_SERVICES", "SYSTEM");
             Set<String> technicianEmployeePostModules = Set.of("SYSTEM");
-            Set<String> technicianEmployeePutModules = Set.of("SYSTEM");
+            Set<String> technicianEmployeePutModules = Set.of("SYSTEM", "REPAIR_REQUEST");
 
             List<Permission> technicianEmployeePermissions = allPermissions.stream()
                     .filter(permission ->
@@ -283,7 +258,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .collect(Collectors.toList());
 
             // Nhà thầu phụ
-            Set<String> subcontractorAllMethodsModules = Set.of("RISK_ASSESSMENTS");
+            Set<String> subcontractorAllMethodsModules = Set.of("MAINTENANCE_HISTORIES");
             Set<String> subcontractorGetModules = Set.of("DEVICES", "MAINTENANCE_HISTORIES", "SYSTEMS");
             Set<String> subcontractorPostModules = Set.of("MAINTENANCE_HISTORIES");
             Set<String> subcontractorPutModules = Set.of("MAINTENANCE_HISTORIES");
@@ -298,7 +273,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .collect(Collectors.toList());
 
             // Khách hàng
-            Set<String> customerGetModules = Set.of("REPAIR_REQUEST", "ELECTRICITY_USAGES", "METERS", "PAYMENT_CONTRACTS", "WORK_REGISTRATIONS");
+            Set<String> customerGetModules = Set.of("CONTRACTS", "REPAIR_REQUEST", "ELECTRICITY_USAGES", "PAYMENT_CONTRACTS", "WORK_REGISTRATIONS");
             Set<String> customerPostModules = Set.of("REPAIR_REQUEST", "WORK_REGISTRATIONS");
 
             List<Permission> customerPermissions = allPermissions.stream()
@@ -479,7 +454,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                                     new CommonArea(4, "Thang máy 3", locations.get(1), 22, 22, 20, 20, "beige"),
                                     new CommonArea(4, "Thang máy 2", locations.get(1), 20, 22, 18, 20, "beige"),
                                     new CommonArea(4, "Thang máy 1", locations.get(1), 18, 22, 16, 20, "beige"),
-                                    new CommonArea(27, "Thang bộ", locations.get(1), 22, 25, 16, 20, "orange"),
+                                    new CommonArea(27, "Thang bộ", locations.get(1), 22, 25, 16, 22, "orange"),
                                     new CommonArea(25, "Kho vật tư", locations.get(3), 4, 41, 0, 38, "brown"),
                                     new CommonArea(15, "Phòng điện tủ nguồn", locations.get(3), 7, 41, 0, 38, "brown"),
                                     new CommonArea(20, "Phòng Kỹ thuật", locations.get(3), 11, 41, 7, 38, "brown"),
@@ -494,7 +469,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                                     new CommonArea(4, "Thang máy 3", locations.get(2), 22, 22, 20, 20, "beige"),
                                     new CommonArea(4, "Thang máy 2", locations.get(2), 20, 22, 18, 20, "beige"),
                                     new CommonArea(4, "Thang máy 1", locations.get(2), 18, 22, 16, 20, "beige"),
-                                    new CommonArea(27, "Thang bộ", locations.get(2), 22, 25, 16, 20, "orange")
+                                    new CommonArea(27, "Thang bộ", locations.get(2), 22, 25, 16, 22, "orange")
                             ));
                         }
                     }

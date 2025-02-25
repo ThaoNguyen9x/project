@@ -18,6 +18,8 @@ import {
   callDeleteSystemMaintenanceService,
   callGetAllSystemMaintenanceServices,
   callGetAllSubcontracts,
+  callGetSystemMaintenanceService,
+  callGetSubcontract,
 } from "../../services/api";
 
 import ModalSystemMaintenanceService from "../../components/admin/Property_Manager/System_Maintenance_Service/modal.system-maintenance-service";
@@ -164,7 +166,7 @@ const SystemMaintenanceService = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -201,9 +203,12 @@ const SystemMaintenanceService = () => {
 
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetSystemMaintenanceService(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "serviceType" ? (
@@ -231,9 +236,12 @@ const SystemMaintenanceService = () => {
       render: (subcontractor) => {
         return (
           <a
-            onClick={() => {
-              setData(subcontractor);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetSubcontract(subcontractor?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "subcontractor.name" ? (
@@ -293,9 +301,12 @@ const SystemMaintenanceService = () => {
             hideChildren
           >
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetSystemMaintenanceService(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -399,13 +410,18 @@ const SystemMaintenanceService = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Dịch vụ bảo trì hệ thống</h2>
+        <h2 className="text-base xl:text-xl font-bold">
+          Dịch vụ bảo trì hệ thống
+        </h2>
         <div className="flex items-center gap-2">
           <Access
             permission={ALL_PERMISSIONS.SYSTEM_MAINTENANCE_SERVICES.CREATE}
             hideChildren
           >
-            <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+            <Button
+              onClick={() => setOpenModal(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
               <GoPlus className="h-4 w-4" />
               Thêm
             </Button>

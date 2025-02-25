@@ -159,7 +159,6 @@ const ModalRepairRequest = (props) => {
                 onChange={({ fileList }) => setDataFile(fileList)}
                 fileList={dataFile}
                 maxCount={1}
-                accept=".pdf"
                 listType="text"
               >
                 {dataFile.length < 1 ? (
@@ -203,6 +202,9 @@ const ModalRepairRequest = (props) => {
                 >
                   <Option value="PENDING" label="Đang chờ xử lý">
                     Đang chờ xử lý
+                  </Option>
+                  <Option value="FAILED" label="Đã thất bại">
+                    Đã thất bại
                   </Option>
                   <Option value="SUCCESS" label="Đã hoàn thành">
                     Đã hoàn thành

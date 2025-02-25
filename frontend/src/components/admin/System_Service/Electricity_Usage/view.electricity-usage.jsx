@@ -1,23 +1,66 @@
 import dayjs from "dayjs";
-import { Descriptions, Drawer } from "antd";
+import {
+  Button,
+  Descriptions,
+  Drawer,
+  message,
+  notification,
+  Popconfirm,
+  Space,
+} from "antd";
 import {
   FORMAT_DATE_DISPLAY,
   FORMAT_DATE_TIME_DISPLAY,
 } from "../../../../utils/constant";
+import { useState } from "react";
+import {
+  callGetContract,
+  callGetCustomer,
+  callGetMeter,
+  callGetOffice,
+  callGetUser,
+  callGetCustomerType,
+  callChangeElectricityUsage,
+} from "../../../../services/api";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 
 const ViewElectricityUsage = (props) => {
-  const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
+  const { user, data, setData, openViewDetail, setOpenViewDetail, fetchData } =
+    props;
+  const [historyStack, setHistoryStack] = useState([]);
+
+  const onClose = () => {
+    setOpenViewDetail(false);
+    setData(null);
+    setHistoryStack([]);
+  };
+
+  const goBack = () => {
+    if (historyStack.length > 0) {
+      const prevData = historyStack[historyStack.length - 1];
+      setHistoryStack(historyStack.slice(0, -1));
+      setData(prevData);
+    }
+  };
+
+  const handleViewDetail = async (newData) => {
+    setHistoryStack([...historyStack, data]);
+    setData(newData);
+    setOpenViewDetail(true);
+  };
 
   const generateItems = () => {
-    if (data?.usageAmount) {
+    if (data?.readingDate) {
       return [
         {
           label: "Đồ hồ đo",
           children: data?.meter?.serialNumber ? (
             <a
-              onClick={() => {
-                setData(data?.meter);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetMeter(data?.meter?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {data?.meter?.serialNumber}
@@ -31,9 +74,11 @@ const ViewElectricityUsage = (props) => {
           label: "Văn phòng",
           children: data?.meter?.office?.name ? (
             <a
-              onClick={() => {
-                setData(data?.meter?.office);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetOffice(data?.meter?.office?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {`${data?.meter?.office?.name} - ${data?.meter?.office?.location?.floor}` ||
@@ -47,9 +92,20 @@ const ViewElectricityUsage = (props) => {
         {
           label: "Bắt đầu đọc",
           children: data?.startReading || 0,
-          span: 2,
         },
-        { label: "Kết thúc đọc", children: data?.endReading || 0, span: 2 },
+        { label: "Kết thúc đọc", children: data?.endReading || 0 },
+        {
+          label: "Số lượng sử dụng",
+          children: `${data?.usageAmount || 0}`,
+        },
+        ...(data?.previousMonthReadingDate !== null
+          ? [
+              {
+                label: "Tháng trước",
+                children: `${data?.previousMonthUsageAmount || 0}`,
+              },
+            ]
+          : []),
         {
           label: "Giá điện",
           children: data?.electricityRate || 0,
@@ -58,8 +114,15 @@ const ViewElectricityUsage = (props) => {
         {
           label: "Chi phí điện",
           children: data?.electricityCost || 0,
-          span: 2,
         },
+        ...(data?.previousMonthReadingDate !== null
+          ? [
+              {
+                label: "Tháng trước",
+                children: `${data?.previousMonthElectricityCost || 0}`,
+              },
+            ]
+          : []),
         { label: "Ngày đọc", children: data?.readingDate || "N/A", span: 2 },
         {
           label: "File",
@@ -77,13 +140,274 @@ const ViewElectricityUsage = (props) => {
             ) || "N/A",
           span: 2,
         },
-        { label: "Bình luận", children: data?.comments || "N/A", span: 2 },
+        { label: "Ghi chú", children: data?.comments || "N/A", span: 2 },
       ];
-    } else if (data?.name) {
+    } else if (data?.serialNumber) {
+      return [
+        {
+          label: "Serial Number",
+          children: data?.serialNumber || "N/A",
+          span: 2,
+        },
+        {
+          label: "Loại đồng hồ",
+          children:
+            data?.meterType === "THREE_PHASE" ? "3 Phase" : "1 Phase" || "N/A",
+          span: 2,
+        },
+        {
+          label: "Ngày cài đặt",
+          children:
+            dayjs(data?.installationDate).format(FORMAT_DATE_DISPLAY) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Văn phòng",
+          children: data?.office?.name ? (
+            <a
+              onClick={async () => {
+                const res = await callGetOffice(data?.office?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {`${data?.office?.name} - ${data?.office?.location?.floor}` ||
+                "N/A"}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+      ];
+    } else if (data?.contractEndDate) {
       return [
         { label: "Tên", children: data?.name || "N/A", span: 2 },
-        { label: "Vị trí", children: data?.location?.floor || "N/A", span: 2 },
-        { label: "Diện tích", children: data?.area + " m²" || "N/A", span: 2 },
+        { label: "Điện thoại", children: data?.phone || "N/A" },
+        {
+          label: "Rating",
+          children: (
+            <Rate value={data?.rating} disabled style={{ fontSize: 16 }} />
+          ),
+          span: 2,
+        },
+        {
+          label: "Hệ thống",
+          children: data?.system?.systemName || "N/A",
+          span: 2,
+        },
+        { label: "Ngày bắt đầu", children: data?.contractStartDate || "N/A" },
+        { label: "Ngày kết thúc", children: data?.contractEndDate || "N/A" },
+      ];
+    } else if (data?.systemName) {
+      return [
+        { label: "Tên", children: data?.systemName || "N/A", span: 2 },
+        { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+        {
+          label: "Chu kỳ bảo trì",
+          children: data?.maintenanceCycle || "N/A",
+          span: 2,
+        },
+      ];
+    } else if (data?.fileName) {
+      return [
+        {
+          label: "Khách hàng",
+          children: data?.customer?.companyName ? (
+            <a
+              onClick={async () => {
+                const res = await callGetCustomer(data?.customer?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.customer?.companyName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Tổng số tiền",
+          children: data?.totalAmount
+            ? data?.totalAmount.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })
+            : 0,
+          span: 2,
+        },
+        {
+          label: "Ngày bắt đầu",
+          children: dayjs(data?.startDate).format(FORMAT_DATE_DISPLAY) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Ngày kết thúc",
+          children: dayjs(data?.endDate).format(FORMAT_DATE_DISPLAY) || "N/A",
+          span: 2,
+        },
+        {
+          label: "File",
+          children:
+            (
+              <a
+                href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
+                  data?.fileName
+                }`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {data?.fileName}
+              </a>
+            ) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Trạng thái",
+          children: (
+            <span
+              className={`${
+                data?.leaseStatus === "Active"
+                  ? "success"
+                  : data?.leaseStatus === "Inactive"
+                  ? "danger"
+                  : "warning"
+              } status`}
+            >
+              {data?.leaseStatus === "Active"
+                ? "Hoạt động"
+                : data?.leaseStatus === "Inactive"
+                ? "Đã chấm dứt"
+                : "Đang chờ gia hạn"}
+            </span>
+          ),
+          span: 2,
+        },
+      ];
+    } else if (data?.companyName) {
+      return [
+        { label: "Công ty", children: data?.companyName || "N/A", span: 2 },
+        { label: "Giám đốc", children: data?.directorName || "N/A", span: 2 },
+        { label: "Email", children: data?.email || "N/A" },
+        { label: "Điện thoại", children: data?.phone || "N/A" },
+        { label: "Địa chỉ", children: data?.address || "N/A", span: 2 },
+        {
+          label: "Ngày sinh",
+          children: data?.birthday
+            ? dayjs(data?.birthday).format("YYYY-DD-MM")
+            : "N/A",
+          span: 2,
+        },
+        {
+          label: "Liên hệ",
+          children: data?.user?.name ? (
+            <a
+              onClick={async () => {
+                const res = await callGetUser(data?.user?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.user?.name}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Loại khách hàng",
+          children: data?.customerType?.typeName ? (
+            <a
+              onClick={async () => {
+                const res = await callGetCustomerType(data?.customerType?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.customerType?.typeName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+      ];
+    } else if (data?.role?.name) {
+      return [
+        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Email", children: data?.email || "N/A", span: 2 },
+        { label: "Điện thoại", children: data?.mobile || "N/A" },
+        { label: "Vai trò", children: data?.role?.name || "N/A" },
+        {
+          label: "Trạng thái",
+          children:
+            (
+              <span className={`${data?.status ? "success" : "danger"} status`}>
+                {data?.status ? "Hoạt động" : "Không hoạt động"}
+              </span>
+            ) || "N/A",
+          span: 2,
+        },
+      ];
+    } else if (data?.typeName) {
+      return [
+        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        {
+          label: "Hồ sơ",
+          children:
+            data?.customerTypeDocuments?.map((x) => (
+              <p key={x?.id}>{x?.documentType}</p>
+            )) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Trạng thái",
+          children:
+            (
+              <span className={`${data?.status ? "success" : "danger"} status`}>
+                {data?.status ? "Hoạt động" : "Không hoạt động"}
+              </span>
+            ) || "N/A",
+          span: 2,
+        },
+      ];
+    } else {
+      return [
+        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        {
+          label: "Hợp đồng",
+          children: (
+            <>
+              {data?.contracts?.[0]?.customer?.companyName ? (
+                <a
+                  onClick={async () => {
+                    const res = await callGetContract(data?.contracts?.[0]?.id);
+                    if (res?.data) {
+                      handleViewDetail(res?.data);
+                    }
+                  }}
+                >
+                  Công ty - {data?.contracts?.[0]?.customer?.companyName}
+                </a>
+              ) : (
+                "N/A"
+              )}
+            </>
+          ),
+          span: 2,
+        },
+        {
+          label: "Tổng diện tích",
+          children: data?.totalArea + " m²" || "N/A",
+          span: 2,
+        },
         {
           label: "Giá thuê",
           children:
@@ -102,6 +426,10 @@ const ViewElectricityUsage = (props) => {
             }) || "N/A",
           span: 2,
         },
+        { label: "Tọa độ bắt đầu x", children: data?.startX || 0 },
+        { label: "Tọa độ bắt đầu y", children: data?.startY || 0 },
+        { label: "Tọa độ kết thúc x", children: data?.endX || 0 },
+        { label: "Tọa độ kết thúc y", children: data?.endY || 0 },
         {
           label: "Bản vẽ",
           children:
@@ -130,43 +458,6 @@ const ViewElectricityUsage = (props) => {
                 {data?.status === "ACTIV" ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
-        },
-      ];
-    } else {
-      return [
-        {
-          label: "Serial Number",
-          children: data?.serialNumber || "N/A",
-          span: 2,
-        },
-        {
-          label: "Loại đồng hồ",
-          children:
-            data?.meterType === "THREE_PHASE" ? "3 Phase" : "1 Phase" || "N/A",
-          span: 2,
-        },
-        {
-          label: "Ngày cài đặt",
-          children:
-            dayjs(data?.installationDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
-        },
-        {
-          label: "Văn phòng",
-          children: data?.office?.name ? (
-            <a
-              onClick={() => {
-                setData(data?.office);
-                setOpenViewDetail(true);
-              }}
-            >
-              {`${data?.office?.name} - ${data?.office?.location?.floor}` ||
-                "N/A"}
-            </a>
-          ) : (
-            "N/A"
-          ),
           span: 2,
         },
       ];
@@ -203,18 +494,95 @@ const ViewElectricityUsage = (props) => {
     ];
   }
 
+  const handleChangeStatus = async (id, status) => {
+    const res = await callChangeElectricityUsage(id, status);
+
+    if (res && res.data) {
+      message.success("Bạn đã xác nhận thành công");
+      fetchData();
+      onClose();
+    } else {
+      notification.error({
+        message: "Có lỗi xảy ra",
+        description: res.message,
+      });
+    }
+  };
+
   return (
     <Drawer
       title={`${
-        data?.usageAmount
+        data?.readingDate
           ? "Thông tin mức tiêu thụ điện"
-          : data?.name
-          ? "Thông tin văn phòng"
-          : "Thông tin đồng hồ đo"
+          : data?.serialNumber
+          ? "Thông tin đồng hồ đo"
+          : data?.systemName
+          ? "Thông tin hệ thống"
+          : data?.contractEndDate
+          ? "Thông tin nhà thầu phụ"
+          : data?.fileName
+          ? "Thông tin hợp đồng"
+          : data?.companyName
+          ? "Thông tin khách hàng"
+          : data?.typeName
+          ? "Thông tin loại khách hàng"
+          : data?.role?.name
+          ? "Thông tin liên hệ"
+          : "Thông tin văn phòng"
       }`}
-      onClose={() => setOpenViewDetail(false)}
+      onClose={onClose}
       open={openViewDetail}
       width={window.innerWidth > 900 ? 800 : window.innerWidth}
+      extra={
+        <Space>
+          {historyStack.length > 0 && (
+            <Button onClick={goBack}>Quay lại</Button>
+          )}
+          {user?.role?.name === "Customer" && data?.status === "PENDING" ? (
+            <>
+              Xác nhận
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc không?"
+                onConfirm={() => handleChangeStatus(data?.id, "YES")}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+              >
+                <Button>Đồng ý</Button>
+              </Popconfirm>
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc không?"
+                onConfirm={() => handleChangeStatus(data?.id, "NO")}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+              >
+                <Button color="danger" variant="solid">
+                  Không
+                </Button>
+              </Popconfirm>
+            </>
+          ) : (
+            ""
+          )}
+        </Space>
+      }
     >
       <Descriptions
         items={items}

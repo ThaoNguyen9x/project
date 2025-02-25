@@ -182,9 +182,7 @@ function App() {
           element: (() => {
             const hasPermission = user?.role?.permissions?.some(
               (perm) =>
-                perm.apiPath ===
-                  ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath ||
-                perm.apiPath === ALL_PERMISSIONS.CUSTOMERS.GET_PAGINATE.apiPath
+                perm.apiPath === ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath
             );
 
             return hasPermission ? (
@@ -246,7 +244,7 @@ function App() {
           element: user?.role?.permissions?.some(
             (perm) =>
               perm.apiPath ===
-              ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath || ALL_PERMISSIONS.RISK_ASSESSMENTS.GET_PAGINATE.apiPath
+              ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath
           ) ? (
             <MaintenanceHistory />
           ) : (
@@ -288,35 +286,12 @@ function App() {
           ),
         },
         {
-          path: "meters",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.METERS.GET_PAGINATE.apiPath
-          ) ? (
-            <Meter />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
-          path: "quotations",
+          path: "quotations-repair-proposals",
           element: user?.role?.permissions?.some(
             (perm) =>
               perm.apiPath === ALL_PERMISSIONS.QUOTATIONS.GET_PAGINATE.apiPath
           ) ? (
             <Quotation />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
-          path: "repair-proposals",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.REPAIR_PROPOSALS.GET_PAGINATE.apiPath
-          ) ? (
-            <RepairProposal />
           ) : (
             <Navigate to="/dashboard" />
           ),
@@ -329,17 +304,6 @@ function App() {
               ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.apiPath
           ) ? (
             <NotificationMaintenance />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
-          path: "tasks",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.TASKS.GET_PAGINATE.apiPath
-          ) ? (
-            <Task />
           ) : (
             <Navigate to="/dashboard" />
           ),
@@ -369,22 +333,10 @@ function App() {
           ),
         },
         {
-          path: "item-checks",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.ITEM_CHECKS.GET_PAGINATE.apiPath
-          ) ? (
-            <ItemCheck />
-          ) : (
-            <Navigate to="/dashboard" />
-          ),
-        },
-        {
           path: "locations",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath
+              perm.apiPath === ALL_PERMISSIONS.LOCATIONS.GET_PAGINATE.apiPath
           ) ? (
             <Location />
           ) : (
@@ -395,8 +347,7 @@ function App() {
           path: "common-areas",
           element: user?.role?.permissions?.some(
             (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.ELECTRICITY_RATES.GET_PAGINATE.apiPath
+              perm.apiPath === ALL_PERMISSIONS.COMMON_AREAS.GET_PAGINATE.apiPath
           ) ? (
             <CommonArea />
           ) : (

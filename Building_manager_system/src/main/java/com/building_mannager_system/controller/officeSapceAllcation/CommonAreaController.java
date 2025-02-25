@@ -2,10 +2,7 @@ package com.building_mannager_system.controller.officeSapceAllcation;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.CommonAreaDto;
-import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.LocationDto;
 import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.CommonArea;
-import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.Location;
-import com.building_mannager_system.entity.property_manager.Systems;
 import com.building_mannager_system.service.officeAllcation.CommonAreaService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
@@ -75,5 +72,11 @@ public class CommonAreaController {
     public ResponseEntity<Void> deleteSystem(@PathVariable(name = "id") int id) {
         commonAreaService.deleteCommonArea(id);
         return ResponseEntity.ok(null);
+    }
+
+    @GetMapping("/{id}")
+    @ApiMessage("Lấy khu vực chung thành công")
+    public ResponseEntity<CommonAreaDto> getUser(@PathVariable(name = "id") int id) {
+        return ResponseEntity.ok(commonAreaService.getCommonArea(id));
     }
 }

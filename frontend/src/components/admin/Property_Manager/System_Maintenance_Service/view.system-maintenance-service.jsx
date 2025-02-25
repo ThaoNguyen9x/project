@@ -1,9 +1,32 @@
 import dayjs from "dayjs";
-import { Descriptions, Drawer, Rate } from "antd";
+import { Button, Descriptions, Drawer, Rate, Space } from "antd";
 import { FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
+import { useState } from "react";
+import { callGetSubcontract, callGetSystem } from "../../../../services/api";
 
 const ViewSystemMaintenanceService = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
+  const [historyStack, setHistoryStack] = useState([]);
+
+  const onClose = () => {
+    setOpenViewDetail(false);
+    setData(null);
+    setHistoryStack([]);
+  };
+
+  const goBack = () => {
+    if (historyStack.length > 0) {
+      const prevData = historyStack[historyStack.length - 1];
+      setHistoryStack(historyStack.slice(0, -1));
+      setData(prevData);
+    }
+  };
+
+  const handleViewDetail = async (newData) => {
+    setHistoryStack([...historyStack, data]);
+    setData(newData);
+    setOpenViewDetail(true);
+  };
 
   const generateItems = () => {
     if (data?.maintenanceScope) {
@@ -71,9 +94,11 @@ const ViewSystemMaintenanceService = (props) => {
           label: "Nhà thầu phụ",
           children: data?.subcontractor?.name ? (
             <a
-              onClick={() => {
-                setData(data?.subcontractor);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetSubcontract(data?.subcontractor?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {data?.subcontractor?.name}
@@ -99,9 +124,11 @@ const ViewSystemMaintenanceService = (props) => {
           label: "Hệ thống",
           children: data?.system?.systemName ? (
             <a
-              onClick={() => {
-                setData(data?.system);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetSystem(data?.system?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {data?.system?.systemName}
@@ -164,9 +191,16 @@ const ViewSystemMaintenanceService = (props) => {
           ? "Thông tin nhà thầu phụ"
           : "Thông tin hệ thống"
       }`}
-      onClose={() => setOpenViewDetail(false)}
+      onClose={onClose}
       open={openViewDetail}
       width={window.innerWidth > 900 ? 800 : window.innerWidth}
+      extra={
+        <Space>
+          {historyStack.length > 0 && (
+            <Button onClick={goBack}>Quay lại</Button>
+          )}
+        </Space>
+      }
     >
       <Descriptions
         items={items}

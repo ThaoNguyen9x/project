@@ -17,6 +17,7 @@ import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
   callDeletePermission,
   callGetAllPermissions,
+  callGetPermission,
 } from "../../services/api";
 
 import ModalPermission from "../../components/admin/Access_Control/Permission/modal.permission";
@@ -150,7 +151,7 @@ const Permission = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -161,9 +162,12 @@ const Permission = () => {
       render: (text, record, index) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetPermission(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "name" ? (
@@ -252,9 +256,12 @@ const Permission = () => {
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.PERMISSIONS.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetPermission(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -357,7 +364,10 @@ const Permission = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Quyền hạn</h2>
         <Access permission={ALL_PERMISSIONS.PERMISSIONS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

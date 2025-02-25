@@ -1,19 +1,15 @@
 package com.building_mannager_system.controller.propertyController;
 
-import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultDto;
-import com.building_mannager_system.entity.property_manager.ItemCheckResult;
+import com.building_mannager_system.dto.responseDto.ApiResponce;
 import com.building_mannager_system.service.property_manager.ItemCheckResultService;
-import com.building_mannager_system.utils.annotation.ApiMessage;
-import com.turkraft.springfilter.boot.Filter;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/result-checks")
+@RequestMapping("/api/item_check_result")
 public class ItemCheckResultController {
     private final ItemCheckResultService itemCheckResultService;
 
@@ -21,44 +17,48 @@ public class ItemCheckResultController {
         this.itemCheckResultService = itemCheckResultService;
     }
 
-    @GetMapping
-    @ApiMessage("Lấy danh sách kết quả kiểm tra mục thành công")
-    public ResponseEntity<ResultPaginationDTO> getAllResults(@Filter Specification<ItemCheckResult> spec,
-                                                                       Pageable pageable) {
-        return ResponseEntity.ok(itemCheckResultService.getAllResults(spec, pageable));
-    }
-
+    // **1. Lấy danh sách kết quả kiểm tra theo ItemCheckId**
     @GetMapping("/item-check/{itemCheckId}")
-    @ApiMessage("Lấy danh sách kết quả kiểm tra mục theo kiểm tra mục thành công")
-    public ResponseEntity<ResultPaginationDTO> getResultsByCheckItemId(@PathVariable(name = "itemCheckId") Long itemCheckId,
-                                                                          @Filter Specification<ItemCheckResult> spec,
-                                                                          Pageable pageable) {
-        return ResponseEntity.ok(itemCheckResultService.getResultsByCheckItemId(itemCheckId, spec, pageable));
+    public ResponseEntity<Page<CheckResultDto>> getResultsByCheckItemId(
+            @PathVariable("itemCheckId") Long checkItemId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "2") int size) {
+
+        Page<CheckResultDto> checkResults = itemCheckResultService.getResultsByCheckItemIdPaged(checkItemId, page, size);
+        return ResponseEntity.ok(checkResults);
     }
 
+    // **2. Thêm mới một kết quả kiểm tra**
     @PostMapping
-    @ApiMessage("Tạo kết quả kiểm tra mục thành công")
-    public ResponseEntity<CheckResultDto> createResult(@RequestBody ItemCheckResult itemCheckResult) {
-        return new ResponseEntity<>(itemCheckResultService.createResult(itemCheckResult), HttpStatus.CREATED);
+    public ResponseEntity<ApiResponce<CheckResultDto>> createResult(@RequestBody CheckResultDto resultDto) {
+        CheckResultDto createdResult = itemCheckResultService.createResult(resultDto);
+        ApiResponce<CheckResultDto> response = new ApiResponce<>(201, createdResult, "Result created successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // **3. Lấy chi tiết một kết quả kiểm tra theo ID**
     @GetMapping("/{id}")
-    @ApiMessage("Lấy kết quả kiểm tra mục thành công")
-    public ResponseEntity<CheckResultDto> getResult(@PathVariable(name = "id") Long id) {
-        return ResponseEntity.ok(itemCheckResultService.getResult(id));
+    public ResponseEntity<ApiResponce<CheckResultDto>> getResultById(@PathVariable Long id) {
+        CheckResultDto result = itemCheckResultService.getResultById(id);
+        ApiResponce<CheckResultDto> responce = new ApiResponce<>(200, result, "Result created successfully");
+        return ResponseEntity.ok(responce);
     }
 
+    // **4. Cập nhật một kết quả kiểm tra**
     @PutMapping("/{id}")
-    @ApiMessage("Cập nhật kết quả kiểm tra mục thành công")
-    public ResponseEntity<CheckResultDto> updateResult(@PathVariable(name = "id") Long id,
-                                                        @RequestBody ItemCheckResult itemCheckResult) {
-        return ResponseEntity.ok(itemCheckResultService.updateResult(id, itemCheckResult));
+    public ResponseEntity<ApiResponce<CheckResultDto>> updateResult(
+            @PathVariable Long id,
+            @RequestBody CheckResultDto updatedResultDto) {
+        CheckResultDto updatedResult = itemCheckResultService.updateResult(id, updatedResultDto);
+        ApiResponce<CheckResultDto> response = new ApiResponce<>(200, updatedResult, "Result updated successfully");
+        return ResponseEntity.ok(response);
     }
 
+    // **5. Xóa một kết quả kiểm tra**
     @DeleteMapping("/{id}")
-    @ApiMessage("Xóa kết quả kiểm tra mục thành công")
-    public ResponseEntity<Void> deleteResults(@PathVariable(name = "id") Long id) {
-        itemCheckResultService.deleteResults(id);
-        return ResponseEntity.ok(null);
+    public ResponseEntity<ApiResponce<Void>> deleteResult(@PathVariable Long id) {
+        itemCheckResultService.deleteResult(id);
+        ApiResponce<Void> response = new ApiResponce<>(200, null, "Result deleted successfully");
+        return ResponseEntity.ok(response);
     }
 }

@@ -107,6 +107,10 @@ export const callGetAllRoles = (query) => {
   return axios.get(`/api/roles?${query}`);
 };
 
+export const callGetRole = (id) => {
+  return axios.get(`/api/roles/${id}`);
+};
+
 export const callCreateRole = (name, description, permissions, status) => {
   return axios.post("/api/roles", {
     name,
@@ -139,6 +143,10 @@ export const callChangeStatusRole = (id, status) => {
 /**************** PERMISSION ****************/
 export const callGetAllPermissions = (query) => {
   return axios.get(`/api/permissions?${query}`);
+};
+
+export const callGetPermission = (id) => {
+  return axios.get(`/api/permissions/${id}`);
 };
 
 export const callCreatePermission = (name, apiPath, method, module, status) => {
@@ -244,6 +252,10 @@ export const callDeleteCustomer = (id) => {
 /**************** CUSTOMER TYPE DOCUMENT ****************/
 export const callGetAllCustomerTypeDocuments = (query) => {
   return axios.get(`/api/customer-type-documents?${query}`);
+};
+
+export const callGetCustomerTypeDocument = (id) => {
+  return axios.get(`/api/customer-type-documents/${id}`);
 };
 
 export const callCreateCustomerTypeDocument = (
@@ -551,6 +563,10 @@ export const callGetAllHandoverStatus = (query) => {
   return axios.get(`/api/handover-status?${query}`);
 };
 
+export const callGetHandoverStatus = (id) => {
+  return axios.get(`/api/handover-status/${id}`);
+};
+
 export const callCreateHandoverStatus = (
   status,
   office,
@@ -685,6 +701,10 @@ export const callGetAllSystemMaintenanceServices = (query) => {
   return axios.get(`/api/system-maintenances?${query}`);
 };
 
+export const callGetSystemMaintenanceService = (id) => {
+  return axios.get(`/api/system-maintenances/${id}`);
+};
+
 export const callCreateSystemMaintenanceService = (
   subcontractor,
   serviceType,
@@ -726,9 +746,13 @@ export const callDeleteSystemMaintenanceService = (id) => {
   return axios.delete(`/api/system-maintenances/${id}`);
 };
 
-/**************** SYSTEM MAINTENANCE SERVICES ****************/
+/**************** MAINTENANCE HISTORY ****************/
 export const callGetAllMaintenanceHistories = (query) => {
   return axios.get(`/api/maintenance-histories?${query}`);
+};
+
+export const callGetMaintenanceHistory = (id) => {
+  return axios.get(`/api/maintenance-histories/${id}`);
 };
 
 export const callCreateMaintenanceHistory = (
@@ -910,13 +934,13 @@ export const callGetAllElectricityUsages = (query) => {
   return axios.get(`/api/electricity-usages?${query}`);
 };
 
+export const callGetElectricityUsage = (id) => {
+  return axios.get(`/api/electricity-usages/${id}`);
+};
+
 export const callCreateElectricityUsage = (
   meter,
-  startReading,
   endReading,
-  electricityRate,
-  electricityCost,
-  readingDate,
   image,
   comments
 ) => {
@@ -924,11 +948,7 @@ export const callCreateElectricityUsage = (
     "/api/electricity-usages",
     {
       meter,
-      startReading,
       endReading,
-      electricityRate,
-      electricityCost,
-      readingDate,
       image,
       comments,
     },
@@ -941,10 +961,7 @@ export const callCreateElectricityUsage = (
 export const callUpdateElectricityUsage = (
   id,
   meter,
-  startReading,
   endReading,
-  electricityRate,
-  electricityCost,
   readingDate,
   image,
   comments
@@ -953,10 +970,7 @@ export const callUpdateElectricityUsage = (
     `/api/electricity-usages/${id}`,
     {
       meter,
-      startReading,
       endReading,
-      electricityRate,
-      electricityCost,
       readingDate,
       image,
       comments,
@@ -967,6 +981,19 @@ export const callUpdateElectricityUsage = (
   );
 };
 
+export const callChangeElectricityUsage = (
+  id,
+  status,
+) => {
+  return axios.put(
+    `/api/electricity-usages/change/${id}`,
+    {
+      id,
+      status
+    },
+  );
+};
+
 export const callDeleteElectricityUsage = (id) => {
   return axios.delete(`/api/electricity-usages/${id}`);
 };
@@ -974,6 +1001,10 @@ export const callDeleteElectricityUsage = (id) => {
 /**************** METERS ****************/
 export const callGetAllMeters = (query) => {
   return axios.get(`/api/meters?${query}`);
+};
+
+export const callGetMeter = (id) => {
+  return axios.get(`/api/meters/${id}`);
 };
 
 export const callCreateMeter = (serialNumber, meterType, office) => {
@@ -999,6 +1030,10 @@ export const callDeleteMeter = (id) => {
 /**************** QUOTATIONS ****************/
 export const callGetAllQuotations = (query) => {
   return axios.get(`/api/quotations?${query}`);
+};
+
+export const callGetQuotation = (id) => {
+  return axios.get(`/api/quotations/${id}`);
 };
 
 export const callCreateQuotation = (
@@ -1059,6 +1094,10 @@ export const callGetAllRepairProposals = (query) => {
   return axios.get(`/api/repair-proposals?${query}`);
 };
 
+export const callGetRepairProposal = (id) => {
+  return axios.get(`/api/repair-proposals/${id}`);
+};
+
 export const callCreateRepairProposal = (
   title,
   description,
@@ -1103,6 +1142,10 @@ export const callDeleteRepairProposal = (id) => {
 /**************** RISK ASSESSMENTS ****************/
 export const callGetAllRiskAssessments = (query) => {
   return axios.get(`/api/risk-assessments?${query}`);
+};
+
+export const callGetRiskAssessment = (id) => {
+  return axios.get(`/api/risk-assessments/${id}`);
 };
 
 export const callCreateRiskAssessment = (
@@ -1300,6 +1343,7 @@ export const callUpdateRepairRequest = (
   return axios.put(
     `/api/repair-requests/${id}`,
     {
+      id,
       requestDate,
       content,
       image,
@@ -1320,8 +1364,11 @@ export const callGetAllWorkRegistrations = (query) => {
   return axios.get(`/api/work-registrations?${query}`);
 };
 
+export const callGetWorkRegistration = (id) => {
+  return axios.get(`/api/work-registrations/${id}`);
+};
+
 export const callCreateWorkRegistration = (
-  account,
   scheduledDate,
   note,
   image,
@@ -1330,7 +1377,6 @@ export const callCreateWorkRegistration = (
   return axios.post(
     "/api/work-registrations",
     {
-      account,
       scheduledDate,
       note,
       image,
@@ -1344,14 +1390,12 @@ export const callCreateWorkRegistration = (
 
 export const callUpdateWorkRegistration = (
   id,
-  account,
   scheduledDate,
   note,
   image,
   status
 ) => {
   return axios.put(`/api/work-registrations/${id}`, {
-    account,
     scheduledDate,
     note,
     image,
@@ -1555,6 +1599,10 @@ export const callGetAllCustomerDocuments = (query) => {
   return axios.get(`/api/customer-documents?${query}`);
 };
 
+export const callGetCustomerDocument = (id) => {
+  return axios.get(`/api/customer-documents/${id}`);
+};
+
 export const callCreateCustomerDocument = (
   customer,
   customerTypeDocument,
@@ -1603,6 +1651,10 @@ export const callDeleteCustomerDocument = (id) => {
 /**************** COMMON AREA ****************/
 export const callGetAllCommonAreas = (query) => {
   return axios.get(`/api/common-areas?${query}`);
+};
+
+export const callGetCommonArea = (id) => {
+  return axios.get(`/api/common-areas/${id}`);
 };
 
 export const callCreateCommonArea = (

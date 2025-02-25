@@ -18,6 +18,7 @@ import {
   callDeleteWorkRegistration,
   callGetAllWorkRegistrations,
   callGetAllUsers,
+  callGetWorkRegistration,
 } from "../../services/api";
 
 import Access from "../../components/share/Access";
@@ -29,7 +30,7 @@ import { AuthContext } from "../../components/share/Context";
 import dayjs from "dayjs";
 import ModalWorkRegistration from "../../components/admin/Work_Registration/modal.work-registration";
 import ViewWorkRegistration from "../../components/admin/Work_Registration/view.work-registration";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const WorkRegistration = () => {
   const { user } = useContext(AuthContext);
@@ -177,9 +178,12 @@ const WorkRegistration = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetWorkRegistration(record?.registrationID);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "registrationDate" ? (
@@ -209,19 +213,6 @@ const WorkRegistration = () => {
           <HighlightText text={note} searchText={searchText} />
         ) : (
           FORMAT_TEXT_LENGTH(note, 20)
-        );
-      },
-    },
-    {
-      title: "Nhân viên phụ trách bảo trì",
-      dataIndex: "account",
-      sorter: (a, b) => a.account.localeCompare(b.account),
-      ...getColumnSearchProps("account"),
-      render: (text, record) => {
-        return searchedColumn === "account" ? (
-          <HighlightText text={record?.account} searchText={searchText} />
-        ) : (
-          FORMAT_TEXT_LENGTH(record?.account, 20)
         );
       },
     },
@@ -286,9 +277,12 @@ const WorkRegistration = () => {
             hideChildren
           >
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetWorkRegistration(record?.registrationID);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -390,29 +384,30 @@ const WorkRegistration = () => {
   };
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const registrationID = queryParams.get("registrationID");
+    const id = queryParams.get("id");
 
-    if (registrationID) {
+    if (id) {
       const fetchRequest = async () => {
-        const res = await callGetAllWorkRegistrations(
-          `filter=registrationID~'${registrationID}'`
-        );
-        if (res?.data?.result.length) {
-          setData(res.data.result[0]);
+        const res = await callGetWorkRegistration(id);
+        if (res?.data) {
+          setData(res?.data);
           setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
         }
       };
       fetchRequest();
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Đăng ký công việc</h2>
+        <h2 className="text-base xl:text-xl font-bold">Đăng ký thi công</h2>
         <Access
           permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.CREATE}
           hideChildren

@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RepairRequestRepository extends JpaRepository<RepairRequest, Integer>,
+public interface RepairRequestRepository extends JpaRepository<RepairRequest, Long>,
         JpaSpecificationExecutor<RepairRequest> {
 }

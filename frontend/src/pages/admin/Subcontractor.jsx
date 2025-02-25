@@ -19,6 +19,8 @@ import {
   callDeleteSubcontract,
   callGetAllSubcontracts,
   callGetAllSystems,
+  callGetSubcontract,
+  callGetSystem,
 } from "../../services/api";
 
 import ModalSubcontractor from "../../components/admin/Property_Manager/Subcontractor/modal.subcontractor";
@@ -165,7 +167,7 @@ const Subcontractor = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -176,11 +178,13 @@ const Subcontractor = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetSubcontract(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
-            className="text-blue-900"
           >
             {searchedColumn === "name" ? (
               <HighlightText text={record?.name} searchText={searchText} />
@@ -224,9 +228,12 @@ const Subcontractor = () => {
       render: (system) => {
         return (
           <a
-            onClick={() => {
-              setData(system);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetSystem(system?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "system.systemName" ? (
@@ -247,9 +254,12 @@ const Subcontractor = () => {
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.SUBCONTRACTS.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetSubcontract(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -350,9 +360,14 @@ const Subcontractor = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Hợp đồng nhà thầu phụ</h2>
+        <h2 className="text-base xl:text-xl font-bold">
+          Hợp đồng nhà thầu phụ
+        </h2>
         <Access permission={ALL_PERMISSIONS.SUBCONTRACTS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

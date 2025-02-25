@@ -10,6 +10,13 @@ export const FORMAT_TEXT_LENGTH = (text, maxLength) => {
   return text;
 };
 
+export const shortenFileName = (fileName, maxLength) =>
+  fileName.length > maxLength
+    ? `${fileName.slice(0, maxLength)}...${fileName.slice(
+        fileName.lastIndexOf(".")
+      )}`
+    : fileName;
+
 export const isURL = (text) => {
   const urlPattern = new RegExp(
     "^" +

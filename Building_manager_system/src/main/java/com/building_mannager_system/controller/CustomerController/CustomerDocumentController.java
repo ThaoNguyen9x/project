@@ -2,6 +2,7 @@ package com.building_mannager_system.controller.CustomerController;
 
 import com.building_mannager_system.dto.requestDto.customer.CustomerDocumentDto;
 import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.OfficesDto;
+import com.building_mannager_system.dto.responseDto.ResUserDTO;
 import com.building_mannager_system.entity.customer_service.contact_manager.Office;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerDocument;
 import com.building_mannager_system.service.customer_service.CustomerDocumentService;
@@ -74,5 +75,11 @@ public class CustomerDocumentController {
     public ResponseEntity<Void> updateDocumentStatus(@PathVariable Integer documentId, @RequestParam boolean isApproved) {
         customerDocumentService.updateDocumentStatus(documentId, isApproved);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}")
+    @ApiMessage("Lấy tài liệu khách hàng thành công")
+    public ResponseEntity<CustomerDocumentDto> getCustomerDocument(@PathVariable(name = "id") int id) {
+        return ResponseEntity.ok(customerDocumentService.getCustomerDocument(id));
     }
 }

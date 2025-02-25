@@ -18,6 +18,8 @@ import {
   callDeleteCommonArea,
   callGetAllCommonAreas,
   callGetAllLocations,
+  callGetCommonArea,
+  callGetLocation,
 } from "../../services/api";
 
 import ModalCommonArea from "../../components/admin/Common_Area/modal.common-area";
@@ -176,9 +178,12 @@ const CommonArea = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetCommonArea(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "name" ? (
@@ -195,37 +200,46 @@ const CommonArea = () => {
       dataIndex: "location",
       sorter: (a, b) => a.location.floor.localeCompare(b.location.floor),
       ...getColumnSearchProps("location.floor"),
-      render: (text, record) => {
-        return searchedColumn === "location.floor" ? (
-          <HighlightText
-            text={record?.location?.floor}
-            searchText={searchText}
-          />
-        ) : (
-          FORMAT_TEXT_LENGTH(record?.location?.floor, 20)
+      render: (location) => {
+        return (
+          <a
+            onClick={async () => {
+              const res = await callGetLocation(location?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
+            }}
+          >
+            {searchedColumn === "location.floor" ? (
+              <HighlightText text={location?.floor} searchText={searchText} />
+            ) : (
+              FORMAT_TEXT_LENGTH(location?.floor, 20)
+            )}
+          </a>
         );
       },
     },
     {
-      title: "startX",
+      title: "Tọa độ bắt đầu X",
       dataIndex: "startX",
       ...getColumnSearchProps("startX"),
       sorter: (a, b) => a.startX - b.startX,
     },
     {
-      title: "startY",
+      title: "Tọa độ bắt đầu Y",
       dataIndex: "startY",
       ...getColumnSearchProps("startY"),
       sorter: (a, b) => a.startY - b.startY,
     },
     {
-      title: "endX",
+      title: "Tọa độ kết thúc X",
       dataIndex: "endX",
       ...getColumnSearchProps("endX"),
       sorter: (a, b) => a.endX - b.endX,
     },
     {
-      title: "endY",
+      title: "Tọa độ kết thúc Y",
       dataIndex: "endY",
       ...getColumnSearchProps("endY"),
       sorter: (a, b) => a.endY - b.endY,
@@ -234,18 +248,21 @@ const CommonArea = () => {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.SYSTEMS.UPDATE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.COMMON_AREAS.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetCommonArea(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access permission={ALL_PERMISSIONS.SYSTEMS.DELETE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.COMMON_AREAS.DELETE} hideChildren>
             <Popconfirm
               placement="leftBottom"
               okText="Có"
@@ -340,7 +357,7 @@ const CommonArea = () => {
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Khu vực chung</h2>
-        <Access permission={ALL_PERMISSIONS.SYSTEMS.CREATE} hideChildren>
+        <Access permission={ALL_PERMISSIONS.COMMON_AREAS.CREATE} hideChildren>
           <Button
             onClick={() => setOpenModal(true)}
             className="p-2 xl:p-3 gap-1 xl:gap-2"

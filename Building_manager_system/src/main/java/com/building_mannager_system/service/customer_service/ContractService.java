@@ -3,6 +3,7 @@ package com.building_mannager_system.service.customer_service;
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
 import com.building_mannager_system.dto.requestDto.customer.CustomerTypeDocumentDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.RepairProposalDto;
 import com.building_mannager_system.dto.responseDto.ContractReminderDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
@@ -12,6 +13,9 @@ import com.building_mannager_system.entity.customer_service.customer_manager.Cus
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerDocument;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerTypeDocument;
 import com.building_mannager_system.entity.customer_service.system_manger.Meter;
+import com.building_mannager_system.entity.notification.Notification;
+import com.building_mannager_system.entity.notification.Recipient;
+import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.repository.Contract.ContractRepository;
 import com.building_mannager_system.repository.Contract.CustomerDocumentRepository;
 import com.building_mannager_system.repository.Contract.CustomerRepository;
@@ -21,7 +25,11 @@ import com.building_mannager_system.repository.office.OfficeRepository;
 import com.building_mannager_system.repository.system_manager.MeterRepository;
 import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.service.ConfigService.FileService;
+import com.building_mannager_system.service.notification.NotificationService;
+import com.building_mannager_system.service.notification.RecipientService;
+import com.building_mannager_system.untils.JsonUntils;
 import com.building_mannager_system.utils.exception.APIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,12 +38,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -50,6 +60,8 @@ public class ContractService {
     private final CustomerDocumentRepository customerDocumentRepository;
     private final HandoverStatusRepository handoverStatusRepository;
     private final MeterRepository meterRepository;
+    private final RecipientService recipientService;
+    private final NotificationService notificationService;
     @Value("${upload-file.base-uri}")
     private String baseURI;
     private String folder = "contracts";
@@ -60,11 +72,20 @@ public class ContractService {
     private final ContractRepository contractRepository;
     private final FileService fileService;
     private final ModelMapper modelMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ContractService(ContractRepository contractRepository,
                            ModelMapper modelMapper,
                            OfficeRepository officeRepository,
-                           CustomerRepository customerRepository, FileService fileService, UserRepository userRepository, CustomerTypeDocumentService customerTypeDocumentService, CustomerDocumentRepository customerDocumentRepository, HandoverStatusRepository handoverStatusRepository, MeterRepository meterRepository) {
+                           CustomerRepository customerRepository,
+                           FileService fileService, UserRepository userRepository,
+                           CustomerTypeDocumentService customerTypeDocumentService,
+                           CustomerDocumentRepository customerDocumentRepository,
+                           HandoverStatusRepository handoverStatusRepository,
+                           MeterRepository meterRepository,
+                           RecipientService recipientService,
+                           NotificationService notificationService,
+                           SimpMessagingTemplate messagingTemplate) {
         this.contractRepository = contractRepository;
         this.modelMapper = modelMapper;
         this.officeRepository = officeRepository;
@@ -75,6 +96,9 @@ public class ContractService {
         this.customerDocumentRepository = customerDocumentRepository;
         this.handoverStatusRepository = handoverStatusRepository;
         this.meterRepository = meterRepository;
+        this.recipientService = recipientService;
+        this.notificationService = notificationService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public ResultPaginationDTO getAllContracts(Specification<Contract> spec, Pageable pageable) {
@@ -83,8 +107,9 @@ public class ContractService {
                 : "";
 
         User user = userRepository.findByEmail(email);
+        if (user == null) return null;
 
-        if (user.getRole().getName().equals("Customer")) {
+        if ("Customer".equals(user.getRole().getName())) {
             spec = spec.and((root, query, builder) ->
                     builder.equal(root.get("customer").get("user").get("id"), user.getId())
             );
@@ -159,7 +184,23 @@ public class ContractService {
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found with ID: " + id));
 
-        return modelMapper.map(contract, ContractDto.class);
+        ContractDto contractDto = modelMapper.map(contract, ContractDto.class);
+
+        if (contractDto.getCustomer() != null && contractDto.getCustomer().getCustomerType() != null) {
+            contractDto.getCustomer().getCustomerType().getCustomerTypeDocuments()
+                    .forEach(customerTypeDocumentDto -> {
+                        if (customerTypeDocumentDto.getCustomerDocuments() != null) {
+                            customerTypeDocumentDto.setCustomerDocuments(
+                                    customerTypeDocumentDto.getCustomerDocuments().stream()
+                                            .filter(customerDocumentDto -> customerDocumentDto.getCustomerId() != null
+                                                    && customerDocumentDto.getCustomerId().equals(contractDto.getCustomer().getId()))
+                                            .collect(Collectors.toList())
+                            );
+                        }
+                    });
+        }
+
+        return contractDto;
     }
 
     public ContractDto updateContract(int id, MultipartFile drawingContract, Contract contract) throws URISyntaxException {
@@ -301,63 +342,67 @@ public class ContractService {
     }
 
     // Check contract end date
-//    public List<ContractDto> checkEndDateContract() {
-//        // Lấy ngày hôm nay
-//        LocalDate today = LocalDate.now();
-//
-//        // Lọc các hợp đồng có ngày kết thúc trong 1 tháng trước
-//        List<ContractDto> contractsWithEndDateInNextMonth = contractRepository.findAll().stream()
-//                .filter(contract -> contract.getEndDate() != null)
-//                .filter(contract -> isEndDateWithinNextMonth(contract.getEndDate(), today))
-//                .map(contract -> modelMapper.map(contract, ContractDto.class))
-//                .collect(Collectors.toList());
-//
-//        return contractsWithEndDateInNextMonth;
-//    }
+    public List<ContractDto> checkEndDateContract() {
+        LocalDate today = LocalDate.now();
+        LocalDate next30Days = today.plusDays(30);
 
-    // Check time contract
-//    private boolean isEndDateWithinNextMonth(LocalDate endDate, LocalDate today) {
-//        // Tính toán ngày kết thúc trong 1 tháng nữa từ hôm nay
-//        LocalDate oneMonthLater = today.plusMonths(1);
-//
-//        // Kiểm tra xem ngày kết thúc có nằm trong khoảng từ hôm nay đến 1 tháng sau không
-//        return !endDate.isBefore(today) && !endDate.isAfter(oneMonthLater);
-//    }
-//
-//    // Check birthday customer by contract
-//    public List<ContractDto> checkCustomerBirthday() {
-//        // Lấy ngày hôm nay
-//        LocalDate today = LocalDate.now();
-//
-//        // Lấy ngày trong 3 ngày tới
-//        LocalDate targetDate = today.plusDays(3);
-//
-//        // Lọc các hợp đồng có khách hàng có sinh nhật trong 3 ngày tới
-//        List<ContractDto> contractsWithCustomerBirthdayInNextThreeDays = contractRepository.findAll().stream()
-//                .filter(contract -> contract.getCustomer() != null && contract.getCustomer().getBirthday() != null) // Kiểm tra có customer và birthday
-//                .filter(contract -> isCustomerBirthdayInNextThreeDays(contract.getCustomer(), today, targetDate)) // Kiểm tra sinh nhật trong 3 ngày tới
-//                .map(contract -> modelMapper.map(contract, ContractDto.class))  // Chuyển đổi Contract thành ContractDto
-//                .collect(Collectors.toList());
-//
-//        return contractsWithCustomerBirthdayInNextThreeDays;
-//    }
-//
-//    private boolean isCustomerBirthdayInNextThreeDays(Customer customer, LocalDate today, LocalDate targetDate) {
-//        LocalDate birthdayThisYear = customer.getBirthday().withYear(today.getYear());
-//        System.out.println("birthday :  " + birthdayThisYear);
-//        // Nếu sinh nhật đã qua trong năm nay, kiểm tra năm sau
-//        if (birthdayThisYear.isBefore(today)) {
-//            birthdayThisYear = birthdayThisYear.plusYears(1);
-//        }
-//
-//        // Kiểm tra xem sinh nhật của khách hàng có trong 3 ngày tới không
-//        return !birthdayThisYear.isBefore(today) && !birthdayThisYear.isAfter(targetDate);
-//    }
-//
-//    /**
-//     * Kiểm tra và nhắc nhở lịch hợp đồng dựa trên trạng thái của CustomerTypeDocument.
-//     */
-//
+        // Lấy danh sách hợp đồng sắp hết hạn trong vòng 30 ngày tới
+        List<Contract> contracts = contractRepository.findByEndDateBetween(today, next30Days);
+
+        // Chuyển đổi Contract -> ContractDto
+        List<ContractDto> dueDtos = contracts.stream()
+                .map(contract -> modelMapper.map(contract, ContractDto.class))
+                .collect(Collectors.toList());
+
+        // Gửi thông báo cho từng hợp đồng
+        dueDtos.forEach(contract -> {
+            sendNotification(contract, "Due_Contract_Notification", "Send Due Contract Notifications");
+        });
+
+        return dueDtos;
+    }
+
+    private void sendNotification(ContractDto contract, String type, String name) {
+        List<String> roles = List.of("Application_Admin");
+        List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+        if (recipients.isEmpty()) return;
+
+        String message = null;
+        try {
+            message = JsonUntils.toJson(contract);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        LocalDateTime timestamp = LocalDateTime.now();
+
+        for (User recipientUser : recipients) {
+            // Tạo recipient
+            Recipient rec = new Recipient();
+            rec.setType(type);
+            rec.setName(name);
+            rec.setReferenceId(recipientUser.getId());
+
+            Recipient recipient = recipientService.createRecipient(rec);
+
+            // Tạo notification
+            Notification notification = new Notification();
+            notification.setRecipient(recipient);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(timestamp);
+
+            notificationService.createNotification(notification);
+
+            // Gửi thông báo qua WebSocket
+            messagingTemplate.convertAndSend("/topic/" + type.toLowerCase() + "/" + recipientUser.getId(), message);
+        }
+    }
+
+    /**
+     * Kiểm tra và nhắc nhở lịch hợp đồng dựa trên trạng thái của CustomerTypeDocument.
+     */
 //    public List<ContractReminderDto> checkContractsByDocumentType() {
 //        return contractRepository.findAll().stream()
 //                // 1️⃣ Lọc hợp đồng có khách hàng hợp lệ

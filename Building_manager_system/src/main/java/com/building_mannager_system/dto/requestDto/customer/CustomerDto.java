@@ -1,10 +1,10 @@
 package com.building_mannager_system.dto.requestDto.customer;
 
-import com.building_mannager_system.entity.Role;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,13 +33,35 @@ public class CustomerDto {
     public static class User {
         private Integer id;
         private String name;
-        private String email;
-        private String mobile;
-        private Role role;
-        private boolean status;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime updatedAt;
-        private String updatedBy;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerTypeDto {
+        private int id;
+        private String typeName;
+        private List<CustomerTypeDocumentDto> customerTypeDocuments;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerTypeDocumentDto {
+        private Integer id;  // ID của tài liệu
+        private String documentType;  // Loại tài liệu
+        private List<CustomerDocumentDto> customerDocuments;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomerDocumentDto {
+        private Integer id;
+        private String filePath;
+        private Integer customerId;
     }
 }

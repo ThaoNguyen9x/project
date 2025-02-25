@@ -1,7 +1,9 @@
 package com.building_mannager_system.component;
 
 import com.building_mannager_system.dto.requestDto.CheckPaymentNotificationDto;
+import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
 import com.building_mannager_system.dto.requestDto.CustomerBirthdayNotificationDto;
+import com.building_mannager_system.service.customer_service.ContractService;
 import com.building_mannager_system.service.customer_service.CustomerService;
 import com.building_mannager_system.service.payment.PaymentContractService;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,10 +16,12 @@ public class Scheduler {
 
     private final CustomerService customerService;
     private final PaymentContractService paymentContractService;
+    private final ContractService contractService;
 
-    public Scheduler(CustomerService customerService, PaymentContractService paymentContractService) {
+    public Scheduler(CustomerService customerService, PaymentContractService paymentContractService, ContractService contractService) {
         this.customerService = customerService;
         this.paymentContractService = paymentContractService;
+        this.contractService = contractService;
     }
 
     // Chạy lúc 8h sáng mỗi ngày
@@ -49,6 +53,17 @@ public class Scheduler {
         if (!payments.isEmpty()) {
             for (CheckPaymentNotificationDto payment : payments) {
                 System.out.println("Payment exp, " + payment.getContract().getCustomer().getId());
+            }
+        }
+    }
+
+    @Scheduled(cron = "0 0 8 * * ?") // Chạy vào 08:00 AM mỗi ngày
+//     @Scheduled(cron = "*/1 * * * * *")
+    public void dueContractCheckNotifications() {
+        List<ContractDto> contracts = contractService.checkEndDateContract();
+        if (!contracts.isEmpty()) {
+            for (ContractDto contract : contracts) {
+                System.out.println("Contract due, " + contract.getCustomer().getId());
             }
         }
     }

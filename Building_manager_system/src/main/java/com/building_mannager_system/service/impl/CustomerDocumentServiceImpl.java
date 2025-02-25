@@ -2,13 +2,10 @@ package com.building_mannager_system.service.impl;
 
 import com.building_mannager_system.dto.requestDto.customer.CustomerDocumentDto;
 import com.building_mannager_system.dto.requestDto.customer.CustomerTypeDocumentDto;
-import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.OfficesDto;
-import com.building_mannager_system.entity.customer_service.contact_manager.Office;
 import com.building_mannager_system.entity.customer_service.customer_manager.Customer;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerDocument;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerType;
 import com.building_mannager_system.entity.customer_service.customer_manager.CustomerTypeDocument;
-import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.Location;
 import com.building_mannager_system.repository.Contract.CustomerDocumentRepository;
 import com.building_mannager_system.repository.Contract.CustomerRepository;
 import com.building_mannager_system.repository.Contract.CustomerTypeDocumentRepository;
@@ -17,7 +14,6 @@ import com.building_mannager_system.service.customer_service.CustomerDocumentSer
 import com.building_mannager_system.service.customer_service.CustomerTypeDocumentService;
 import com.building_mannager_system.utils.exception.APIException;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -177,4 +173,11 @@ public class CustomerDocumentServiceImpl implements CustomerDocumentService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public CustomerDocumentDto getCustomerDocument(int id) {
+        CustomerDocument ex = customerDocumentRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Không tìm thấy tài liệu với ID: " + id));
+
+        return modelMapper.map(ex, CustomerDocumentDto.class);
+    }
 }

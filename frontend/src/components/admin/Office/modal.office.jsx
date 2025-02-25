@@ -40,8 +40,6 @@ import {
   callUpdateOffice,
   callUpdateUser,
 } from "../../../services/api";
-import Access from "../../share/Access";
-import { ALL_PERMISSIONS } from "../Access_Control/Permission/data/permissions";
 import dayjs from "dayjs";
 
 const { Option } = Select;
@@ -245,7 +243,7 @@ const ModalOffice = (props) => {
           values.password,
           values.statusUser,
           {
-            id: (values.role = 2),
+            id: (values.role = 8),
           }
         );
 
@@ -313,7 +311,6 @@ const ModalOffice = (props) => {
           await callDeleteMeter(resMeter.data.id);
           throw new Error(resContract?.error);
         }
-
       } else {
         resUser = await callUpdateUser(
           data?.customer?.user?.id,
@@ -322,7 +319,7 @@ const ModalOffice = (props) => {
           values.mobile,
           values.statusUser,
           {
-            id: (values.role = 2),
+            id: (values.role = 8),
           }
         );
 
@@ -716,9 +713,9 @@ const ModalOffice = (props) => {
 
           {selectedCustomerType && listCustomerTypeDocuments.length > 0 && (
             <Col xs={24}>
-              <h3>Danh sách tài liệu yêu cầu:</h3>
+              <h3>Danh sách hồ sơ yêu cầu:</h3>
 
-              <ul>
+              <ul className="my-2">
                 {listCustomerTypeDocuments
                   ?.filter((doc) => {
                     return doc.customerType.id === selectedCustomerType;
@@ -735,7 +732,7 @@ const ModalOffice = (props) => {
                       </Checkbox>
 
                       {checkedDocuments?.[doc.id] && (
-                        <Form.Item label="Path" name="filePath">
+                        <Form.Item name="filePath">
                           <Upload
                             name="filePath"
                             beforeUpload={beforeUpload}
@@ -1058,7 +1055,7 @@ const ModalOffice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="startX"
+              label="Tọa độ bắt đầu X"
               name="startX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1070,7 +1067,7 @@ const ModalOffice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="startY"
+              label="Tọa độ bắt đầu Y"
               name="startY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1082,7 +1079,7 @@ const ModalOffice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="endX"
+              label="Tọa độ kết thúc X"
               name="endX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1094,7 +1091,7 @@ const ModalOffice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="endY"
+              label="Tọa độ kết thúc Y"
               name="endY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1221,19 +1218,15 @@ const ModalOffice = (props) => {
 
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-base my-2">Tình trạng bàn giao</h3>
-          <Access
-            permission={ALL_PERMISSIONS.HANDOVER_STATUS.CREATE}
-            hideChildren
+
+          <Button
+            type="dashed"
+            onClick={addHandover}
+            icon={<PlusOutlined />}
+            className="mt-2"
           >
-            <Button
-              type="dashed"
-              onClick={addHandover}
-              icon={<PlusOutlined />}
-              className="mt-2"
-            >
-              Thêm
-            </Button>
-          </Access>
+            Thêm
+          </Button>
         </div>
 
         {handoverList?.map((handover, index) => (
@@ -1317,18 +1310,13 @@ const ModalOffice = (props) => {
               ""
             )}
 
-            <Access
-              permission={ALL_PERMISSIONS.HANDOVER_STATUS.DELETE}
-              hideChildren
-            >
-              <Col xs={3} className="mt-[1.85rem]">
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => handleRemoveHandover(handover)}
-                />
-              </Col>
-            </Access>
+            <Col xs={3} className="mt-[1.85rem]">
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleRemoveHandover(handover)}
+              />
+            </Col>
           </Row>
         ))}
 

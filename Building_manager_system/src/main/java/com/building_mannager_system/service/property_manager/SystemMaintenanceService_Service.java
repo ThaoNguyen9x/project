@@ -1,6 +1,7 @@
 package com.building_mannager_system.service.property_manager;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.oficeSapceAllcationDto.LocationDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.SystemMaintenanceServiceDto;
 import com.building_mannager_system.entity.property_manager.Subcontractor;
 import com.building_mannager_system.entity.property_manager.SystemMaintenanceService;
@@ -13,6 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SystemMaintenanceService_Service {
@@ -42,6 +46,14 @@ public class SystemMaintenanceService_Service {
 
         rs.setMeta(mt);
         rs.setResult(page.getContent());
+
+        List<SystemMaintenanceServiceDto> list = page.getContent()
+                .stream()
+                .map(item -> modelMapper.map(item, SystemMaintenanceServiceDto.class))
+                .collect(Collectors.toList());
+
+        rs.setResult(list);
+
 
         return rs;
     }

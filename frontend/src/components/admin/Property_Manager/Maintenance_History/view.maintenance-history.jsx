@@ -1,109 +1,306 @@
 import dayjs from "dayjs";
-import { Descriptions, Drawer, Rate, Space } from "antd";
+import { Descriptions, Drawer, Rate, Space, Button } from "antd";
 import {
   FORMAT_DATE_DISPLAY,
   FORMAT_DATE_TIME_DISPLAY,
 } from "../../../../utils/constant";
+import { useState } from "react";
+import {
+  callGetCommonArea,
+  callGetContract,
+  callGetCustomer,
+  callGetDevice,
+  callGetDeviceType,
+  callGetMaintenanceHistory,
+  callGetOffice,
+  callGetRiskAssessment,
+  callGetSubcontract,
+  callGetSystem,
+  callGetSystemMaintenanceService,
+  callGetUser,
+  callGetCustomerType,
+} from "../../../../services/api";
 
 const ViewMaintenanceHistory = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
+  const [historyStack, setHistoryStack] = useState([]);
 
   const onClose = () => {
     setOpenViewDetail(false);
     setData(null);
+    setHistoryStack([]);
+  };
+
+  const goBack = () => {
+    if (historyStack.length > 0) {
+      const prevData = historyStack[historyStack.length - 1];
+      setHistoryStack(historyStack.slice(0, -1));
+      setData(prevData);
+    }
+  };
+
+  const handleViewDetail = async (newData) => {
+    setHistoryStack([...historyStack, data]);
+    setData(newData);
+    setOpenViewDetail(true);
   };
 
   const generateItems = () => {
-    if (data?.performedDate) {
+    if (data?.deviceId) {
       return [
         {
+          label: "Tên thiết bị",
+          children: data?.deviceName || "N/A",
+          span: 2,
+        },
+        {
+          label: "Loại thiết bị",
+          children: data?.deviceType?.typeName ? (
+            <a
+              onClick={async () => {
+                const res = await callGetDeviceType(data?.deviceType?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.deviceType?.typeName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        { label: "Tuổi thọ", children: data?.lifespan || "N/A" },
+        { label: "Ngày cài đặt", children: data?.installationDate || "N/A" },
+        { label: "Vị trí", children: data?.location?.floor || "N/A" },
+        {
+          label: "Hệ thống",
+          children: data?.system?.systemName ? (
+            <a
+              onClick={async () => {
+                const res = await callGetSystem(data?.system?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.system?.systemName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        { label: "Tọa độ X", children: data?.x || 0 },
+        { label: "Tọa độ Y", children: data?.y || 0 },
+        {
           label: "Dịch vụ bảo trì",
-          children: data?.maintenanceService?.subcontractor?.name ? (
-            <a
-              onClick={() => {
-                setData(data?.maintenanceService?.subcontractor);
-                setOpenViewDetail(true);
-              }}
-            >
-              {`${data?.maintenanceService?.subcontractor?.name} - ` +
-                (data?.maintenanceService?.serviceType === "ELECTRICAL"
-                  ? "Hệ thống điện"
-                  : data?.maintenanceService?.serviceType === "PLUMBING"
-                  ? "Hệ thống cấp thoát nước"
-                  : data?.maintenanceService?.serviceType === "HVAC"
-                  ? "Hệ thống điều hòa không khí"
-                  : "Hệ thống phòng cháy") || "N/A"}
-            </a>
-          ) : (
-            "N/A"
+          children: (
+            <>
+              {data?.maintenanceService?.serviceType ? (
+                <a
+                  onClick={async () => {
+                    const res = await callGetSystemMaintenanceService(
+                      data?.maintenanceService?.id
+                    );
+                    if (res?.data) {
+                      handleViewDetail(res?.data);
+                    }
+                  }}
+                >
+                  {data?.maintenanceService?.serviceType === "ELECTRICAL"
+                    ? "Hệ thống điện"
+                    : data?.maintenanceService?.serviceType === "PLUMBING"
+                    ? "Hệ thống cấp thoát nước"
+                    : data?.maintenanceService?.serviceType === "HVAC"
+                    ? "Hệ thống điều hòa không khí"
+                    : "Hệ thống phòng cháy"}
+                </a>
+              ) : (
+                "N/A"
+              )}
+            </>
           ),
-          span: 2,
-        },
-        {
-          label: "Ghi chú",
-          children: data?.notes || "N/A",
-          span: 2,
-        },
-        {
-          label: "Vấn đề",
-          children: data?.findings || "N/A",
-          span: 2,
-        },
-        {
-          label: "Giải pháp",
-          children: data?.resolution || "N/A",
-          span: 2,
-        },
-        {
-          label: "Kỹ thuật viên",
-          children: data?.technician?.name ? (
-            <a
-              onClick={() => {
-                setData(data?.technician);
-                setOpenViewDetail(true);
-              }}
-            >
-              {data?.technician?.name}
-            </a>
-          ) : (
-            "N/A"
-          ),
-          span: 2,
-        },
-        {
-          label: "Số điện thoại khác",
-          children: data?.phone || "N/A",
           span: 2,
         },
         {
           label: "Đánh giá rủi ro",
-          children: data?.riskAssessments?.[0] ? (
+          children:
+            data?.riskAssessments?.length > 0 ? (
+              data?.riskAssessments?.map((x) => (
+                <a
+                  key={x?.riskAssessmentID}
+                  onClick={async () => {
+                    const res = await callGetRiskAssessment(
+                      x?.riskAssessmentID
+                    );
+                    if (res?.data) {
+                      handleViewDetail(res?.data);
+                    }
+                  }}
+                >
+                  {x?.assessmentDate}
+                </a>
+              ))
+            ) : (
+              <span>Chưa có đánh giá</span>
+            ),
+          span: 2,
+        },
+      ];
+    } else if (data?.description) {
+      return [
+        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        {
+          label: "Mô tả",
+          children: data?.description || "N/A",
+          span: 2,
+        },
+      ];
+    } else if (data?.systemName) {
+      return [
+        { label: "Tên", children: data?.systemName || "N/A", span: 2 },
+        { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+        {
+          label: "Chu kỳ bảo trì",
+          children: data?.maintenanceCycle || "N/A",
+          span: 2,
+        },
+      ];
+    } else if (data?.fileName) {
+      return [
+        {
+          label: "Khách hàng",
+          children: data?.customer?.companyName ? (
             <a
-              onClick={() => {
-                setData(data?.riskAssessments?.[0]);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetCustomer(data?.customer?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
-              {data?.riskAssessments?.[0]?.assessmentDate}
+              {data?.customer?.companyName}
             </a>
           ) : (
             "N/A"
           ),
+          span: 2,
+        },
+        {
+          label: "Tổng số tiền",
+          children: data?.totalAmount
+            ? data?.totalAmount.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })
+            : 0,
+          span: 2,
+        },
+        {
+          label: "Ngày bắt đầu",
+          children: dayjs(data?.startDate).format(FORMAT_DATE_DISPLAY) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Ngày kết thúc",
+          children: dayjs(data?.endDate).format(FORMAT_DATE_DISPLAY) || "N/A",
+          span: 2,
+        },
+        {
+          label: "File hợp đồng",
+          children:
+            (
+              <a
+                href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
+                  data?.fileName
+                }`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Xem
+              </a>
+            ) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Trạng thái",
+          children: (
+            <span
+              className={`${
+                data?.leaseStatus === "Active"
+                  ? "success"
+                  : data?.leaseStatus === "Inactive"
+                  ? "danger"
+                  : "warning"
+              } status`}
+            >
+              {data?.leaseStatus === "Active"
+                ? "Hoạt động"
+                : data?.leaseStatus === "Inactive"
+                ? "Đã chấm dứt"
+                : "Đang chờ gia hạn"}
+            </span>
+          ),
+          span: 2,
+        },
+      ];
+    } else if (data?.role?.name) {
+      return [
+        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Email", children: data?.email || "N/A", span: 2 },
+        { label: "Điện thoại", children: data?.mobile || "N/A" },
+        { label: "Vai trò", children: data?.role?.name || "N/A" },
+        {
+          label: "Trạng thái",
+          children:
+            (
+              <span className={`${data?.status ? "success" : "danger"} status`}>
+                {data?.status ? "Hoạt động" : "Không hoạt động"}
+              </span>
+            ) || "N/A",
+          span: 2,
+        },
+      ];
+    } else if (data?.typeName) {
+      return [
+        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        {
+          label: "Hồ sơ",
+          children:
+            data?.customerTypeDocuments?.map((x) => (
+              <p key={x?.id}>{x?.documentType}</p>
+            )) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Trạng thái",
+          children:
+            (
+              <span className={`${data?.status ? "success" : "danger"} status`}>
+                {data?.status ? "Hoạt động" : "Không hoạt động"}
+              </span>
+            ) || "N/A",
           span: 2,
         },
       ];
     } else if (data?.assessmentDate) {
       return [
         {
-          label: "Nhà thầu phụ",
-          children: data?.contractor?.name ? (
+          label: "Lịch sử bảo trì",
+          children: data?.maintenanceHistory?.performedDate ? (
             <a
-              onClick={() => {
-                setData(data?.contractor);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetMaintenanceHistory(
+                  data?.maintenanceHistory?.id
+                );
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
-              {data?.contractor?.name}
+              {data?.maintenanceHistory?.performedDate || "N/A"}
             </a>
           ) : (
             "N/A"
@@ -111,15 +308,35 @@ const ViewMaintenanceHistory = (props) => {
           span: 2,
         },
         {
-          label: "Thiết bị",
+          label: "Tên thiết bị",
           children: data?.device?.deviceName ? (
             <a
-              onClick={() => {
-                setData(data?.device);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetDevice(data?.device?.deviceId);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {data?.device?.deviceName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Nhà thầu phụ",
+          children: data?.contractor?.name ? (
+            <a
+              onClick={async () => {
+                const res = await callGetSubcontract(data?.contractor?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.contractor?.name}
             </a>
           ) : (
             "N/A"
@@ -163,80 +380,157 @@ const ViewMaintenanceHistory = (props) => {
           span: 2,
         },
       ];
-    } else if (data?.deviceName) {
+    } else if (data?.performedDate) {
       return [
-        { label: "Tên thiết bị", children: data?.deviceName || "N/A", span: 2 },
-        {
-          label: "Loại thiết bị",
-          children: data?.deviceType?.typeName ? (
-            <a
-              onClick={() => {
-                setData(data?.deviceType);
-                setOpenViewDetail(true);
-              }}
-            >
-              {data?.deviceType?.typeName}
-            </a>
-          ) : (
-            "N/A"
-          ),
-          span: 2,
-        },
-        { label: "Tuổi thọ", children: data?.lifespan || "N/A" },
-        { label: "Ngày cài đặt", children: data?.installationDate || "N/A" },
-        { label: "Vị trí", children: data?.location?.floor || "N/A" },
-        {
-          label: "Hệ thống",
-          children: data?.system?.systemName ? (
-            <a
-              onClick={() => {
-                setData(data?.system);
-                setOpenViewDetail(true);
-              }}
-            >
-              {data?.system?.systemName}
-            </a>
-          ) : (
-            "N/A"
-          ),
-          span: 2,
-        },
         {
           label: "Dịch vụ bảo trì",
-          children: `${
-            data?.maintenanceService?.subcontractor?.name || "N/A"
-          } - ${
-            data?.maintenanceService?.serviceType === "ELECTRICAL"
-              ? "Hệ thống Điện"
-              : data?.maintenanceService?.serviceType === "PLUMBING"
-              ? "Hệ thống Cấp thoát nước"
-              : data?.maintenanceService?.serviceType === "FIRE_PROTECTION"
-              ? "Hệ thống Phòng cháy"
-              : data?.maintenanceService?.serviceType === "HVAC"
-              ? "Hệ thống Điều hòa không khí"
-              : "N/A"
-          }`,
+          children: data?.maintenanceService?.serviceType ? (
+            <a
+              onClick={async () => {
+                const res = await callGetSystemMaintenanceService(
+                  data?.maintenanceService?.id
+                );
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.maintenanceService?.serviceType === "ELECTRICAL"
+                ? "Hệ thống Điện"
+                : data?.maintenanceService?.serviceType === "PLUMBING"
+                ? "Hệ thống Cấp thoát nước"
+                : data?.maintenanceService?.serviceType === "HVAC"
+                ? "Hệ thống Điều hòa không khí"
+                : "Hệ thống Phòng cháy" || "N/A"}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Ghi chú",
+          children: data?.notes || "N/A",
+          span: 2,
+        },
+        {
+          label: "Vấn đề",
+          children: data?.findings || "N/A",
+          span: 2,
+        },
+        {
+          label: "Giải pháp",
+          children: data?.resolution || "N/A",
+          span: 2,
+        },
+        {
+          label: "Kỹ thuật viên",
+          children: data?.technician?.name ? (
+            <a
+              onClick={async () => {
+                const res = await callGetUser(data?.technician?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.technician?.name}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Số điện thoại khác",
+          children: data?.phone || "N/A",
           span: 2,
         },
       ];
-    } else if (data?.email) {
+    } else if (data?.rentPrice) {
       return [
-        { label: "Họ và tên", children: data?.name || "N/A", span: 2 },
-        { label: "Email", children: data?.email || "N/A", span: 2 },
-        { label: "Điện thoại", children: data?.mobile || "N/A" },
-        { label: "Vai trò", children: data?.role?.name || "N/A" },
+        { label: "Tên", children: data?.name || "N/A", span: 2 },
         {
-          label: "Trạng thái",
+          label: "Hợp đồng",
+          children: (
+            <>
+              {data?.contracts?.[0]?.customer?.companyName ? (
+                <a
+                  onClick={async () => {
+                    const res = await callGetContract(data?.contracts?.[0]?.id);
+                    if (res?.data) {
+                      handleViewDetail(res?.data);
+                    }
+                  }}
+                >
+                  Công ty - {data?.contracts?.[0]?.customer?.companyName}
+                </a>
+              ) : (
+                "N/A"
+              )}
+            </>
+          ),
           span: 2,
+        },
+        {
+          label: "Tổng diện tích",
+          children: data?.totalArea + " m²" || "N/A",
+          span: 2,
+        },
+        {
+          label: "Giá thuê",
+          children:
+            data?.rentPrice?.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            }) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Phí dịch vụ",
+          children:
+            data?.serviceFee?.toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+            }) || "N/A",
+          span: 2,
+        },
+        { label: "Tọa độ bắt đầu x", children: data?.startX || 0 },
+        { label: "Tọa độ bắt đầu y", children: data?.startY || 0 },
+        { label: "Tọa độ kết thúc x", children: data?.endX || 0 },
+        { label: "Tọa độ kết thúc y", children: data?.endY || 0 },
+        {
+          label: "Bản vẽ",
           children:
             (
-              <span className={`${data?.status ? "success" : "danger"} status`}>
-                {data?.status ? "Hoạt động" : "Không hoạt động"}
+              <a
+                href={`${import.meta.env.VITE_BACKEND_URL}/storage/offices/${
+                  data?.drawingFile
+                }`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Xem
+              </a>
+            ) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Trạng thái",
+          children:
+            (
+              <span
+                className={`${
+                  data?.status === "ACTIV" ? "success" : "danger"
+                } status`}
+              >
+                {data?.status === "ACTIV" ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
+          span: 2,
         },
       ];
-    } else if (data?.name) {
+    } else if (data?.contractEndDate) {
       return [
         { label: "Tên", children: data?.name || "N/A", span: 2 },
         { label: "Điện thoại", children: data?.phone || "N/A" },
@@ -249,20 +543,98 @@ const ViewMaintenanceHistory = (props) => {
         },
         {
           label: "Hệ thống",
-          children: data?.system?.systemName ? (
+          children: data?.system?.systemName || "N/A",
+          span: 2,
+        },
+        { label: "Ngày bắt đầu", children: data?.contractStartDate || "N/A" },
+        { label: "Ngày kết thúc", children: data?.contractEndDate || "N/A" },
+      ];
+    } else if (data?.companyName) {
+      return [
+        { label: "Công ty", children: data?.companyName || "N/A", span: 2 },
+        { label: "Giám đốc", children: data?.directorName || "N/A", span: 2 },
+        { label: "Email", children: data?.email || "N/A" },
+        { label: "Điện thoại", children: data?.phone || "N/A" },
+        { label: "Địa chỉ", children: data?.address || "N/A", span: 2 },
+        {
+          label: "Ngày sinh",
+          children: data?.birthday
+            ? dayjs(data?.birthday).format("YYYY-DD-MM")
+            : "N/A",
+          span: 2,
+        },
+        {
+          label: "Liên hệ",
+          children: data?.user?.name ? (
             <a
-              onClick={() => {
-                setData(data?.system);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetUser(data?.user?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
-              {data?.system?.systemName}
+              {data?.user?.name}
             </a>
           ) : (
             "N/A"
           ),
           span: 2,
         },
+        {
+          label: "Loại khách hàng",
+          children: data?.customerType?.typeName ? (
+            <a
+              onClick={async () => {
+                const res = await callGetCustomerType(data?.customerType?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.customerType?.typeName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Hồ sơ",
+          children: (
+            <Steps
+              direction="vertical"
+              size="small"
+              current={1}
+              items={
+                data?.customerType?.customerTypeDocuments?.map((x) => {
+                  const filePath = x?.customerDocuments?.[0]?.filePath;
+                  return {
+                    title: x?.documentType,
+                    description: filePath ? (
+                      <a
+                        href={`${
+                          import.meta.env.VITE_BACKEND_URL
+                        }/storage/customer_documents/${filePath}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Xem
+                      </a>
+                    ) : (
+                      <span style={{ color: "red" }}>Đang thiếu</span>
+                    ),
+                    status: filePath ? "finish" : "error",
+                  };
+                }) || []
+              }
+            />
+          ),
+          span: 2,
+        },
+      ];
+    } else if (data?.nextScheduledDate) {
+      return [
         {
           label: "Dịch vụ",
           children:
@@ -271,27 +643,87 @@ const ViewMaintenanceHistory = (props) => {
               : data?.serviceType === "PLUMBING"
               ? "Hệ thống Cấp thoát nước"
               : data?.serviceType === "FIRE_PROTECTION"
-              ? "Hệ thống Điều hòa không khí"
-              : data?.serviceType === "HVAC"
               ? "Hệ thống Phòng cháy"
+              : data?.serviceType === "HVAC"
+              ? "Hệ thống Điều hòa không khí"
               : "N/A",
           span: 2,
         },
-      ];
-    } else if (data?.typeName) {
-      return [
-        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
-        { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+        {
+          label: "Phạm vi",
+          children: data?.maintenanceScope || "N/A",
+          span: 2,
+        },
+        {
+          label: "Tần suất",
+          children:
+            data?.frequency === "MONTHLY"
+              ? "Hàng tháng"
+              : data?.frequency === "QUARTERLY"
+              ? "Hàng quý"
+              : data?.frequency === "ANNUALLY"
+              ? "Hàng năm"
+              : "N/A",
+          span: 2,
+        },
+        {
+          label: "Ngày dự kiến",
+          children:
+            dayjs(data?.nextScheduledDate).format("YYYY-MM-DD") || "N/A",
+          span: 2,
+        },
+        {
+          label: "Trạng thái",
+          children:
+            (
+              <span
+                className={`${
+                  data?.status === "COMPLETED"
+                    ? "success"
+                    : data?.status === "PENDING"
+                    ? "danger"
+                    : "warning"
+                } status`}
+              >
+                {data?.status === "COMPLETED"
+                  ? "Hoàn thành"
+                  : data?.status === "PENDING"
+                  ? "Chưa giải quyết"
+                  : "Đang tiến hành"}
+              </span>
+            ) || "N/A",
+          span: 2,
+        },
+        {
+          label: "Nhà thầu phụ",
+          children: data?.subcontractor?.name ? (
+            <a
+              onClick={async () => {
+                const res = await callGetSubcontract(data?.subcontractor?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.subcontractor?.name}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
       ];
     } else {
       return [
-        { label: "Tên", children: data?.systemName || "N/A", span: 2 },
-        { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Tọa độ bắt đầu X", children: data?.startX || 0, span: 2 },
         {
-          label: "Chu kỳ bảo trì",
-          children: data?.maintenanceCycle || "N/A",
+          label: "Tọa độ bắt đầu Y",
+          children: data?.startY || 0,
           span: 2,
         },
+        { label: "Tọa độ kết thúc X", children: data?.endX || 0, span: 2 },
+        { label: "Tọa độ kết thúc Y", children: data?.endY || 0, span: 2 },
       ];
     }
   };
@@ -329,17 +761,44 @@ const ViewMaintenanceHistory = (props) => {
   return (
     <Drawer
       title={`${
-        data?.performedDate
-          ? "Thông tin lịch sử bảo trì"
-          : data?.email
-          ? "Thông tin kỹ thuật viên"
-          : data?.name
+        data?.floor
+          ? "Thông tin vị trí"
+          : data?.description
+          ? "Thông tin loại thiết bị"
+          : data?.systemName
+          ? "Thông tin hệ thống"
+          : data?.contractEndDate
           ? "Thông tin nhà thầu phụ"
-          : "Thông tin hệ thống"
+          : data?.fileName
+          ? "Thông tin hợp đồng"
+          : data?.companyName
+          ? "Thông tin khách hàng"
+          : data?.typeName
+          ? "Thông tin loại khách hàng"
+          : data?.role?.name
+          ? "Thông tin liên hệ"
+          : data?.assessmentDate
+          ? "Thông tin đánh giá rủi ro"
+          : data?.performedDate
+          ? "Thông tin lịch sử bảo trì"
+          : data?.nextScheduledDate
+          ? "Thông tin dịch vụ bảo trì"
+          : data?.deviceId
+          ? "Thông tin thiết bị"
+          : data?.rentPrice
+          ? "Thông tin văn phòng"
+          : "Thông tin khu vực chung"
       }`}
       onClose={onClose}
       open={openViewDetail}
       width={window.innerWidth > 900 ? 800 : window.innerWidth}
+      extra={
+        <Space>
+          {historyStack.length > 0 && (
+            <Button onClick={goBack}>Quay lại</Button>
+          )}
+        </Space>
+      }
     >
       <Descriptions
         items={items}

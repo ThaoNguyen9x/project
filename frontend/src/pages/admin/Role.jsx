@@ -14,7 +14,11 @@ import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { callDeleteRole, callGetAllRoles } from "../../services/api";
+import {
+  callDeleteRole,
+  callGetAllRoles,
+  callGetRole,
+} from "../../services/api";
 
 import ModalRole from "../../components/admin/Access_Control/Role/modal.role";
 import ViewRole from "../../components/admin/Access_Control/Role/view.role";
@@ -147,7 +151,7 @@ const Role = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -158,9 +162,12 @@ const Role = () => {
       render: (text, record, index) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetRole(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "name" ? (
@@ -198,9 +205,12 @@ const Role = () => {
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.ROLES.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetRole(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -303,7 +313,10 @@ const Role = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Vai trò</h2>
         <Access permission={ALL_PERMISSIONS.ROLES.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>

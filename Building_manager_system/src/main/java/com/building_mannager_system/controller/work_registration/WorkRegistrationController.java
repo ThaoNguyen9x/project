@@ -1,10 +1,12 @@
 package com.building_mannager_system.controller.work_registration;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
 import com.building_mannager_system.dto.requestDto.work_registration.WorkRegistrationDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.work_registration.WorkRegistration;
 import com.building_mannager_system.repository.UserRepository;
+import com.building_mannager_system.service.notification.NotificationPaymentContractService;
 import com.building_mannager_system.service.work_registration.WorkRegistrationService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
@@ -26,13 +28,15 @@ public class WorkRegistrationController {
     private final WorkRegistrationService workRegistrationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
+    private final NotificationPaymentContractService notificationPaymentContractService;
 
     public WorkRegistrationController(WorkRegistrationService workRegistrationService,
                                       SimpMessagingTemplate messagingTemplate,
-                                      UserRepository userRepository) {
+                                      UserRepository userRepository, NotificationPaymentContractService notificationPaymentContractService) {
         this.workRegistrationService = workRegistrationService;
         this.messagingTemplate = messagingTemplate;
         this.userRepository = userRepository;
+        this.notificationPaymentContractService = notificationPaymentContractService;
     }
 
     @GetMapping
@@ -60,7 +64,9 @@ public class WorkRegistrationController {
     public ResponseEntity<WorkRegistrationDto> updateWorkRegistration(@PathVariable(name = "id") int id,
                                                                       @RequestPart(value = "image", required = false) MultipartFile image,
                                                                       @RequestBody WorkRegistration workRegistration) throws URISyntaxException {
-        return ResponseEntity.ok(workRegistrationService.updateWorkRegistration(id, image, workRegistration));
+        WorkRegistrationDto res = workRegistrationService.updateWorkRegistration(id, image, workRegistration);
+        notificationPaymentContractService.sendWorkRegistrationToCustomer(res);
+        return ResponseEntity.ok(res);
     }
 
     @DeleteMapping("/{id}")

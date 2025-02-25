@@ -2,7 +2,10 @@ import React, { useRef, useState, useEffect, useContext } from "react";
 import {
   callGetAllCustomerTypeDocuments,
   callGetAllCustomerTypes,
+  callGetAllDeviceTypes,
   callGetAllLocations,
+  callGetAllSystemMaintenanceServices,
+  callGetAllSystems,
   callGetDevice,
   callGetLocation,
   callGetOffice,
@@ -35,9 +38,10 @@ import Access from "../../components/share/Access";
 import { GoPlus } from "react-icons/go";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
 import ModalOffice from "../../components/admin/Office/modal.office";
+import ModalDevice from "../../components/admin/Property_Manager/Device/modal.device";
 
 const Office = () => {
-  const scaleFactor = 10; // Tăng kích thước cho dễ nhìn
+  const [scaleFactor, setScaleFactor] = useState(10);
   const maxHeight = 44 * scaleFactor; // Chiều cao tối đa của bản vẽ electrical_cabinet
 
   const { user } = useContext(AuthContext);
@@ -47,12 +51,17 @@ const Office = () => {
   const [filter, setFilter] = useState("");
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [openModalDevice, setOpenModalDevice] = useState(false);
   const [data, setData] = useState(null);
   const [listCustomerTypes, setListCustomerTypes] = useState([]);
   const [listLocations, setListLocations] = useState([]);
   const [listCustomerTypeDocuments, setListCustomerTypeDocuments] = useState(
     []
   );
+  const [listSystems, setListSystems] = useState([]);
+  const [listDeviceTypes, setListDeviceTypes] = useState([]);
+  const [listSystemMaintenanceServices, setListSystemMaintenanceServices] =
+    useState([]);
 
   useEffect(() => {
     const init = async () => {
@@ -69,6 +78,24 @@ const Office = () => {
       const customerTypeDocuments = await callGetAllCustomerTypeDocuments();
       if (customerTypeDocuments && customerTypeDocuments.data) {
         setListCustomerTypeDocuments(customerTypeDocuments.data?.result);
+      }
+
+      const systems = await callGetAllSystems();
+      if (systems && systems.data) {
+        setListSystems(systems.data?.result);
+      }
+
+      const deviceTypes = await callGetAllDeviceTypes();
+      if (deviceTypes && deviceTypes.data) {
+        setListDeviceTypes(deviceTypes.data?.result);
+      }
+
+      const systemMaintenanceServices =
+        await callGetAllSystemMaintenanceServices();
+      if (systemMaintenanceServices && systemMaintenanceServices.data) {
+        setListSystemMaintenanceServices(
+          systemMaintenanceServices.data?.result
+        );
       }
     };
     init();
@@ -105,25 +132,75 @@ const Office = () => {
     const areaName = area.name.trim().toLowerCase();
 
     if (areaName === "thang bộ") {
-      return <TbStairs className="size-4 text-white border" />;
+      return (
+        <TbStairs
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("kỹ thuật")) {
-      return <GiAutoRepair className="size-4 text-white border" />;
+      return (
+        <GiAutoRepair
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("thang máy")) {
-      return <PiElevatorLight className="size-4 text-white border" />;
+      return (
+        <PiElevatorLight
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("vệ sinh nam")) {
-      return <GrRestroomMen className="size-4 text-white border" />;
+      return (
+        <GrRestroomMen
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("vệ sinh nữ")) {
-      return <GrRestroomWomen className="size-4 text-white border" />;
+      return (
+        <GrRestroomWomen
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("điện tủ nguồn")) {
-      return <GiElectricalResistance className="size-4 text-white border" />;
+      return (
+        <GiElectricalResistance
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("vật tư")) {
-      return <PiSelectionPlusFill className="size-4 text-white border" />;
+      return (
+        <PiSelectionPlusFill
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("xử lý nước")) {
-      return <MdOutlineWaterDamage className="size-4 text-white border" />;
+      return (
+        <MdOutlineWaterDamage
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("bơm nước")) {
-      return <FaPumpMedical className="size-4 text-white border" />;
+      return (
+        <FaPumpMedical
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("chiler")) {
-      return <SiDwavesystems className="size-4 text-white border" />;
+      return (
+        <SiDwavesystems
+          size={1.75 * scaleFactor}
+          className="text-white border border-white"
+        />
+      );
     } else if (areaName.includes("sảnh")) {
       return "";
     } else {
@@ -142,19 +219,30 @@ const Office = () => {
   };
 
   return (
-    <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
+    <div className="relative p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="flex flex-col gap-5">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-base xl:text-xl font-bold">Sơ đồ văn phòng</h2>
-          <Access permission={ALL_PERMISSIONS.OFFICES.CREATE} hideChildren>
-            <Button
-              onClick={() => setOpenModal(true)}
-              className="p-2 xl:p-3 gap-1 xl:gap-2"
-            >
-              <GoPlus className="h-4 w-4" />
-              Thêm
-            </Button>
-          </Access>
+          <div className="flex flex-col lg:flex-row gap-2">
+            <Access permission={ALL_PERMISSIONS.OFFICES.CREATE} hideChildren>
+              <Button
+                onClick={() => setOpenModal(true)}
+                className="p-2 xl:p-3 gap-1 xl:gap-2"
+              >
+                <GoPlus className="h-4 w-4" />
+                Thêm hợp đồng khách hàng
+              </Button>
+            </Access>
+            <Access permission={ALL_PERMISSIONS.DEVICES.CREATE} hideChildren>
+              <Button
+                onClick={() => setOpenModalDevice(true)}
+                className="p-2 xl:p-3 gap-1 xl:gap-2"
+              >
+                <GoPlus className="h-4 w-4" />
+                Thêm thiết bị
+              </Button>
+            </Access>
+          </div>
         </div>
         <div className="flex flex-col lg:flex-row gap-5 w-full lg:max-w-fit border rounded-md p-5">
           <div className="flex items-center gap-2">
@@ -180,6 +268,7 @@ const Office = () => {
           onFinish={handleFilter}
           initialValues={{
             location: 1,
+            deviceType: "fcu",
           }}
           className="flex items-center gap-3"
         >
@@ -203,6 +292,20 @@ const Office = () => {
         </Form>
 
         <div className="flex items-center justify-center w-full">
+          <div className="absolute right-7 flex flex-col items-center gap-2 w-5">
+            <Button
+              onClick={() => setScaleFactor((prev) => Math.min(prev + 10, 20))}
+            >
+              +
+            </Button>
+
+            <Button
+              onClick={() => setScaleFactor((prev) => Math.max(prev - 10, 10))}
+            >
+              -
+            </Button>
+          </div>
+
           <div
             className="relative"
             style={{
@@ -288,10 +391,9 @@ const Office = () => {
                   if (res?.data) {
                     setData(res?.data);
                     setOpenViewDetail(true);
-                    console.log(res?.data);
                   }
                 }}
-                className="absolute border border-red-800 bg-blue-900 text-white cursor-pointer hover:bg-opacity-95"
+                className="absolute text-center border border-red-800 bg-blue-900 text-white cursor-pointer hover:bg-opacity-95"
                 key={index}
                 style={{
                   left: `${office.startX * scaleFactor}px`,
@@ -301,7 +403,10 @@ const Office = () => {
                 }}
               >
                 {/* Hiển thị tên Office */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div
+                  style={{ fontSize: `${1.3 * scaleFactor}px` }}
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                >
                   {office.name}
                 </div>
               </div>
@@ -316,9 +421,9 @@ const Office = () => {
                   deviceImages["default"];
 
                 const imageWidth =
-                  device?.deviceType?.typeName === "fcu" ? 20 : 20;
+                  device?.deviceType?.typeName === "fcu" ? 2 : 1.75;
                 const imageHeight =
-                  device?.deviceType?.typeName === "fcu" ? 20 : 20;
+                  device?.deviceType?.typeName === "fcu" ? 3 : 1.75;
 
                 return (
                   <div
@@ -340,8 +445,8 @@ const Office = () => {
                         top: `${
                           maxHeight - device?.y * scaleFactor - imageHeight / 2
                         }px`,
-                        width: `${imageWidth}px`,
-                        height: `${imageHeight}px`,
+                        width: `${imageWidth * scaleFactor}px`,
+                        height: `${imageHeight * scaleFactor}px`,
                       }}
                       className="absolute"
                     />
@@ -373,6 +478,7 @@ const Office = () => {
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
           setOpenModal={setOpenModal}
+          setOpenModalDevice={setOpenModalDevice}
         />
 
         <ModalOffice
@@ -384,6 +490,18 @@ const Office = () => {
           listCustomerTypes={listCustomerTypes}
           listLocations={listLocations}
           listCustomerTypeDocuments={listCustomerTypeDocuments}
+        />
+
+        <ModalDevice
+          data={data}
+          setData={setData}
+          openModalDevice={openModalDevice}
+          setOpenModalDevice={setOpenModalDevice}
+          fetchData={fetchData}
+          listLocations={listLocations}
+          listSystems={listSystems}
+          listDeviceTypes={listDeviceTypes}
+          listSystemMaintenanceServices={listSystemMaintenanceServices}
         />
       </div>
     </div>

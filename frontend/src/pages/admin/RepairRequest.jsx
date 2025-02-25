@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import React, { useRef, useState, useEffect, useContext } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
   Input,
@@ -35,7 +35,6 @@ import HighlightText from "../../components/share/HighlightText";
 
 const RepairRequest = () => {
   const { user } = useContext(AuthContext);
-  const location = useLocation();
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -173,7 +172,7 @@ const RepairRequest = () => {
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
-      title: "Ngày thi công",
+      title: "Ngày yêu cầu",
       dataIndex: "requestDate",
       sorter: (a, b) => a.requestDate.localeCompare(b.requestDate),
       ...getColumnSearchProps("requestDate"),
@@ -223,20 +222,34 @@ const RepairRequest = () => {
       dataIndex: "status",
       filters: [
         {
-          text: "Đang chờ xử lý",
+          text: "Đang chờ duyệt",
           value: "PENDING",
         },
         {
           text: "Đã hoàn thành",
           value: "SUCCESS",
         },
+        {
+          text: "Đã thất bại",
+          value: "FAILED",
+        },
       ],
       onFilter: (value, record) => record.status === value,
       render: (status, record) => (
         <span
-          className={`${status == "PENDING" ? "warning" : "success"} status`}
+          className={`${
+            status === "PENDING"
+              ? "warning"
+              : status === "FAILED"
+              ? "danger"
+              : "success"
+          } status`}
         >
-          {status == "PENDING" ? "Đang chờ xử lý" : "Đã hoàn thành"}
+          {status === "PENDING"
+            ? "Đang chờ duyệt"
+            : status === "FAILED"
+            ? "Đã thất bại"
+            : "Đã hoàn thành"}
         </span>
       ),
     },
@@ -355,23 +368,26 @@ const RepairRequest = () => {
     }
   };
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const requestID = queryParams.get("requestID");
+    const id = queryParams.get("id");
 
-    if (requestID) {
+    if (id) {
       const fetchRequest = async () => {
-        const res = await callGetAllRepairRequests(
-          `filter=requestID~'${requestID}'`
-        );
-        if (res?.data?.result.length) {
-          setData(res.data.result[0]);
+        const res = await callGetRepairRequest(id);
+        if (res?.data) {
+          setData(res?.data);
           setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
         }
       };
       fetchRequest();
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

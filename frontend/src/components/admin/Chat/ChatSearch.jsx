@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Search from "antd/es/transfer/search";
 import HighlightText from "../../share/HighlightText";
 import { Avatar, Button, DatePicker, Dropdown, Space } from "antd";
-import { FORMAT_TEXT_LENGTH } from "../../../utils/constant";
+import { FORMAT_TEXT_LENGTH, shortenFileName } from "../../../utils/constant";
 
 import { FaRegUser } from "react-icons/fa";
 import { LuCalendarDays } from "react-icons/lu";
@@ -180,13 +180,6 @@ const ChatSearch = ({
         .map((user) => [user.key, user])
     ).values(),
   ];
-
-  const shortenFileName = (fileName, maxLength) =>
-    fileName.length > maxLength
-      ? `${fileName.slice(0, maxLength)}...${fileName.slice(
-          fileName.lastIndexOf(".")
-        )}`
-      : fileName;
 
   return (
     <div

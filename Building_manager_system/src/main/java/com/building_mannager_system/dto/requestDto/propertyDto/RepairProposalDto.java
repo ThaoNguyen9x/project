@@ -32,4 +32,13 @@ public class RepairProposalDto {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RiskAssessmentDto {
+        private Integer riskAssessmentID;
+        private LocalDate assessmentDate;
+    }
 }

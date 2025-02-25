@@ -1,6 +1,7 @@
 package com.building_mannager_system.entity.work_registration;
 
 import com.building_mannager_system.entity.BaseEntity;
+import com.building_mannager_system.entity.User;
 import com.building_mannager_system.enums.WorkStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,9 @@ public class WorkRegistration extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long registrationID;
 
-    private String account; // Người đăng ký thi công
+    @ManyToOne
+    @JoinColumn(name = "accountID", nullable = false)
+    private User account; // Người đăng ký thi công
 
     @Column(nullable = false)
     private LocalDateTime registrationDate = LocalDateTime.now(); // Ngày đăng ký

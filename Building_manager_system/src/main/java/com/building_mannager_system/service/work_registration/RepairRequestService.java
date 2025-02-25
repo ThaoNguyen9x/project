@@ -83,7 +83,7 @@ public class RepairRequestService {
             throw new RuntimeException(e);
         }
 
-        List<String> roles = List.of("Application_Admin");
+        List<String> roles = List.of("Application_Admin", "Technician_Manager", "Technician_Employee");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         if (recipients.isEmpty()) {
@@ -151,7 +151,7 @@ public class RepairRequestService {
     }
 
     // ✅ Lấy RepairRequest theo ID
-    public RepairRequestDto getRepairRequest(int id) {
+    public RepairRequestDto getRepairRequest(Long id) {
         RepairRequest repairRequest = repairRequestRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Repair Request not found with ID: " + id));
         return modelMapper.map(repairRequest, RepairRequestDto.class);
@@ -159,12 +159,9 @@ public class RepairRequestService {
 
 
     // ✅ Cập nhật RepairRequest
-    public RepairRequestDto updateRepairRequest(int id, MultipartFile image, RepairRequest repairRequest) throws URISyntaxException {
+    public RepairRequestDto updateRepairRequest(Long id, MultipartFile image, RepairRequest repairRequest) throws URISyntaxException {
         RepairRequest ex = repairRequestRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Repair Request not found with ID: " + id));
-
-        String email = SecurityUtil.getCurrentUserLogin().orElse("");
-        User user = userRepository.findByEmail(email);
 
         if (image != null && !image.isEmpty()) {
             fileService.validateFile(image, allowedExtensions);
@@ -186,7 +183,7 @@ public class RepairRequestService {
     }
 
     // ✅ Xóa RepairRequest
-    public void deleteRepairRequest(int id) throws URISyntaxException {
+    public void deleteRepairRequest(Long id) throws URISyntaxException {
         RepairRequest ex = repairRequestRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Repair Request not found with ID: " + id));
 

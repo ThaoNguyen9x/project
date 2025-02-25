@@ -35,7 +35,7 @@ import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { TbNotification } from "react-icons/tb";
 import { AuthContext } from "../../components/share/Context";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const PaymentContract = () => {
   const { user } = useContext(AuthContext);
@@ -449,20 +449,6 @@ const PaymentContract = () => {
     }
   };
 
-  const handleNotification = async (paymentId) => {
-    const res = await callSendPaymentRequest(paymentId);
-
-    if (res && res.statusCode === 200) {
-      message.success(res.message);
-      fetchData();
-    } else {
-      notification.error({
-        message: "Có lỗi xảy ra",
-        description: res.error,
-      });
-    }
-  };
-
   const handlePaymentStripe = async (
     paymentId,
     contract,
@@ -491,24 +477,25 @@ const PaymentContract = () => {
   };
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const paymentId = queryParams.get("paymentId");
+    const id = queryParams.get("id");
 
-    if (paymentId) {
+    if (id) {
       const fetchRequest = async () => {
-        const res = await callGetAllPaymentContracts(
-          `filter=paymentId~'${paymentId}'`
-        );
-        if (res?.data?.result.length) {
-          setData(res.data.result[0]);
+        const res = await callGetPaymentContract(id);
+        if (res?.data) {
+          setData(res?.data);
           setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
         }
       };
       fetchRequest();
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">

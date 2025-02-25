@@ -56,6 +56,10 @@ public class Device extends BaseEntity {
     @JsonIgnore
     private List<ItemCheck> itemChecks;
 
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<RiskAssessment> riskAssessments;
+
     public Device(Systems system, Location location, String deviceName, int x, int y, String installationDate, Integer lifespan, DeviceType deviceType, SystemMaintenanceService maintenanceService) {
         this.system = system;
         this.location = location;

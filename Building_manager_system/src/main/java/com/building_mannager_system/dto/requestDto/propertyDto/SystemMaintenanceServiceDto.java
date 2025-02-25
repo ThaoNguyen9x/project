@@ -1,6 +1,5 @@
 package com.building_mannager_system.dto.requestDto.propertyDto;
 
-import com.building_mannager_system.dto.requestDto.systemDto.SubcontractorDto;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -22,4 +21,23 @@ public class SystemMaintenanceServiceDto {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SubcontractorDto {
+        private Integer id;
+        private String name;
+        private SystemDto system;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SystemDto {
+        private Long id;
+        private String systemName;
+    }
 }

@@ -18,7 +18,9 @@ import { QuestionCircleOutlined } from "@ant-design/icons";
 import {
   callDeleteQuotation,
   callGetAllQuotations,
-  callGetAllRepairProposals,
+  callGetAllRiskAssessments,
+  callGetQuotation,
+  callGetRepairProposal,
 } from "../../services/api";
 
 import ModalQuotation from "../../components/admin/System_Service/Quotation/modal.quotation";
@@ -28,13 +30,14 @@ import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permissio
 import PDFViewer from "../../components/share/PDFViewer";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
+import HighlightText from "../../components/share/HighlightText";
 
 const Quotation = () => {
   const { user } = useContext(AuthContext);
   const [list, setList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [sortQuery, setSortQuery] = useState("sort=updatedAt,desc");
+  const [sortQuery, setSortQuery] = useState();
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [total, setTotal] = useState(0);
@@ -50,13 +53,13 @@ const Quotation = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
 
-  const [listRepairProposals, setListRepairProposals] = useState([]);
+  const [listRiskAssessments, setListRiskAssessments] = useState([]);
 
   useEffect(() => {
     const init = async () => {
-      const res = await callGetAllRepairProposals();
+      const res = await callGetAllRiskAssessments();
       if (res && res.data) {
-        setListRepairProposals(res.data?.result);
+        setListRiskAssessments(res.data?.result);
       }
     };
     init();
@@ -167,7 +170,7 @@ const Quotation = () => {
     {
       title: "STT",
       key: "index",
-      fixed: 'left',
+      fixed: "left",
       render: (text, record, index) => (current - 1) * pageSize + index + 1,
     },
     {
@@ -178,9 +181,12 @@ const Quotation = () => {
       render: (text, record, index) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetQuotation(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "supplierName" ? (
@@ -204,9 +210,12 @@ const Quotation = () => {
       render: (repairProposal) => {
         return (
           <a
-            onClick={() => {
-              setData(repairProposal);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetRepairProposal(repairProposal?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "repairProposal.title" ? (
@@ -255,7 +264,7 @@ const Quotation = () => {
               setPreviewOpen(true);
             }}
           >
-            View
+            Xem
           </a>
         ) : (
           "N/A"
@@ -304,9 +313,12 @@ const Quotation = () => {
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.QUOTATIONS.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetQuotation(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
@@ -407,9 +419,14 @@ const Quotation = () => {
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-base xl:text-xl font-bold">Báo giá</h2>
+        <h2 className="text-base xl:text-xl font-bold">
+          Báo giá & Đề xuất bảo trì
+        </h2>
         <Access permission={ALL_PERMISSIONS.QUOTATIONS.CREATE} hideChildren>
-          <Button onClick={() => setOpenModal(true)} className="p-2 xl:p-3 gap-1 xl:gap-2">
+          <Button
+            onClick={() => setOpenModal(true)}
+            className="p-2 xl:p-3 gap-1 xl:gap-2"
+          >
             <GoPlus className="h-4 w-4" />
             Thêm
           </Button>
@@ -446,7 +463,7 @@ const Quotation = () => {
           openModal={openModal}
           setOpenModal={setOpenModal}
           fetchData={fetchData}
-          listRepairProposals={listRepairProposals}
+          listRiskAssessments={listRiskAssessments}
         />
 
         <Modal

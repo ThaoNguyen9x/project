@@ -13,6 +13,7 @@ import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.enums.WorkStatus;
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.work_registration.WorkRegistrationRepository;
+import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.service.ConfigService.FileService;
 import com.building_mannager_system.service.notification.NotificationService;
 import com.building_mannager_system.service.notification.RecipientService;
@@ -68,9 +69,13 @@ public class WorkRegistrationService {
     }
 
     public WorkRegistrationDto createWorkRegistration(MultipartFile image, WorkRegistration workRegistration) {
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+        User account = userRepository.findByEmail(email);
+
         fileService.validateFile(image, allowedExtensions);
         workRegistration.setDrawingUrl(fileService.storeFile(image, folder));
 
+        workRegistration.setAccount(account);
         workRegistration = workRegistrationRepository.saveAndFlush(workRegistration);
 
         // Tạo JSON message
@@ -81,7 +86,7 @@ public class WorkRegistrationService {
             throw new RuntimeException(e);
         }
 
-        List<String> roles = List.of("Application_Admin");
+        List<String> roles = List.of("Application_Admin", "Technician_Manager");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         if (recipients.isEmpty()) {
@@ -112,6 +117,18 @@ public class WorkRegistrationService {
     // ✅ Lấy tất cả
     public ResultPaginationDTO getAllWorkRegistrations(Specification<WorkRegistration> spec,
                                                     Pageable pageable) {
+
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new APIException(HttpStatus.NOT_FOUND, "User not found");
+        }
+
+        if (user.getRole().getName().equals("Customer")) {
+            spec = Specification.where((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("account").get("id"), user.getId()));
+        }
 
         Page<WorkRegistration> page = workRegistrationRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
@@ -162,7 +179,6 @@ public class WorkRegistrationService {
             ex.setDrawingUrl(fileService.storeFile(image, folder));
         }
 
-        ex.setAccount(workRegistration.getAccount());
         ex.setScheduledDate(workRegistration.getScheduledDate());
         ex.setStatus(workRegistration.getStatus());
         ex.setNote(workRegistration.getNote());

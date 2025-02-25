@@ -21,8 +21,8 @@ const ModalDevice = (props) => {
   const {
     data,
     setData,
-    openModal,
-    setOpenModal,
+    openModalDevice,
+    setOpenModalDevice,
     fetchData,
     listSystems,
     listLocations,
@@ -123,7 +123,7 @@ const ModalDevice = (props) => {
   };
 
   const handleReset = async () => {
-    setOpenModal(false);
+    setOpenModalDevice(false);
     setData(null);
     form.resetFields();
   };
@@ -131,7 +131,7 @@ const ModalDevice = (props) => {
   return (
     <Modal
       title={data?.deviceId ? "Cập nhật thiết bị" : "Tạo thiết bị"}
-      open={openModal}
+      open={openModalDevice}
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}

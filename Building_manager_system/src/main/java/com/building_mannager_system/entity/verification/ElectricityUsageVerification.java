@@ -56,4 +56,7 @@ public class ElectricityUsageVerification extends BaseEntity {
 
     @Column(name = "current_month_cost")
     private BigDecimal currentMonthCost;  // Số tiền của tháng hiện tại
+
+    @Column(name = "electricity_usage_id", nullable = false)
+    private Integer electricityId; // Lưu ID của ElectricityUsage
 }

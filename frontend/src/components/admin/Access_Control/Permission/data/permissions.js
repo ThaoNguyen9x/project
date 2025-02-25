@@ -21,6 +21,50 @@ export const ALL_PERMISSIONS = {
       module: "ELECTRICITY_RATES",
     },
   },
+  LOCATIONS: {
+    GET_PAGINATE: {
+      method: "GET",
+      apiPath: "/api/locations",
+      module: "LOCATIONS",
+    },
+    CREATE: {
+      method: "POST",
+      apiPath: "/api/locations",
+      module: "LOCATIONS",
+    },
+    UPDATE: {
+      method: "PUT",
+      apiPath: "/api/locations/{id}",
+      module: "LOCATIONS",
+    },
+    DELETE: {
+      method: "DELETE",
+      apiPath: "/api/locations/{id}",
+      module: "LOCATIONS",
+    },
+  },
+  COMMON_AREAS: {
+    GET_PAGINATE: {
+      method: "GET",
+      apiPath: "/api/common-areas",
+      module: "COMMON_AREAS",
+    },
+    CREATE: {
+      method: "POST",
+      apiPath: "/api/common-areas",
+      module: "COMMON_AREAS",
+    },
+    UPDATE: {
+      method: "PUT",
+      apiPath: "/api/common-areas/{id}",
+      module: "COMMON_AREAS",
+    },
+    DELETE: {
+      method: "DELETE",
+      apiPath: "/api/common-areas/{id}",
+      module: "COMMON_AREAS",
+    },
+  },
   WORK_REGISTRATIONS: {
     GET_PAGINATE: {
       method: "GET",
@@ -41,50 +85,6 @@ export const ALL_PERMISSIONS = {
       method: "DELETE",
       apiPath: "/api/work-registrations/{id}",
       module: "WORK_REGISTRATIONS",
-    },
-  },
-  RESULT_CHECKS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/result-checks",
-      module: "RESULT_CHECKS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/result-checks",
-      module: "RESULT_CHECKS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/result-checks/{id}",
-      module: "RESULT_CHECKS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/result-checks/{id}",
-      module: "RESULT_CHECKS",
-    },
-  },
-  ITEM_CHECKS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/item-checks",
-      module: "ITEM_CHECKS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/item-checks",
-      module: "ITEM_CHECKS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/item-checks/{id}",
-      module: "ITEM_CHECKS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/item-checks/{id}",
-      module: "ITEM_CHECKS",
     },
   },
   REPAIR_REQUEST: {
@@ -131,28 +131,6 @@ export const ALL_PERMISSIONS = {
       module: "NOTIFICATION_MAINTENANCES",
     },
   },
-  TASKS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/tasks",
-      module: "TASKS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/tasks",
-      module: "TASKS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/tasks/{id}",
-      module: "TASKS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/tasks/{id}",
-      module: "TASKS",
-    },
-  },
   DEVICES: {
     GET_PAGINATE: {
       method: "GET",
@@ -175,50 +153,6 @@ export const ALL_PERMISSIONS = {
       module: "DEVICES",
     },
   },
-  RISK_ASSESSMENTS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/risk-assessments",
-      module: "RISK_ASSESSMENTS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/risk-assessments",
-      module: "RISK_ASSESSMENTS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/risk-assessments/{id}",
-      module: "RISK_ASSESSMENTS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/risk-assessments/{id}",
-      module: "RISK_ASSESSMENTS",
-    },
-  },
-  REPAIR_PROPOSALS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/repair-proposals",
-      module: "REPAIR_PROPOSALS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/repair-proposals",
-      module: "REPAIR_PROPOSALS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/repair-proposals/{id}",
-      module: "REPAIR_PROPOSALS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/repair-proposals/{id}",
-      module: "REPAIR_PROPOSALS",
-    },
-  },
   QUOTATIONS: {
     GET_PAGINATE: {
       method: "GET",
@@ -239,28 +173,6 @@ export const ALL_PERMISSIONS = {
       method: "DELETE",
       apiPath: "/api/quotations/{id}",
       module: "QUOTATIONS",
-    },
-  },
-  METERS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/meters",
-      module: "METERS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/meters",
-      module: "METERS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/meters/{id}",
-      module: "METERS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/meters/{id}",
-      module: "METERS",
     },
   },
   ELECTRICITY_USAGES: {
@@ -395,28 +307,6 @@ export const ALL_PERMISSIONS = {
       module: "SYSTEMS",
     },
   },
-  HANDOVER_STATUS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/handover-status",
-      module: "HANDOVER_STATUS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/handover-status",
-      module: "HANDOVER_STATUS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/handover-status/{id}",
-      module: "HANDOVER_STATUS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/handover-status/{id}",
-      module: "HANDOVER_STATUS",
-    },
-  },
   PAYMENT_CONTRACTS: {
     GET_PAGINATE: {
       method: "GET",
@@ -486,28 +376,6 @@ export const ALL_PERMISSIONS = {
       method: "DELETE",
       apiPath: "/api/offices/{id}",
       module: "OFFICES",
-    },
-  },
-  CUSTOMERS: {
-    GET_PAGINATE: {
-      method: "GET",
-      apiPath: "/api/customers",
-      module: "CUSTOMERS",
-    },
-    CREATE: {
-      method: "POST",
-      apiPath: "/api/customers",
-      module: "CUSTOMERS",
-    },
-    UPDATE: {
-      method: "PUT",
-      apiPath: "/api/customers/{id}",
-      module: "CUSTOMERS",
-    },
-    DELETE: {
-      method: "DELETE",
-      apiPath: "/api/customers/{id}",
-      module: "CUSTOMERS",
     },
   },
   CUSTOMER_TYPES: {
@@ -599,17 +467,13 @@ export const ALL_PERMISSIONS = {
 };
 
 export const ALL_MODULES = [
+  "COMMON_AREAS",
+  "LOCATIONS",
   "ELECTRICITY_RATES",
   "WORK_REGISTRATIONS",
-  "RESULT_CHECKS",
-  "ITEM_CHECKS",
   "REPAIR_REQUEST",
-  "TASKS",
   "NOTIFICATION_MAINTENANCES",
-  "RISK_ASSESSMENTS",
-  "REPAIR_PROPOSALS",
   "QUOTATIONS",
-  "METERS",
   "ELECTRICITY_USAGES",
   "DEVICES",
   "DEVICE_TYPES",
@@ -617,11 +481,9 @@ export const ALL_MODULES = [
   "SYSTEM_MAINTENANCE_SERVICES",
   "SUBCONTRACTS",
   "SYSTEMS",
-  "HANDOVER_STATUS",
   "PAYMENT_CONTRACTS",
   "CONTRACTS",
   "OFFICES",
-  "CUSTOMERS",
   "CUSTOMER_TYPES",
   "CUSTOMER_TYPE_DOCUMENTS",
   "PERMISSIONS",

@@ -22,6 +22,8 @@ import {
   callGetAllSubcontracts,
   callGetAllSystemMaintenanceServices,
   callGetAllUsers,
+  callGetMaintenanceHistory,
+  callGetRiskAssessment,
 } from "../../services/api";
 
 import Access from "../../components/share/Access";
@@ -267,7 +269,7 @@ const MaintenanceHistory = () => {
           Lịch sử bảo trì & Đánh giá rủi ro
         </h2>
         <Access
-          permission={ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.CREATE}
+          permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.CREATE}
           hideChildren
         >
           <Button
@@ -312,9 +314,12 @@ const MaintenanceHistory = () => {
               render={(text, record) => {
                 return (
                   <a
-                    onClick={() => {
-                      setData(record);
-                      setOpenViewDetail(true);
+                    onClick={async () => {
+                      const res = await callGetMaintenanceHistory(record?.id);
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenViewDetail(true);
+                      }
                     }}
                   >
                     {record?.performedDate}
@@ -339,12 +344,17 @@ const MaintenanceHistory = () => {
               }}
               render={(_, record) => {
                 const assessmentDate =
-                  record.riskAssessments?.[0]?.assessmentDate;
+                  record?.riskAssessments?.[0]?.assessmentDate;
                 return assessmentDate ? (
                   <a
-                    onClick={() => {
-                      setData(record.riskAssessments?.[0]);
-                      setOpenViewDetail(true);
+                    onClick={async () => {
+                      const res = await callGetRiskAssessment(
+                        record?.riskAssessments?.[0]?.riskAssessmentID
+                      );
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenViewDetail(true);
+                      }
                     }}
                   >
                     {assessmentDate}
@@ -360,13 +370,16 @@ const MaintenanceHistory = () => {
             render={(text, record) => (
               <div className="flex items-center gap-3">
                 <Access
-                  permission={ALL_PERMISSIONS.CONTRACTS.UPDATE}
+                  permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.UPDATE}
                   hideChildren
                 >
                   <div
-                    onClick={() => {
-                      setData(record);
-                      setOpenModal(true);
+                    onClick={async () => {
+                      const res = await callGetMaintenanceHistory(record?.id);
+                      if (res?.data) {
+                        setData(res?.data);
+                        setOpenModal(true);
+                      }
                     }}
                     className="cursor-pointer text-amber-900"
                   >
@@ -374,7 +387,7 @@ const MaintenanceHistory = () => {
                   </div>
                 </Access>
                 <Access
-                  permission={ALL_PERMISSIONS.CONTRACTS.DELETE}
+                  permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.DELETE}
                   hideChildren
                 >
                   <Popconfirm

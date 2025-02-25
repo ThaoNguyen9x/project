@@ -4,7 +4,9 @@ import com.building_mannager_system.entity.User;
 import com.building_mannager_system.dto.requestDto.ReqChangePasswordDTO;
 import com.building_mannager_system.dto.requestDto.ReqLoginDTO;
 import com.building_mannager_system.dto.responseDto.ResLoginDTO;
+import com.building_mannager_system.entity.account.PageFlutter;
 import com.building_mannager_system.repository.UserRepository;
+import com.building_mannager_system.repository.account.PageFlutterRepository;
 import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.service.UserService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
@@ -14,13 +16,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,18 +36,18 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final UserRepository userRepository;
     private final UserService userService;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final PageFlutterRepository pageFlutterRepository;
 
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
                           SecurityUtil securityUtil,
                           UserRepository userRepository,
                           UserService userService,
-                          SimpMessagingTemplate messagingTemplate) {
+                          PageFlutterRepository pageFlutterRepository) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.userRepository = userRepository;
         this.userService = userService;
-        this.messagingTemplate = messagingTemplate;
+        this.pageFlutterRepository = pageFlutterRepository;
     }
 
     @PostMapping(value = {"/login", "/sign-in"})
@@ -82,11 +85,12 @@ public class AuthController {
         }
 
         // Create access token
+        List<PageFlutter> pageFlutters = pageFlutterRepository.findPageFlutterByRoleIdOrderByRoute(currentUser.getRole().getId());
         String accessToken = securityUtil.createAccessToken(authentication.getName(), res);
         res.setAccessToken(accessToken);
 
         // Create refresh token
-        String refreshToken = securityUtil.createRefreshToken(loginDTO.getEmail(), res);
+        String refreshToken = securityUtil.createRefreshToken(loginDTO.getEmail(), res, pageFlutters);
 
         // Update user
         userService.refreshToken(refreshToken, loginDTO.getEmail());
@@ -146,10 +150,11 @@ public class AuthController {
             res.setUser(userInfo);
         }
 
+        List<PageFlutter> pageFlutters = pageFlutterRepository.findPageFlutterByRoleIdOrderByRoute(currentUser.getRole().getId());
         String accessToken = securityUtil.createAccessToken(email, res);
         res.setAccessToken(accessToken);
 
-        String newRefreshToken = securityUtil.createRefreshToken(email, res);
+        String newRefreshToken = securityUtil.createRefreshToken(email, res, pageFlutters);
         userService.refreshToken(refreshToken, newRefreshToken);
 
         ResponseCookie resCookie = ResponseCookie.from("refresh_token", newRefreshToken)

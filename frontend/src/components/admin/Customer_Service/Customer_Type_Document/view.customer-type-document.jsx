@@ -1,9 +1,32 @@
 import dayjs from "dayjs";
-import { Descriptions, Drawer } from "antd";
+import { Button, Descriptions, Drawer, Space } from "antd";
 import { FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
+import { useState } from "react";
+import { callGetCustomerType } from "../../../../services/api";
 
 const ViewCustomerTypeDocument = (props) => {
   const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
+  const [historyStack, setHistoryStack] = useState([]);
+
+  const onClose = () => {
+    setOpenViewDetail(false);
+    setData(null);
+    setHistoryStack([]);
+  };
+
+  const goBack = () => {
+    if (historyStack.length > 0) {
+      const prevData = historyStack[historyStack.length - 1];
+      setHistoryStack(historyStack.slice(0, -1));
+      setData(prevData);
+    }
+  };
+
+  const handleViewDetail = async (newData) => {
+    setHistoryStack([...historyStack, data]);
+    setData(newData);
+    setOpenViewDetail(true);
+  };
 
   const generateItems = () => {
     if (data?.documentType) {
@@ -17,9 +40,11 @@ const ViewCustomerTypeDocument = (props) => {
           label: "Loại khách hàng",
           children: data?.customerType?.typeName ? (
             <a
-              onClick={() => {
-                setData(data?.customerType);
-                setOpenViewDetail(true);
+              onClick={async () => {
+                const res = await callGetCustomerType(data?.customerType?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
               }}
             >
               {data?.customerType?.typeName}
@@ -93,10 +118,21 @@ const ViewCustomerTypeDocument = (props) => {
 
   return (
     <Drawer
-      title={`${data?.documentType ? "Thông tin hồ sơ phân loại" : "Thông tin loại khách hàng"}`}
-      onClose={() => setOpenViewDetail(false)}
+      title={`${
+        data?.documentType
+          ? "Thông tin hồ sơ phân loại"
+          : "Thông tin loại khách hàng"
+      }`}
+      onClose={onClose}
       open={openViewDetail}
       width={window.innerWidth > 900 ? 800 : window.innerWidth}
+      extra={
+        <Space>
+          {historyStack.length > 0 && (
+            <Button onClick={goBack}>Quay lại</Button>
+          )}
+        </Space>
+      }
     >
       <Descriptions
         items={items}

@@ -91,7 +91,7 @@ public class RepairProposalService {
         RepairProposal repair = repairProposalRepository.saveAndFlush(repairProposal);
 
         // Find admin users
-        List<String> roles = List.of("Application_Admin");
+        List<String> roles = List.of("Application_Admin", "Technician_Manager");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         if (recipients.isEmpty()) {

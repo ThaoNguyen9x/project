@@ -14,7 +14,11 @@ import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { callDeleteLocation, callGetAllLocations } from "../../services/api";
+import {
+  callDeleteLocation,
+  callGetAllLocations,
+  callGetLocation,
+} from "../../services/api";
 
 import ModalLocation from "../../components/admin/Location/modal.location";
 import ViewLocation from "../../components/admin/Location/view.location";
@@ -160,9 +164,12 @@ const Location = () => {
       render: (text, record) => {
         return (
           <a
-            onClick={() => {
-              setData(record);
-              setOpenViewDetail(true);
+            onClick={async () => {
+              const res = await callGetLocation(record?.id);
+              if (res?.data) {
+                setData(res?.data);
+                setOpenViewDetail(true);
+              }
             }}
           >
             {searchedColumn === "floor" ? (
@@ -177,31 +184,56 @@ const Location = () => {
     {
       title: "Tổng diện tích",
       dataIndex: "totalArea",
+      sorter: (a, b) => (a.totalArea || 0) - (b.totalArea || 0),
       ...getColumnSearchProps("totalArea"),
-      sorter: (a, b) => a.totalArea - b.totalArea,
+      render: (text, record) => {
+        const formattedArea = record?.totalArea
+          ? `${record.totalArea.toLocaleString()} m²`
+          : "0";
+
+        return searchedColumn === "totalArea" ? (
+          <HighlightText text={formattedArea} searchText={searchText} />
+        ) : (
+          formattedArea
+        );
+      },
     },
     {
       title: "Khu vực chung",
       dataIndex: "commonArea",
+      sorter: (a, b) => (a.commonArea || 0) - (b.commonArea || 0),
       ...getColumnSearchProps("commonArea"),
-      sorter: (a, b) => a.commonArea - b.commonArea,
+      render: (text, record) => {
+        const formattedArea = record?.commonArea
+          ? `${record.commonArea.toLocaleString()} m²`
+          : "0";
+
+        return searchedColumn === "commonArea" ? (
+          <HighlightText text={formattedArea} searchText={searchText} />
+        ) : (
+          formattedArea
+        );
+      },
     },
     {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access permission={ALL_PERMISSIONS.SYSTEMS.UPDATE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.LOCATIONS.UPDATE} hideChildren>
             <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
+              onClick={async () => {
+                const res = await callGetLocation(record?.id);
+                if (res?.data) {
+                  setData(res?.data);
+                  setOpenModal(true);
+                }
               }}
               className="cursor-pointer text-amber-900"
             >
               <CiEdit className="h-5 w-5" />
             </div>
           </Access>
-          <Access permission={ALL_PERMISSIONS.SYSTEMS.DELETE} hideChildren>
+          <Access permission={ALL_PERMISSIONS.LOCATIONS.DELETE} hideChildren>
             <Popconfirm
               placement="leftBottom"
               okText="Có"
@@ -281,7 +313,7 @@ const Location = () => {
   const handleDelete = async (id) => {
     const res = await callDeleteLocation(id);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
@@ -296,7 +328,7 @@ const Location = () => {
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Vị trí</h2>
-        <Access permission={ALL_PERMISSIONS.SYSTEMS.CREATE} hideChildren>
+        <Access permission={ALL_PERMISSIONS.LOCATIONS.CREATE} hideChildren>
           <Button
             onClick={() => setOpenModal(true)}
             className="p-2 xl:p-3 gap-1 xl:gap-2"

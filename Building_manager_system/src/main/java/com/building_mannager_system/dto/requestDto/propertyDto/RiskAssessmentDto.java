@@ -2,6 +2,7 @@ package com.building_mannager_system.dto.requestDto.propertyDto;
 
 import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
 import com.building_mannager_system.dto.requestDto.systemDto.SubcontractorDto;
+import com.building_mannager_system.enums.DeviceStatus;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ import java.util.List;
 public class RiskAssessmentDto {
     private Integer riskAssessmentID;
     private MaintenanceHistoryDto maintenanceHistory; // Foreign Key (MaintenanceHistory)
-    private SubcontractorDto contractor; // Foreign Key (Subcontractor)
+    private com.building_mannager_system.dto.requestDto.propertyDto.DeviceDto.SubcontractorDto contractor; // Foreign Key (Subcontractor)
     private String systemType; // ENUM as String
     private DeviceDto device; // Foreign Key (Device)
     private LocalDate assessmentDate; // Date of assessment
@@ -36,16 +37,15 @@ public class RiskAssessmentDto {
     @AllArgsConstructor
     public static class MaintenanceHistoryDto {
         private Long id;
-        private SystemMaintenanceServiceDto maintenanceService;
         private LocalDate performedDate;
-        private String notes;
-        private CustomerDto.User technician;
-        private String findings;
-        private String resolution;
-        private String phone;
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private LocalDateTime updatedAt;
-        private String updatedBy;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeviceDto {
+        private Long deviceId;
+        private String deviceName;
     }
 }

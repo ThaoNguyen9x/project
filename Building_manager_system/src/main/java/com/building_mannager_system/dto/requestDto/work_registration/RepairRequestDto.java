@@ -1,6 +1,5 @@
 package com.building_mannager_system.dto.requestDto.work_registration;
 
-import com.building_mannager_system.dto.requestDto.customer.CustomerDto;
 import com.building_mannager_system.enums.RequestStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +29,7 @@ public class RepairRequestDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CustomerDto {
-        private String id;
+        private int id;
         private String name;
     }
 }

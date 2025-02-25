@@ -2,7 +2,9 @@ package com.building_mannager_system.controller.propertyController;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.propertyDto.QuotationDto;
+import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
 import com.building_mannager_system.entity.property_manager.Quotation;
+import com.building_mannager_system.service.notification.NotificationPaymentContractService;
 import com.building_mannager_system.service.system_service.QuotationService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
@@ -20,9 +22,11 @@ import java.net.URISyntaxException;
 public class QuotationServiceController {
 
     private final QuotationService quotationService;
+    private final NotificationPaymentContractService notificationPaymentContractService;
 
-    public QuotationServiceController(QuotationService quotationService) {
+    public QuotationServiceController(QuotationService quotationService, NotificationPaymentContractService notificationPaymentContractService) {
         this.quotationService = quotationService;
+        this.notificationPaymentContractService = notificationPaymentContractService;
     }
 
     @GetMapping
@@ -50,7 +54,9 @@ public class QuotationServiceController {
     public ResponseEntity<QuotationDto> updateQuotation(@PathVariable(name = "id") Long id,
                                                    @RequestPart(value = "image", required = false) MultipartFile file,
                                                    @ModelAttribute Quotation quotation) throws URISyntaxException {
-        return ResponseEntity.ok(quotationService.updateQuotation(id, file, quotation));
+        QuotationDto res = quotationService.updateQuotation(id, file, quotation);
+        notificationPaymentContractService.sendRepairProposal(res);
+        return ResponseEntity.ok(res);
     }
 
     @DeleteMapping("/{id}")
