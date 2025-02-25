@@ -22,5 +22,6 @@ public interface ContractRepository extends JpaRepository<Contract, Integer>,
 
 //    Contract findByOfficeID_Id(Integer officeId);
 
-    List<Contract> findByEndDateBetween(LocalDate start, LocalDate end);
+    @Query("SELECT c FROM Contract c JOIN FETCH c.customer WHERE c.endDate BETWEEN :start AND :end")
+    List<Contract> findByEndDateBetween(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

@@ -229,15 +229,16 @@ const ModalNotification = (props) => {
           Kiểm tra thông tin chi tiết trong hệ thống.
         </Link>
       </div>
-    ) : notificationDetails?.recipient?.type ===
-      "Repair_Proposal_Notification" ? (
+    ) : notificationDetails?.recipient?.type === "Due_Contract_Notification" ? (
       <div className="flex flex-col gap-2">
         <p>
-          Bạn có thông báo yêu cầu sửa chữa ngày{" "}
-          <b>{new Date(message?.requestDate).toLocaleDateString("vi-VN")}</b>
+          Hợp đồng của khách hàng công ty{" "}
+          <b>{message?.customer?.companyName}</b> còn 30 ngày nữa là hết hạn.
+          Vui lòng liên hệ khách hàng để gia hạn hợp đồng. Nếu khách hàng không
+          muốn gia hạn, vui lòng hướng dẫn các thủ tục thanh lý hợp đồng.
         </p>
         <Link
-          to={`/dashboard/repair-proposals?openViewDetail=true&id=${message?.id}`}
+          to={`/dashboard/customer-contracts?openViewDetail=true&id=${message?.id}`}
           onClick={() => setOpenNotification(false)}
         >
           Kiểm tra thông tin chi tiết trong hệ thống.

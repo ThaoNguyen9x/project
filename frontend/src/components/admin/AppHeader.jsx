@@ -325,6 +325,10 @@ const AppHeader = () => {
               notification?.recipient?.type === "Maintenance_Task_Notification"
             ) {
               notificationText = `Bạn có nhiệm vụ bảo trì cần kiểm tra`;
+            } else if (
+              notification?.recipient?.type === "Due_Contract_Notification"
+            ) {
+              notificationText = `Hợp đồng của khách hàng công ty ${message?.customer?.companyName} sắp hết hạn`;
             }
           }
 
@@ -383,6 +387,9 @@ const AppHeader = () => {
                     : notification?.recipient?.type ===
                       "Repair_Proposal_Notification"
                     ? "Thông báo yêu cầu bảo trì"
+                    : notification?.recipient?.type ===
+                      "Due_Contract_Notification"
+                    ? "Thông báo hợp đồng sắp hết hạn"
                     : notification?.recipient?.type ===
                       "Maintenance_Task_Notification"
                     ? "Thông báo nhiệm vụ bảo trì"

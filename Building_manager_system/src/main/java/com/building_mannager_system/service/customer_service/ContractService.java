@@ -5,6 +5,7 @@ import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
 import com.building_mannager_system.dto.requestDto.customer.CustomerTypeDocumentDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.RepairProposalDto;
 import com.building_mannager_system.dto.responseDto.ContractReminderDto;
+import com.building_mannager_system.dto.responseDto.ContractResponceDto;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
 import com.building_mannager_system.entity.customer_service.contact_manager.HandoverStatus;
@@ -40,6 +41,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -342,19 +344,17 @@ public class ContractService {
     }
 
     // Check contract end date
-    public List<ContractDto> checkEndDateContract() {
+    @Transactional
+    public List<ContractResponceDto> checkEndDateContract() {
         LocalDate today = LocalDate.now();
         LocalDate next30Days = today.plusDays(30);
 
-        // Lấy danh sách hợp đồng sắp hết hạn trong vòng 30 ngày tới
         List<Contract> contracts = contractRepository.findByEndDateBetween(today, next30Days);
 
-        // Chuyển đổi Contract -> ContractDto
-        List<ContractDto> dueDtos = contracts.stream()
-                .map(contract -> modelMapper.map(contract, ContractDto.class))
+        List<ContractResponceDto> dueDtos = contracts.stream()
+                .map(contract -> modelMapper.map(contract, ContractResponceDto.class))
                 .collect(Collectors.toList());
 
-        // Gửi thông báo cho từng hợp đồng
         dueDtos.forEach(contract -> {
             sendNotification(contract, "Due_Contract_Notification", "Send Due Contract Notifications");
         });
@@ -362,7 +362,7 @@ public class ContractService {
         return dueDtos;
     }
 
-    private void sendNotification(ContractDto contract, String type, String name) {
+    private void sendNotification(ContractResponceDto contract, String type, String name) {
         List<String> roles = List.of("Application_Admin");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 

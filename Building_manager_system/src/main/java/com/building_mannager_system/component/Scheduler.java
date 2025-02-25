@@ -1,8 +1,8 @@
 package com.building_mannager_system.component;
 
 import com.building_mannager_system.dto.requestDto.CheckPaymentNotificationDto;
-import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
 import com.building_mannager_system.dto.requestDto.CustomerBirthdayNotificationDto;
+import com.building_mannager_system.dto.responseDto.ContractResponceDto;
 import com.building_mannager_system.service.customer_service.ContractService;
 import com.building_mannager_system.service.customer_service.CustomerService;
 import com.building_mannager_system.service.payment.PaymentContractService;
@@ -60,9 +60,9 @@ public class Scheduler {
     @Scheduled(cron = "0 0 8 * * ?") // Chạy vào 08:00 AM mỗi ngày
 //     @Scheduled(cron = "*/1 * * * * *")
     public void dueContractCheckNotifications() {
-        List<ContractDto> contracts = contractService.checkEndDateContract();
+        List<ContractResponceDto> contracts = contractService.checkEndDateContract();
         if (!contracts.isEmpty()) {
-            for (ContractDto contract : contracts) {
+            for (ContractResponceDto contract : contracts) {
                 System.out.println("Contract due, " + contract.getCustomer().getId());
             }
         }
