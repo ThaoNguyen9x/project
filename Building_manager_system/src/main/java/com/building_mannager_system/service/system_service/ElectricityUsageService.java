@@ -2,6 +2,7 @@ package com.building_mannager_system.service.system_service;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
 import com.building_mannager_system.dto.requestDto.notificationDto.NotificationMaintenanceDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.ElectricUsageRequestDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.ElectricityUsageDTO;
 import com.building_mannager_system.entity.User;
 import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
@@ -106,11 +107,15 @@ public class ElectricityUsageService {
         String email = SecurityUtil.getCurrentUserLogin().orElse("");
 
         User user = userRepository.findByEmail(email);
-        if (user == null) return null;
+        if (user == null) {
+            return null;
+        }
 
         if (user.getRole().getName().equals("Customer")) {
             Customer customer = user.getCustomer();
-            if (customer == null) return null;
+            if (customer == null) {
+                return null;
+            }
 
             Contract contract = customer.getContracts().stream()
                     .findFirst()
@@ -149,7 +154,7 @@ public class ElectricityUsageService {
         return rs;
     }
 
-    public ElectricityUsageDTO createElectricityUsage(MultipartFile image, ElectricityUsage electricityUsage) {
+    public ElectricityUsageDTO createElectricityUsageW(MultipartFile image, ElectricityUsage electricityUsage) {
 
         // Check Meter
         if (electricityUsage.getMeter() != null) {
@@ -217,37 +222,6 @@ public class ElectricityUsageService {
         return modelMapper.map(savedEntity, ElectricityUsageDTO.class);
     }
 
-    public ElectricityUsageDTO getElectricityUsage(int id) {
-        ElectricityUsage electricityUsage = electricityUsageRepository.findById(id)
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Electricity usage not found with ID: " + id));
-
-        LocalDate currentReadingDate = electricityUsage.getReadingDate();
-        LocalDate lastMonthStart = currentReadingDate.minusMonths(1).withDayOfMonth(1);
-        LocalDate lastMonthEnd = currentReadingDate.minusMonths(1).withDayOfMonth(currentReadingDate.minusMonths(1).lengthOfMonth());
-
-        List<ElectricityUsage> lastMonthUsageList = electricityUsageRepository.findByMeterIdAndReadingDateBetween(
-                electricityUsage.getMeter().getId(), lastMonthStart, lastMonthEnd);
-
-        ElectricityUsage previousMonthUsage = null;
-        if (!lastMonthUsageList.isEmpty()) {
-            previousMonthUsage = lastMonthUsageList.get(lastMonthUsageList.size() - 1); // Lấy bản ghi cuối của tháng trước
-        }
-
-        ElectricityUsageDTO dto = modelMapper.map(electricityUsage, ElectricityUsageDTO.class);
-
-        if (previousMonthUsage != null) {
-            dto.setPreviousMonthElectricityCost(previousMonthUsage.getElectricityCost());
-            dto.setPreviousMonthUsageAmount(previousMonthUsage.getUsageAmount());
-            dto.setPreviousMonthReadingDate(previousMonthUsage.getReadingDate());
-        } else {
-            dto.setPreviousMonthElectricityCost(BigDecimal.ZERO);
-            dto.setPreviousMonthUsageAmount(BigDecimal.ZERO);
-            dto.setPreviousMonthReadingDate(null);
-        }
-
-        return dto;
-    }
-
     public ElectricityUsageDTO updateStatus(int id, ElectricityUsage electricityUsage) {
         ElectricityUsage ex = electricityUsageRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Electricity usage not found with ID: " + id));
@@ -258,7 +232,9 @@ public class ElectricityUsageService {
         List<String> roles = List.of("Application_Admin");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-        if (recipients.isEmpty()) return null;
+        if (recipients.isEmpty()) {
+            return null;
+        }
 
         String message;
         try {
@@ -434,50 +410,156 @@ public class ElectricityUsageService {
         notificationPaymentContractService.sendElectricityUsageVerificationNotification(contacId, save);
     }
 
-//    public ResultPaginationDTO getHistoryElectricityUsagesByMeterId(
-//            Specification<ElectricityUsage> spec, Pageable pageable, int meterId) {
-//
-//        // Sắp xếp theo readingDate (nếu cần)
-//        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("readingDate").descending());
-//
-//        // Truy vấn danh sách sử dụng điện theo meterId với phân trang
-//        Page<ElectricityUsage> electricityUsagePage = electricityUsageRepository.findByMeterId(meterId, pageable);
-//
-//        // Kiểm tra nếu danh sách rỗng, trả về một DTO rỗng
-//        if (electricityUsagePage.isEmpty()) {
-//            ResultPaginationDTO rs = new ResultPaginationDTO();
-//            ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-//            meta.setPage(0);
-//            meta.setPageSize(pageable.getPageSize());
-//            meta.setPages(0);
-//            meta.setTotal(0L);
-//            rs.setMeta(meta);
-//            rs.setResult(Collections.emptyList());
-//            return rs;
-//        }
-//
-//        // Chuyển đổi từ Page<Entity> sang List<DTO> bằng ModelMapper
-//        List<ElectricityUsageDTO> dtoList = electricityUsagePage.getContent().stream()
-//                .map(entity -> modelMapper.map(entity, ElectricityUsageDTO.class))
-//                .collect(Collectors.toList());
-//
-//        // Tạo đối tượng kết quả
-//        ResultPaginationDTO rs = new ResultPaginationDTO();
-//
-//        // Tạo metadata cho phân trang
-//        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
-//        mt.setPage(pageable.getPageNumber() + 1);
-//        mt.setPageSize(pageable.getPageSize());
-//        mt.setPages(electricityUsagePage.getTotalPages());
-//        mt.setTotal(electricityUsagePage.getTotalElements());
-//
-//        rs.setMeta(mt); // Gán metadata vào DTO
-//        rs.setResult(dtoList); // Gán danh sách DTO vào DTO
-//
-//        return rs;
-//    }
-}
+    public ElectricityUsageDTO getElectricityUsage(int id) {
+        ElectricityUsage electricityUsage = electricityUsageRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Electricity usage not found with ID: " + id));
 
+        LocalDate currentReadingDate = electricityUsage.getReadingDate();
+        LocalDate lastMonthStart = currentReadingDate.minusMonths(1).withDayOfMonth(1);
+        LocalDate lastMonthEnd = currentReadingDate.minusMonths(1).withDayOfMonth(currentReadingDate.minusMonths(1).lengthOfMonth());
+
+        List<ElectricityUsage> lastMonthUsageList = electricityUsageRepository.findByMeterIdAndReadingDateBetween(
+                electricityUsage.getMeter().getId(), lastMonthStart, lastMonthEnd);
+
+        ElectricityUsage previousMonthUsage = null;
+        if (!lastMonthUsageList.isEmpty()) {
+            previousMonthUsage = lastMonthUsageList.get(lastMonthUsageList.size() - 1); // Lấy bản ghi cuối của tháng trước
+        }
+
+        ElectricityUsageDTO dto = modelMapper.map(electricityUsage, ElectricityUsageDTO.class);
+
+        if (previousMonthUsage != null) {
+            dto.setPreviousMonthElectricityCost(previousMonthUsage.getElectricityCost());
+            dto.setPreviousMonthUsageAmount(previousMonthUsage.getUsageAmount());
+            dto.setPreviousMonthReadingDate(previousMonthUsage.getReadingDate());
+        } else {
+            dto.setPreviousMonthElectricityCost(BigDecimal.ZERO);
+            dto.setPreviousMonthUsageAmount(BigDecimal.ZERO);
+            dto.setPreviousMonthReadingDate(null);
+        }
+
+        return dto;
+    }
+
+    public ElectricUsageRequestDto createElectricityUsage(MultipartFile image, ElectricUsageRequestDto electricUsageRequestDto) {
+
+        // Check Meter
+        System.out.println(electricUsageRequestDto.getMeterId());
+        ElectricityUsage electricityUsage = new ElectricityUsage();
+        if (electricUsageRequestDto.getMeterId() != null) {
+            System.out.println(electricUsageRequestDto.getMeterId());
+
+            Meter meter = meterRepository.findById(electricUsageRequestDto.getMeterId())
+                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Meter not found with ID: " + electricUsageRequestDto.getMeterId()));
+            electricityUsage.setMeter(meter);
+        }
+
+        // Validate and store the file
+        fileService.validateFile(image, allowedExtensions);
+        electricityUsage.setImageName(fileService.storeFile(image, folder));
+        electricityUsage.setElectricityRate(BigDecimal.valueOf(1.2));
+        electricityUsage.setElectricityCost(BigDecimal.valueOf(1.6));
+        electricityUsage.setEndReading(electricUsageRequestDto.getEndReading());
+        electricityUsage.setReadingDate(LocalDate.now());
+
+        // Lấy ngày hiện tại
+        LocalDate currentDate = LocalDate.now();
+        //LocalDate lastMonth20th = currentDate.minusMonths(1).withDayOfMonth(20);
+
+        // Gọi phương thức để lấy danh sách sử dụng điện theo MeterId và khoảng thời gian
+        List<ElectricityUsage> lastMonthUsage = getElectricityUsageByMeterAndDate(electricUsageRequestDto.getMeterId());
+
+        // Debugging - kiểm tra danh sách dữ liệu tháng trước
+        System.out.println("Dữ liệu tháng trước: " + lastMonthUsage);
+
+        if (lastMonthUsage != null && !lastMonthUsage.isEmpty()) {
+            // Nếu có dữ liệu tháng trước, lấy chỉ số điện cuối kỳ từ bản ghi cuối cùng
+            BigDecimal lastMonthEndReading = lastMonthUsage.get(lastMonthUsage.size() - 1).getEndReading();
+            BigDecimal startReading = lastMonthEndReading != null ? lastMonthEndReading : BigDecimal.ZERO;
+            electricityUsage.setStartReading(startReading);
+
+            // Gán chỉ số đầu kỳ cho DTO
+            //set theo ngày hiện tại ghi
+            // dto.setReadingDate(currentDate);
+
+            // Tính toán lượng điện sử dụng
+            BigDecimal usageAmount = electricityUsage.getEndReading().subtract(startReading);
+            electricityUsage.setUsageAmount(usageAmount);
+        } else {
+            // Nếu không có dữ liệu tháng trước (lần ghi đầu tiên)
+            electricityUsage.setStartReading(BigDecimal.ZERO);
+
+            // Tính toán lượng điện sử dụng nếu có giá trị endReading
+            if (electricityUsage.getEndReading() != null) {
+                electricityUsage.setUsageAmount(electricityUsage.getEndReading()); // Sử dụng endReading làm lượng sử dụng
+            }
+        }
+        // Tính toán tiền điện
+        BigDecimal usageAmount = electricityUsage.getUsageAmount() != null ? electricityUsage.getUsageAmount() : BigDecimal.ZERO;
+        BigDecimal totalCost = electricityCostService.calculateCost(usageAmount);
+        electricityUsage.setElectricityCost(totalCost);
+
+        // Chuyển DTO sang Entity
+        //set ngày ghi theo ngày hiện tại
+        // dto.setReadingDate(currentDate);
+        ElectricityUsage entity = modelMapper.map(electricityUsage, ElectricityUsage.class);
+
+        // Lưu bản ghi mới vào cơ sở dữ liệu
+        ElectricityUsage savedEntity = electricityUsageRepository.save(entity);
+
+        // Debugging - kiểm tra entity đã lưu
+        System.out.println("Entity đã lưu: " + savedEntity);
+        // Tạo thông báo cho khách hàng xác nhận chỉ số điện
+        createElectricityUsageVerification(savedEntity);
+        // Chuyển entity đã lưu trở lại DTO và trả về
+        return modelMapper.map(savedEntity, ElectricUsageRequestDto.class);
+
+
+    }
+
+    public ResultPaginationDTO getHistoryElectricityUsagesByMeterId(
+            Specification<ElectricityUsage> spec, Pageable pageable, int meterId) {
+
+        // Sắp xếp theo readingDate (nếu cần)
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("readingDate").descending());
+
+        // Truy vấn danh sách sử dụng điện theo meterId với phân trang
+        Page<ElectricityUsage> electricityUsagePage = (Page<ElectricityUsage>) electricityUsageRepository.findByMeterId(meterId, pageable);
+
+        // Kiểm tra nếu danh sách rỗng, trả về một DTO rỗng
+        if (electricityUsagePage.isEmpty()) {
+            ResultPaginationDTO rs = new ResultPaginationDTO();
+            ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+            meta.setPage(0);
+            meta.setPageSize(pageable.getPageSize());
+            meta.setPages(0);
+            meta.setTotal(0L);
+            rs.setMeta(meta);
+            rs.setResult(Collections.emptyList());
+            return rs;
+        }
+
+        // Chuyển đổi từ Page<Entity> sang List<DTO> bằng ModelMapper
+        List<ElectricityUsageDTO> dtoList = electricityUsagePage.getContent().stream()
+                .map(entity -> modelMapper.map(entity, ElectricityUsageDTO.class))
+                .collect(Collectors.toList());
+
+        // Tạo đối tượng kết quả
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+
+        // Tạo metadata cho phân trang
+        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageable.getPageSize());
+        mt.setPages(electricityUsagePage.getTotalPages());
+        mt.setTotal(electricityUsagePage.getTotalElements());
+
+        rs.setMeta(mt); // Gán metadata vào DTO
+        rs.setResult(dtoList); // Gán danh sách DTO vào DTO
+
+        return rs;
+    }
+}
 
 
 

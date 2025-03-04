@@ -1,6 +1,7 @@
 package com.building_mannager_system.controller.propertyController;
 
 import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultFlutterDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
 import com.building_mannager_system.dto.responseDto.ApiResponce;
 import com.building_mannager_system.service.property_manager.ItemCheckResultService;
@@ -20,35 +21,40 @@ public class ItemCheckResultController {
 
     // **1. Lấy danh sách kết quả kiểm tra theo ItemCheckId**
     @GetMapping("/item-check/{itemCheckId}")
-    public ResponseEntity<Page<CheckResultDto>> getResultsByCheckItemId(
+    public ResponseEntity<Page<CheckResultFlutterDto>> getResultsByCheckItemId(
             @PathVariable("itemCheckId") Long checkItemId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "2") int size) {
 
-        Page<CheckResultDto> checkResults = itemCheckResultService.getResultsByCheckItemIdPaged(checkItemId, page, size);
+        Page<CheckResultFlutterDto> checkResults = itemCheckResultService.getResultsByCheckItemIdPaged(checkItemId, page, size);
         return ResponseEntity.ok(checkResults);
     }
 
     // **2. Thêm mới một kết quả kiểm tra**
     @PostMapping
-    public ResponseEntity<ApiResponce<CheckResultDto>> createResult(@RequestBody CheckResultDto resultDto) {
-        CheckResultDto createdResult = itemCheckResultService.createResult(resultDto);
-        ApiResponce<CheckResultDto> response = new ApiResponce<>(201, createdResult, "Result created successfully");
+    public ResponseEntity<ApiResponce<CheckResultFlutterDto>> createResult(@RequestBody CheckResultFlutterDto resultDto) {
+        CheckResultFlutterDto createdResult = itemCheckResultService.createResult(resultDto);
+        ApiResponce<CheckResultFlutterDto> response = new ApiResponce<>(201, createdResult, "Result created successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CheckResultDto> getItemCheck(@PathVariable(name = "id") Long id) {
+    public ResponseEntity<CheckResultFlutterDto> getItemCheck(@PathVariable(name = "id") Long id) {
         return ResponseEntity.ok(itemCheckResultService.getResultById(id));
+    }
+
+    @GetMapping("/web/{id}")
+    public ResponseEntity<CheckResultDto> getItemCheckByID(@PathVariable(name = "id") Long id) {
+        return ResponseEntity.ok(itemCheckResultService.getResult(id));
     }
 
     // **4. Cập nhật một kết quả kiểm tra**
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponce<CheckResultDto>> updateResult(
+    public ResponseEntity<ApiResponce<CheckResultFlutterDto>> updateResult(
             @PathVariable Long id,
-            @RequestBody CheckResultDto updatedResultDto) {
-        CheckResultDto updatedResult = itemCheckResultService.updateResult(id, updatedResultDto);
-        ApiResponce<CheckResultDto> response = new ApiResponce<>(200, updatedResult, "Result updated successfully");
+            @RequestBody CheckResultFlutterDto updatedResultDto) {
+        CheckResultFlutterDto updatedResult = itemCheckResultService.updateResult(id, updatedResultDto);
+        ApiResponce<CheckResultFlutterDto> response = new ApiResponce<>(200, updatedResult, "Result updated successfully");
         return ResponseEntity.ok(response);
     }
 

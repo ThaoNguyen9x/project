@@ -39,7 +39,7 @@ public class SecurityUtil {
     @Value("${jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public String createAccessToken(String email, ResLoginDTO dto) {
+    public String createAccessToken(String email, ResLoginDTO dto, List<PageFlutter> pages) {
         ResLoginDTO.InsideToken userToken = new ResLoginDTO.InsideToken();
         userToken.setId(dto.getUser().getId());
         userToken.setName(dto.getUser().getName());
@@ -53,6 +53,17 @@ public class SecurityUtil {
         listAuthority.add("Customer");
         listAuthority.add("Application_Admin");
 
+        List<Map<String, String>> pageDetails = pages.stream()
+                .map(page -> {
+                    Map<String, String> pageMap = new HashMap<>();
+                    pageMap.put("name", page.getName());
+                    pageMap.put("route", page.getRoute());
+                    pageMap.put("icon", page.getIcon());
+                    return pageMap;
+                })
+                .collect(Collectors.toList());
+        // @formatter:off
+
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
@@ -60,6 +71,7 @@ public class SecurityUtil {
                 .subject(email)
                 .claim("user", userToken)
                 .claim("permission", listAuthority)
+                .claim("pages", pageDetails)
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

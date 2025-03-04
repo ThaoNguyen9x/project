@@ -1,6 +1,7 @@
 package com.building_mannager_system.service.property_manager;
 
 import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultFlutterDto;
 import com.building_mannager_system.entity.property_manager.ItemCheckResult;
 import com.building_mannager_system.enums.ResultStatus;
 import com.building_mannager_system.mapper.propertiMapper.ItemCheckResultMapper;
@@ -29,7 +30,7 @@ public class ItemCheckResultService {
     }
 
     // Lấy kết quả kiểm tra theo checkItemId với phân trang
-    public Page<CheckResultDto> getResultsByCheckItemId(Long checkItemId, int page, int size) {
+    public Page<CheckResultFlutterDto> getResultsByCheckItemId(Long checkItemId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("checkedAt").descending());
         Page<ItemCheckResult> resultsPage = itemCheckResultRepository.findByItemCheckId(checkItemId, pageable);
 
@@ -37,7 +38,7 @@ public class ItemCheckResultService {
         return resultsPage.map(itemCheckResultMapper::toDto);
     }
 
-    public Page<CheckResultDto> getResultsByCheckItemIdPaged(Long checkItemId, int page, int size) {
+    public Page<CheckResultFlutterDto> getResultsByCheckItemIdPaged(Long checkItemId, int page, int size) {
         Pageable pageable = PageRequest.of(page-1, size,Sort.by("checkedAt").descending());
 
         Page<ItemCheckResult> resultsPage = itemCheckResultRepository.findByItemCheckId(checkItemId, pageable);
@@ -46,13 +47,13 @@ public class ItemCheckResultService {
     }
 
     // Thêm mới kết quả kiểm tra
-    public CheckResultDto createResult(CheckResultDto resultDto) {
+    public CheckResultFlutterDto createResult(CheckResultFlutterDto resultDto) {
         ItemCheckResult result = itemCheckResultMapper.toEntity(resultDto); // Ánh xạ từ DTO sang Entity
         return  itemCheckResultMapper.toDto(itemCheckResultRepository.save(result));
     }
 
     // Cập nhật kết quả kiểm tra
-    public CheckResultDto updateResult(Long id, CheckResultDto updatedResultDto) {
+    public CheckResultFlutterDto updateResult(Long id, CheckResultFlutterDto updatedResultDto) {
         // Lấy kết quả kiểm tra hiện có
         ItemCheckResult existingResult = itemCheckResultRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Result not found with id: " + id));
@@ -73,7 +74,12 @@ public class ItemCheckResultService {
         itemCheckResultRepository.delete(result);
     }
 
-    public CheckResultDto getResultById(Long id) {
+    public CheckResultFlutterDto getResultById(Long checkResultId) {
+        ItemCheckResult itemCheckResult = itemCheckResultRepository.findById(checkResultId).orElse(null);
+        return itemCheckResultMapper.toDto(itemCheckResult);
+    }
+
+    public CheckResultDto getResult(Long id) {
         ItemCheckResult result = itemCheckResultRepository.findById(id)
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Result not found with ID: " + id));
         return modelMapper.map(result, CheckResultDto.class); // Map từ Entity sang DTO

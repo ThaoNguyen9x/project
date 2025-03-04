@@ -1,6 +1,6 @@
 package com.building_mannager_system.mapper.propertiMapper;
 
-import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckFlutterDto;
 import com.building_mannager_system.entity.property_manager.ItemCheck;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,12 +13,12 @@ public interface ItemCheckMapper {
 
     // Map từ DTO sang Entity
     @Mapping(target = "id", ignore = true) // Bỏ qua trường ID khi thêm mới
-    @Mapping(target = "device.deviceId",source = "device.deviceId")
+    @Mapping(target = "device.deviceId",source = "deviceId")
 
-    ItemCheck toEntity(ItemCheckDto dto);
+    ItemCheck toEntity(ItemCheckFlutterDto dto);
 
     // Map từ Entity sang DTO
-    @Mapping(source = "device.deviceId",target = "device.deviceId")
+    @Mapping(source = "device.deviceId",target = "deviceId")
 
-    ItemCheckDto toDto(ItemCheck entity);
+    ItemCheckFlutterDto toDto(ItemCheck entity);
 }

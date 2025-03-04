@@ -86,7 +86,7 @@ public class AuthController {
 
         // Create access token
         List<PageFlutter> pageFlutters = pageFlutterRepository.findPageFlutterByRoleIdOrderByRoute(currentUser.getRole().getId());
-        String accessToken = securityUtil.createAccessToken(authentication.getName(), res);
+        String accessToken = securityUtil.createAccessToken(authentication.getName(), res, pageFlutters);
         res.setAccessToken(accessToken);
 
         // Create refresh token
@@ -151,7 +151,7 @@ public class AuthController {
         }
 
         List<PageFlutter> pageFlutters = pageFlutterRepository.findPageFlutterByRoleIdOrderByRoute(currentUser.getRole().getId());
-        String accessToken = securityUtil.createAccessToken(email, res);
+        String accessToken = securityUtil.createAccessToken(email, res, pageFlutters);
         res.setAccessToken(accessToken);
 
         String newRefreshToken = securityUtil.createRefreshToken(email, res, pageFlutters);

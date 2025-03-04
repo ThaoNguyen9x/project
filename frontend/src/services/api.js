@@ -941,7 +941,7 @@ export const callCreateElectricityUsage = (
   comments
 ) => {
   return axios.post(
-    "/api/electricity-usages",
+    "/api/electricity-usages/create",
     {
       meter,
       endReading,
@@ -1477,7 +1477,7 @@ export const callGetAllItemChecks = (query) => {
 };
 
 export const callGetItemCheck = (id) => {
-  return axios.get(`/api/item-checks/${id}`);
+  return axios.get(`/api/item-checks/web/${id}`);
 };
 
 export const callGetAllItemChecksByDeviceId = (deviceId, query) => {
@@ -1527,7 +1527,7 @@ export const callGetAllResultChecks = (query) => {
 };
 
 export const callGetResultCheck = (id) => {
-  return axios.get(`/api/item_check_result/${id}`);
+  return axios.get(`/api/item_check_result/web/${id}`);
 };
 
 export const callGetAllResultsByCheckItemId = (itemCheckId, query) => {

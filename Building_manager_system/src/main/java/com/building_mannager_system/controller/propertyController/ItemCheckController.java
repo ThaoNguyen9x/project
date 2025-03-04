@@ -2,6 +2,7 @@ package com.building_mannager_system.controller.propertyController;
 
 
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckFlutterDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckWithResultsDto;
 import com.building_mannager_system.dto.responseDto.ApiResponce;
 import com.building_mannager_system.dto.responseDto.ResUserDTO;
@@ -32,19 +33,19 @@ public class ItemCheckController {
 
     // **1. Lấy danh sách ItemCheck theo deviceId**
     @GetMapping("/device/{deviceId}")
-    public ResponseEntity<Page<ItemCheckDto>> getItemChecksByDeviceId(
+    public ResponseEntity<Page<ItemCheckFlutterDto>> getItemChecksByDeviceId(
             @PathVariable Long deviceId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "2") int size) {
 
-        Page<ItemCheckDto> itemChecks = itemCheckService.getAllItemChecksByDeviceId(deviceId, page, size);
+        Page<ItemCheckFlutterDto> itemChecks = itemCheckService.getAllItemChecksByDeviceId(deviceId, page, size);
         return ResponseEntity.ok(itemChecks);
     }
 
     // **2. Lấy chi tiết ItemCheck theo ID**
-    @GetMapping("/{id}")
+    @GetMapping("/web/{id}")
     public ResponseEntity<ItemCheckDto> getItemCheck(@PathVariable(name = "id") Long id) {
-        return ResponseEntity.ok(itemCheckService.getItemCheckById(id));
+        return ResponseEntity.ok(itemCheckService.getItemCheck(id));
     }
 
     @GetMapping("/with-results/{deviceId}")
@@ -59,16 +60,16 @@ public class ItemCheckController {
     }
     // **3. Thêm mới ItemCheck**
     @PostMapping
-    public ResponseEntity<ApiResponce<ItemCheckDto>> createItemCheck(@RequestBody ItemCheckDto itemCheck) {
-        ItemCheckDto createdItemCheck = itemCheckService.createItemCheck(itemCheck);
-        ApiResponce<ItemCheckDto> responce = new ApiResponce(200,createdItemCheck,"success");
+    public ResponseEntity<ApiResponce<ItemCheckFlutterDto>> createItemCheck(@RequestBody ItemCheckFlutterDto itemCheck) {
+        ItemCheckFlutterDto createdItemCheck = itemCheckService.createItemCheck(itemCheck);
+        ApiResponce<ItemCheckFlutterDto> responce = new ApiResponce(200,createdItemCheck,"success");
 
         return ResponseEntity.ok(responce);
     }
 
     // **4. Cập nhật ItemCheck**
     @PutMapping("/{id}")
-    public ResponseEntity<ItemCheck> updateItemCheck(@PathVariable Long id, @RequestBody ItemCheckDto updatedItemCheck) {
+    public ResponseEntity<ItemCheck> updateItemCheck(@PathVariable Long id, @RequestBody ItemCheckFlutterDto updatedItemCheck) {
         ItemCheck itemCheck = itemCheckService.updateItemCheck(id, updatedItemCheck);
         return ResponseEntity.ok(itemCheck);
     }
@@ -78,6 +79,13 @@ public class ItemCheckController {
     public ResponseEntity<Void> deleteItemCheck(@PathVariable Long id) {
         itemCheckService.deleteItemCheck(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponce<ItemCheckFlutterDto>> getItemCheckById(@PathVariable Long id) {
+        ItemCheckFlutterDto itemCheck = itemCheckService.getItemCheckById(id);
+        ApiResponce<ItemCheckFlutterDto> responce = new ApiResponce(200,itemCheck,"success");
+        return ResponseEntity.ok(responce);
     }
 
 }

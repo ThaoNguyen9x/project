@@ -1,18 +1,19 @@
 package com.building_mannager_system.service.property_manager;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
-import com.building_mannager_system.dto.requestDto.propertyDto.DeviceDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.*;
+import com.building_mannager_system.dto.responseDto.DeviceResponceDto;
 import com.building_mannager_system.entity.customer_service.officeSpaceAllcation.Location;
-import com.building_mannager_system.entity.property_manager.Device;
-import com.building_mannager_system.entity.property_manager.DeviceType;
-import com.building_mannager_system.entity.property_manager.SystemMaintenanceService;
-import com.building_mannager_system.entity.property_manager.Systems;
+import com.building_mannager_system.entity.property_manager.*;
 import com.building_mannager_system.repository.office.LocationRepository;
 import com.building_mannager_system.repository.system_manager.DeviceRepository;
 import com.building_mannager_system.repository.system_manager.DeviceTypeRepository;
 import com.building_mannager_system.repository.system_manager.SystemMaintenanceServiceRepository;
 import com.building_mannager_system.repository.system_manager.SystemsRepository;
+import com.building_mannager_system.service.system_service.RiskAssessmentService;
 import com.building_mannager_system.utils.exception.APIException;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,19 +33,23 @@ public class DeviceService {
     private final LocationRepository locationRepository;
     private final DeviceTypeRepository deviceTypeRepository;
     private final SystemMaintenanceServiceRepository systemMaintenanceServiceRepository;
+    private final MaintenanceHistoryService maintenanceHistoryService;
+    private final RiskAssessmentService riskAssessmentService;
 
     public DeviceService(DeviceRepository deviceRepository,
                          ModelMapper modelMapper,
                          SystemsRepository systemsRepository,
                          LocationRepository locationRepository,
                          DeviceTypeRepository deviceTypeRepository,
-                         SystemMaintenanceServiceRepository systemMaintenanceServiceRepository) {
+                         SystemMaintenanceServiceRepository systemMaintenanceServiceRepository, MaintenanceHistoryService maintenanceHistoryService, RiskAssessmentService riskAssessmentService) {
         this.deviceRepository = deviceRepository;
         this.modelMapper = modelMapper;
         this.systemsRepository = systemsRepository;
         this.locationRepository = locationRepository;
         this.deviceTypeRepository = deviceTypeRepository;
         this.systemMaintenanceServiceRepository = systemMaintenanceServiceRepository;
+        this.maintenanceHistoryService = maintenanceHistoryService;
+        this.riskAssessmentService = riskAssessmentService;
     }
 
     public ResultPaginationDTO getAllDevices(Specification<Device> spec,
@@ -162,5 +168,68 @@ public class DeviceService {
                 .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Device not found with ID: " + id));
 
         deviceRepository.delete(ex);
+    }
+
+    //luongth thêm đánh g và maintenance_hítory
+    @Transactional
+    public DeviceDto addRiskAssessmentAndMaintenanceHistoryToDevice(Long deviceId,
+                                                                    RissAssementRequesFlutterDto riskAssessmentFlutterDto,
+                                                                    MaintenanceRepuestFlutterDto maintenanceHistoryFlutterDto) {
+
+        // ✅ Bước 1: Validate tham số đầu vào
+        System.out.println(deviceId);
+        System.out.println(riskAssessmentFlutterDto);
+        System.out.println(maintenanceHistoryFlutterDto);
+
+        if (deviceId == null) {
+            throw new IllegalArgumentException("Device ID không được null");
+        }
+        if (maintenanceHistoryFlutterDto == null) {
+            throw new IllegalArgumentException("MaintenanceHistory không được null");
+        }
+        if (riskAssessmentFlutterDto == null) {
+            throw new IllegalArgumentException("RiskAssessment không được null");
+        }
+
+        // ✅ Bước 2: Tìm Device theo ID
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new RuntimeException("Device không tìm thấy với ID: " + deviceId));
+
+        // ✅ Bước 3: Ánh xạ DTO -> Entity và lưu MaintenanceHistory
+        System.out.println(device);
+        MaintenanceHistory maintenanceHistory = modelMapper.map(maintenanceHistoryFlutterDto, MaintenanceHistory.class);
+        System.out.println(maintenanceHistory.getId());
+
+        maintenanceHistory.setPerformedDate(LocalDate.now());
+        MaintenanceHistoryDto savedMaintenanceHistory = maintenanceHistoryService.createMaintenanceHistory(maintenanceHistory);
+
+        if (savedMaintenanceHistory == null || savedMaintenanceHistory.getId() == null) {
+            throw new RuntimeException("Không thể lưu MaintenanceHistory");
+        }
+
+        // ✅ Bước 4: Cập nhật ID của MaintenanceHistory vào RiskAssessment DTO
+        riskAssessmentFlutterDto.setMaintenanceID(savedMaintenanceHistory.getId().intValue());
+
+        // ✅ Bước 5: Ánh xạ DTO -> Entity và lưu RiskAssessment
+        RiskAssessment riskAssessment = modelMapper.map(riskAssessmentFlutterDto, RiskAssessment.class);
+        riskAssessment.setDevice(device);
+        riskAssessment.setAssessmentDate(LocalDate.now());
+        riskAssessment.setMaintenanceHistory(maintenanceHistory);
+
+        RiskAssessmentDto savedRiskAssessment = riskAssessmentService.createRiskAssessment(riskAssessment);
+
+        if (savedRiskAssessment == null || savedRiskAssessment.getRiskAssessmentID() == null) {
+            throw new RuntimeException("Không thể lưu RiskAssessment");
+        }
+
+        // ✅ Bước 6: Chuyển Device sang DTO và trả về
+        return modelMapper.map(device, DeviceDto.class);
+    }
+
+    // device responce bu flutter
+    public DeviceResponceDto getDeviceResponce(Long id) {
+        Device device = deviceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Device not found with id: " + id));
+        return modelMapper.map(device, DeviceResponceDto.class);
     }
 }

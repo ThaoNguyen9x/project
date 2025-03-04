@@ -16,12 +16,12 @@ public class ItemCheckWithResultsDto {
     private String checkCategory;
     private String standard;
     private String frequency;
-    private List<CheckResultDto> results;
+    private List<CheckResultFlutterDto> results;
     private int totalPages;
     private long totalElements;
 
     public ItemCheckWithResultsDto(Long id, String checkName, String checkCategory, String standard, String frequency,
-                                   List<CheckResultDto> results, int totalPages, long totalElements) {
+                                   List<CheckResultFlutterDto> results, int totalPages, long totalElements) {
         this.id = id;
         this.checkName = checkName;
         this.checkCategory = checkCategory;

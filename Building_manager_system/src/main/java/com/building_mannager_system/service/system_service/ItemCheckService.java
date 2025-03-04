@@ -1,7 +1,10 @@
 package com.building_mannager_system.service.system_service;
 
+import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultFlutterDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckFlutterDto;
 import com.building_mannager_system.entity.property_manager.ItemCheck;
+import com.building_mannager_system.entity.property_manager.ItemCheckResult;
 import com.building_mannager_system.mapper.propertiMapper.ItemCheckMapper;
 import com.building_mannager_system.repository.system_manager.CheckResultRepository;
 import com.building_mannager_system.repository.system_manager.ItemCheckRepository;
@@ -33,7 +36,7 @@ public class ItemCheckService {
     }
 
     // Lấy tất cả các mục kiểm tra theo deviceId
-    public Page<ItemCheckDto> getAllItemChecksByDeviceId(Long deviceId, int page, int size) {
+    public Page<ItemCheckFlutterDto> getAllItemChecksByDeviceId(Long deviceId, int page, int size) {
         Pageable pageable = PageRequest.of(page-1, size);
         Page<ItemCheck> itemCheckPage = itemCheckRepository.findAllByDevice_DeviceId(deviceId, pageable);
 
@@ -42,22 +45,15 @@ public class ItemCheckService {
     }
 
     // Thêm mới một mục kiểm tra
-    public ItemCheckDto createItemCheck(ItemCheckDto itemCheckDto) {
+    public ItemCheckFlutterDto createItemCheck(ItemCheckFlutterDto itemCheckDto) {
         // Map từ DTO sang Entity
         ItemCheck itemCheck = itemCheckMapper.toEntity(itemCheckDto);
 
         return itemCheckMapper.toDto(itemCheckRepository.save(itemCheck));
     }
 
-    // Lấy chi tiết một mục kiểm tra theo ID
-    public ItemCheckDto getItemCheckById(Long id) {
-        ItemCheck itemCheck = itemCheckRepository.findById(id)
-                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "ItemCheck not found with ID: " + id));
-        return modelMapper.map(itemCheck, ItemCheckDto.class); // Map từ Entity sang DTO
-    }
-
     // Cập nhật mục kiểm tra
-    public ItemCheck updateItemCheck(Long id, ItemCheckDto updatedItemCheckDto) {
+    public ItemCheck updateItemCheck(Long id, ItemCheckFlutterDto updatedItemCheckDto) {
         // Lấy mục kiểm tra hiện có từ database
         ItemCheck existingItemCheck = itemCheckRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ItemCheck not found with id: " + id));
@@ -86,6 +82,18 @@ public class ItemCheckService {
 
         // Xóa mục kiểm tra sau khi xóa hết kết quả liên quan
         itemCheckRepository.delete(itemCheck);
+    }
+
+    public ItemCheckDto getItemCheck(Long id) {
+        ItemCheck itemCheck = itemCheckRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "ItemCheck not found with ID: " + id));
+        return modelMapper.map(itemCheck, ItemCheckDto.class); // Map từ Entity sang DTO
+    }
+
+    public ItemCheckFlutterDto getItemCheckById(Long id) {
+        ItemCheck itemCheck = itemCheckRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ItemCheck not found with id: " + id));
+        return itemCheckMapper.toDto(itemCheck); // Map từ Entity sang DTO
     }
 
 }
