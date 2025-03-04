@@ -14,7 +14,6 @@ const ChatSidebar = ({
   selectChatRoomUser,
   handleCreateRoomPrivate,
   handleCreateGroup,
-  handleDeleteRoomChat,
   isSidebarVisible,
 }) => {
   const [filter, setFilter] = useState("all");

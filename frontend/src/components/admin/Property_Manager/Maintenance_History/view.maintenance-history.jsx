@@ -140,7 +140,7 @@ const ViewMaintenanceHistory = (props) => {
                     }
                   }}
                 >
-                  {x?.assessmentDate}
+                  {x?.assessmentDate} <br />
                 </a>
               ))
             ) : (

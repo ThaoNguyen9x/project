@@ -55,7 +55,7 @@ const ChatInfo = ({
   const items = [
     {
       key: "1",
-      label: "Ảnh/Video",
+      label: "Ảnh",
       children: (
         <>
           {mergedList.filter((image) => {

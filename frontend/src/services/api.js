@@ -758,7 +758,6 @@ export const callGetMaintenanceHistory = (id) => {
 export const callCreateMaintenanceHistory = (
   maintenanceService,
   notes,
-  technician,
   findings,
   resolution,
   phone
@@ -766,7 +765,6 @@ export const callCreateMaintenanceHistory = (
   return axios.post("/api/maintenance-histories", {
     maintenanceService,
     notes,
-    technician,
     findings,
     resolution,
     phone,
@@ -778,7 +776,6 @@ export const callUpdateMaintenanceHistory = (
   maintenanceService,
   performedDate,
   notes,
-  technician,
   findings,
   resolution,
   phone
@@ -787,7 +784,6 @@ export const callUpdateMaintenanceHistory = (
     maintenanceService,
     performedDate,
     notes,
-    technician,
     findings,
     resolution,
     phone,
@@ -981,17 +977,11 @@ export const callUpdateElectricityUsage = (
   );
 };
 
-export const callChangeElectricityUsage = (
-  id,
-  status,
-) => {
-  return axios.put(
-    `/api/electricity-usages/change/${id}`,
-    {
-      id,
-      status
-    },
-  );
+export const callChangeElectricityUsage = (id, status) => {
+  return axios.put(`/api/electricity-usages/change/${id}`, {
+    id,
+    status,
+  });
 };
 
 export const callDeleteElectricityUsage = (id) => {

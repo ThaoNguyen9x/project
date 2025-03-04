@@ -51,6 +51,12 @@ public class MaintenanceHistoryDto {
     public static class RiskAssessmentDto {
         private Integer riskAssessmentID;
         private LocalDate assessmentDate;
+        private Integer riskProbability;
+        private Integer riskImpact;
+        private Integer riskDetection;
+        private Integer riskPriorityNumber;
+        private String mitigationAction;
+        private String remarks;
         private SubcontractorDto contractor;
         private String systemType;
         private DeviceDto device;

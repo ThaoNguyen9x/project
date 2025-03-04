@@ -317,7 +317,7 @@ const ViewRepairProposal = (props) => {
                     }
                   }}
                 >
-                  {x?.assessmentDate}
+                  {x?.assessmentDate} <br />
                 </a>
               ))
             ) : (

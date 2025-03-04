@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Button, Descriptions, Drawer, QRCode, Rate, Space, Steps } from "antd";
+import { Button, Descriptions, Drawer, Rate, Space, Steps } from "antd";
 import {
   FORMAT_DATE_DISPLAY,
   FORMAT_DATE_TIME_DISPLAY,
@@ -11,7 +11,6 @@ import {
   callGetCustomerType,
   callGetDevice,
   callGetDeviceType,
-  callGetHandoverStatus,
   callGetMaintenanceHistory,
   callGetMeter,
   callGetOffice,
@@ -24,6 +23,8 @@ import {
 import { useState } from "react";
 import Access from "../../share/Access";
 import { ALL_PERMISSIONS } from "../Access_Control/Permission/data/permissions";
+import { GoPlus } from "react-icons/go";
+import { CiEdit } from "react-icons/ci";
 
 const ViewOffice = (props) => {
   const {
@@ -34,6 +35,8 @@ const ViewOffice = (props) => {
     setOpenViewDetail,
     setOpenModal,
     setOpenModalDevice,
+    setOpenModalMaintenanceHistory,
+    setOpenModalQuotation,
   } = props;
   const [historyStack, setHistoryStack] = useState([]);
 
@@ -91,11 +94,6 @@ const ViewOffice = (props) => {
   const generateItems = () => {
     if (data?.deviceId) {
       return [
-        {
-          label: "QRCode",
-          children: <QRCode value={data?.deviceId} /> || "N/A",
-          span: 2,
-        },
         {
           label: "Tên thiết bị",
           children: data?.deviceName || "N/A",
@@ -177,19 +175,43 @@ const ViewOffice = (props) => {
           children:
             data?.riskAssessments?.length > 0 ? (
               data?.riskAssessments?.map((x) => (
-                <a
+                <div
                   key={x?.riskAssessmentID}
-                  onClick={async () => {
-                    const res = await callGetRiskAssessment(
-                      x?.riskAssessmentID
-                    );
-                    if (res?.data) {
-                      handleViewDetail(res?.data);
-                    }
-                  }}
+                  className="flex items-center gap-2 my-1"
                 >
-                  {x?.assessmentDate}
-                </a>
+                  <a
+                    onClick={async () => {
+                      const res = await callGetRiskAssessment(
+                        x?.riskAssessmentID
+                      );
+                      if (res?.data) {
+                        handleViewDetail(res?.data);
+                      }
+                    }}
+                  >
+                    {x?.assessmentDate}
+                  </a>
+                  <Access
+                    permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.CREATE}
+                    hideChildren
+                  >
+                    {isDevice && (
+                      <Button
+                        onClick={() => {
+                          setOpenViewDetail(false);
+                          setData({ riskAssessmentID: x?.riskAssessmentID });
+                          setOpenModalQuotation(true);
+                        }}
+                        className="p-2 xl:p-3 gap-1 xl:gap-2"
+                      >
+                        <GoPlus className="h-4 w-4" />
+                        <p className="hidden lg:block">
+                          Tạo báo giá & đề xuất bảo trì
+                        </p>
+                      </Button>
+                    )}
+                  </Access>
+                </div>
               ))
             ) : (
               <span>Chưa có đánh giá</span>
@@ -817,11 +839,6 @@ const ViewOffice = (props) => {
     } else {
       return [
         {
-          label: "QRCode",
-          children: <QRCode value={data?.id} /> || "N/A",
-          span: 2,
-        },
-        {
           label: "Serial Number",
           children: data?.serialNumber || "N/A",
           span: 2,
@@ -942,7 +959,8 @@ const ViewOffice = (props) => {
                   }
                 }}
               >
-                Chỉnh sửa
+                <CiEdit className="h-4 w-4" />
+                <p className="hidden lg:block">Chỉnh sửa</p>
               </Button>
             )}
           </Access>
@@ -960,7 +978,29 @@ const ViewOffice = (props) => {
                   }
                 }}
               >
-                Chỉnh sửa
+                <CiEdit className="h-4 w-4" />
+                <p className="hidden lg:block">Chỉnh sửa</p>
+              </Button>
+            )}
+          </Access>
+
+          <Access
+            permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.CREATE}
+            hideChildren
+          >
+            {isDevice && (
+              <Button
+                onClick={() => {
+                  setOpenViewDetail(false);
+                  setData({ deviceId: data?.deviceId });
+                  setOpenModalMaintenanceHistory(true);
+                }}
+                className="p-2 xl:p-3 gap-1 xl:gap-2"
+              >
+                <GoPlus className="h-4 w-4" />
+                <p className="hidden lg:block">
+                  Tạo lịch sử bảo trì và đánh giá rủi ro
+                </p>
               </Button>
             )}
           </Access>

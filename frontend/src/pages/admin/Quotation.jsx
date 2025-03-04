@@ -31,6 +31,7 @@ import PDFViewer from "../../components/share/PDFViewer";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 import HighlightText from "../../components/share/HighlightText";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Quotation = () => {
   const { user } = useContext(AuthContext);
@@ -47,7 +48,7 @@ const Quotation = () => {
   const searchInput = useRef(null);
 
   const [openViewDetail, setOpenViewDetail] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
+  const [openModalQuotation, setOpenModalQuotation] = useState(false);
   const [data, setData] = useState(null);
 
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -317,7 +318,7 @@ const Quotation = () => {
                 const res = await callGetQuotation(record?.id);
                 if (res?.data) {
                   setData(res?.data);
-                  setOpenModal(true);
+                  setOpenModalQuotation(true);
                 }
               }}
               className="cursor-pointer text-amber-900"
@@ -416,6 +417,27 @@ const Quotation = () => {
     }
   };
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get("id");
+
+    if (id) {
+      const fetchRequest = async () => {
+        const res = await callGetRepairProposal(id);
+        if (res?.data) {
+          setData(res?.data);
+          setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
+        }
+      };
+      fetchRequest();
+    }
+  }, [location.search, navigate]);
+
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
       <div className="mb-5 flex items-center justify-between">
@@ -424,7 +446,7 @@ const Quotation = () => {
         </h2>
         <Access permission={ALL_PERMISSIONS.QUOTATIONS.CREATE} hideChildren>
           <Button
-            onClick={() => setOpenModal(true)}
+            onClick={() => setOpenModalQuotation(true)}
             className="p-2 xl:p-3 gap-1 xl:gap-2"
           >
             <GoPlus className="h-4 w-4" />
@@ -460,8 +482,8 @@ const Quotation = () => {
         <ModalQuotation
           data={data}
           setData={setData}
-          openModal={openModal}
-          setOpenModal={setOpenModal}
+          openModalQuotation={openModalQuotation}
+          setOpenModalQuotation={setOpenModalQuotation}
           fetchData={fetchData}
           listRiskAssessments={listRiskAssessments}
         />

@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
-import { Button, Descriptions, Drawer, QRCode, Rate, Space } from "antd";
-import { FORMAT_DATE_DISPLAY, FORMAT_DATE_TIME_DISPLAY } from "../../../../utils/constant";
+import { Button, Descriptions, Drawer, Rate, Space } from "antd";
+import {
+  FORMAT_DATE_DISPLAY,
+  FORMAT_DATE_TIME_DISPLAY,
+} from "../../../../utils/constant";
 import { useState } from "react";
 import {
   callGetCustomer,
@@ -40,11 +43,6 @@ const ViewDevice = (props) => {
   const generateItems = () => {
     if (data?.deviceId) {
       return [
-        {
-          label: "QRCode",
-          children: <QRCode value={data?.deviceId} /> || "N/A",
-          span: 2,
-        },
         {
           label: "Tên thiết bị",
           children: data?.deviceName || "N/A",
@@ -137,7 +135,7 @@ const ViewDevice = (props) => {
                     }
                   }}
                 >
-                  {x?.assessmentDate}
+                  {x?.assessmentDate} <br />
                 </a>
               ))
             ) : (

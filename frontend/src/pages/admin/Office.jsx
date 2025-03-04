@@ -1,9 +1,11 @@
-import React, { useRef, useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   callGetAllCustomerTypeDocuments,
   callGetAllCustomerTypes,
+  callGetAllDevices,
   callGetAllDeviceTypes,
   callGetAllLocations,
+  callGetAllRiskAssessments,
   callGetAllSystemMaintenanceServices,
   callGetAllSystems,
   callGetDevice,
@@ -39,6 +41,8 @@ import { GoPlus } from "react-icons/go";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
 import ModalOffice from "../../components/admin/Office/modal.office";
 import ModalDevice from "../../components/admin/Property_Manager/Device/modal.device";
+import ModalMaintenanceHistory from "../../components/admin/Property_Manager/Maintenance_History/modal.maintenance-history";
+import ModalQuotation from "../../components/admin/System_Service/Quotation/modal.quotation";
 
 const Office = () => {
   const [scaleFactor, setScaleFactor] = useState(10);
@@ -52,6 +56,9 @@ const Office = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openModalDevice, setOpenModalDevice] = useState(false);
+  const [openModalMaintenanceHistory, setOpenModalMaintenanceHistory] =
+    useState(false);
+  const [openModalQuotation, setOpenModalQuotation] = useState(false);
   const [data, setData] = useState(null);
   const [listCustomerTypes, setListCustomerTypes] = useState([]);
   const [listLocations, setListLocations] = useState([]);
@@ -62,42 +69,73 @@ const Office = () => {
   const [listDeviceTypes, setListDeviceTypes] = useState([]);
   const [listSystemMaintenanceServices, setListSystemMaintenanceServices] =
     useState([]);
+  const [listDevices, setListDevices] = useState([]);
+  const [listRiskAssessments, setListRiskAssessments] = useState([]);
+
+  const fetchAllPages = async (apiCall, pageSize) => {
+    let page = 1;
+    let allResults = [];
+    let hasMore = true;
+
+    while (hasMore) {
+      const query = `page=${page}&size=${pageSize}`;
+      const response = await apiCall(query);
+      const result = response?.data?.result || [];
+      allResults = [...allResults, ...result];
+
+      if (result.length < pageSize) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+    return allResults;
+  };
 
   useEffect(() => {
     const init = async () => {
-      const customerTypes = await callGetAllCustomerTypes();
-      if (customerTypes && customerTypes.data) {
-        setListCustomerTypes(customerTypes.data?.result);
-      }
+      setIsLoading(true);
+      const pageSize = 20;
 
-      const locations = await callGetAllLocations();
-      if (locations && locations.data) {
-        setListLocations(locations.data?.result);
-      }
+      const customerTypes = await fetchAllPages(
+        callGetAllCustomerTypes,
+        pageSize
+      );
+      setListCustomerTypes(customerTypes);
 
-      const customerTypeDocuments = await callGetAllCustomerTypeDocuments();
-      if (customerTypeDocuments && customerTypeDocuments.data) {
-        setListCustomerTypeDocuments(customerTypeDocuments.data?.result);
-      }
+      const locations = await fetchAllPages(callGetAllLocations, pageSize);
+      setListLocations(locations);
 
-      const systems = await callGetAllSystems();
-      if (systems && systems.data) {
-        setListSystems(systems.data?.result);
-      }
+      const customerTypeDocuments = await fetchAllPages(
+        callGetAllCustomerTypeDocuments,
+        pageSize
+      );
+      setListCustomerTypeDocuments(customerTypeDocuments);
 
-      const deviceTypes = await callGetAllDeviceTypes();
-      if (deviceTypes && deviceTypes.data) {
-        setListDeviceTypes(deviceTypes.data?.result);
-      }
+      const systems = await fetchAllPages(callGetAllSystems, pageSize);
+      setListSystems(systems);
 
-      const systemMaintenanceServices =
-        await callGetAllSystemMaintenanceServices();
-      if (systemMaintenanceServices && systemMaintenanceServices.data) {
-        setListSystemMaintenanceServices(
-          systemMaintenanceServices.data?.result
-        );
-      }
+      const deviceTypes = await fetchAllPages(callGetAllDeviceTypes, pageSize);
+      setListDeviceTypes(deviceTypes);
+
+      const systemMaintenanceServices = await fetchAllPages(
+        callGetAllSystemMaintenanceServices,
+        pageSize
+      );
+      setListSystemMaintenanceServices(systemMaintenanceServices);
+
+      const devices = await fetchAllPages(callGetAllDevices, pageSize);
+      setListDevices(devices);
+
+      const riskAssessments = await fetchAllPages(
+        callGetAllRiskAssessments,
+        pageSize
+      );
+      setListRiskAssessments(riskAssessments);
+
+      setIsLoading(false);
     };
+
     init();
   }, []);
 
@@ -479,6 +517,8 @@ const Office = () => {
           setOpenViewDetail={setOpenViewDetail}
           setOpenModal={setOpenModal}
           setOpenModalDevice={setOpenModalDevice}
+          setOpenModalMaintenanceHistory={setOpenModalMaintenanceHistory}
+          setOpenModalQuotation={setOpenModalQuotation}
         />
 
         <ModalOffice
@@ -502,6 +542,25 @@ const Office = () => {
           listSystems={listSystems}
           listDeviceTypes={listDeviceTypes}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
+        />
+
+        <ModalMaintenanceHistory
+          data={data}
+          setData={setData}
+          openModalMaintenanceHistory={openModalMaintenanceHistory}
+          setOpenModalMaintenanceHistory={setOpenModalMaintenanceHistory}
+          fetchData={fetchData}
+          listSystemMaintenanceServices={listSystemMaintenanceServices}
+          listDevices={listDevices}
+        />
+
+        <ModalQuotation
+          data={data}
+          setData={setData}
+          openModalQuotation={openModalQuotation}
+          setOpenModalQuotation={setOpenModalQuotation}
+          fetchData={fetchData}
+          listRiskAssessments={listRiskAssessments}
         />
       </div>
     </div>

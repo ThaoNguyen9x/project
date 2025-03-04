@@ -135,7 +135,7 @@ const ViewElectricityUsage = (props) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {data?.imageName}
+                Xem
               </a>
             ) || "N/A",
           span: 2,

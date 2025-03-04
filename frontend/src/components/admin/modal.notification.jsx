@@ -246,14 +246,15 @@ const ModalNotification = (props) => {
       </div>
     ) : (
       <div className="flex flex-col gap-2">
-        <p>{message?.title}</p>
-
-        <p>{message?.description}</p>
+        <p>
+          Bộ phận Kỹ thuật đã hoàn thành đánh giá rủi ro và đề xuất phương án
+          bảo trì vào ngày <b>{message?.requestDate}</b>.
+        </p>
 
         {notificationDetails?.recipient?.type ===
         "Repair_Proposal_Notification" ? (
           <Link
-            to={`/dashboard/repair-proposals?openViewDetail=true&id=${message?.id}`}
+            to={`/dashboard/quotations-repair-proposals?openViewDetail=true&id=${message?.id}`}
             onClick={() => setOpenNotification(false)}
           >
             Kiểm tra thông tin chi tiết trong hệ thống.

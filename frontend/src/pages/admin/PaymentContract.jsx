@@ -19,7 +19,6 @@ import {
   callDeletePaymentContract,
   callGetAllPaymentContracts,
   callGetAllContracts,
-  callSendPaymentRequest,
   callPaymentStripe,
   callPaymentStatus,
   callGetPaymentContract,

@@ -230,7 +230,7 @@ const ViewLocation = (props) => {
                     }
                   }}
                 >
-                  {x?.assessmentDate}
+                  {x?.assessmentDate} <br />
                 </a>
               ))
             ) : (

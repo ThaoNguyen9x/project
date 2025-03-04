@@ -1,35 +1,75 @@
 import CardItem from "./CardItem";
-import { PieChartOutlined } from "@ant-design/icons";
+import { LuUsers } from "react-icons/lu";
+import { TbUserHeart } from "react-icons/tb";
+import { PiBuildingOffice } from "react-icons/pi";
+import { FaUserTie } from "react-icons/fa6";
+import { useEffect, useState } from "react";
+import {
+  callGetAllCustomers,
+  callGetAllOffices,
+  callGetAllUsers,
+  callGetSubcontract,
+} from "../../../services/api";
 
 const Card = () => {
+  const [listUsers, setListUsers] = useState([]);
+  const [listCustomers, setListCustomers] = useState([]);
+  const [listOffices, setListOffices] = useState([]);
+  const [listSubContracts, setListSubContracts] = useState([]);
+
+  useEffect(() => {
+    const init = async () => {
+      const users = await callGetAllUsers();
+      if (users && users?.data) {
+        setListUsers(users?.data?.meta);
+      }
+
+      const customers = await callGetAllCustomers();
+      if (customers && customers?.data) {
+        setListCustomers(customers?.data?.meta);
+      }
+
+      const offices = await callGetAllOffices();
+      if (offices && offices?.data) {
+        setListOffices(offices?.data?.meta);
+      }
+
+      const subContracts = await callGetSubcontract();
+      if (subContracts && subContracts?.data) {
+        setListSubContracts(subContracts?.data?.meta);
+      }
+    };
+    init();
+  }, []);
+
   const cardItems = [
     {
       icon: (
-        <PieChartOutlined className="rounded-full bg-red-700 p-2 text-4xl text-white" />
+        <LuUsers className="rounded-full bg-red-700 p-2 text-5xl text-white" />
       ),
-      title: "Total Earning",
-      value: "$2200",
+      title: "Tài khoản",
+      value: listUsers?.total || 0,
     },
     {
       icon: (
-        <PieChartOutlined className="rounded-full bg-red-700 p-2 text-4xl text-white" />
+        <TbUserHeart className="rounded-full bg-red-700 p-2 text-5xl text-white" />
       ),
-      title: "Total Sales",
-      value: "$1500",
+      title: "Khách hàng",
+      value: listCustomers?.total || 0,
     },
     {
       icon: (
-        <PieChartOutlined className="rounded-full bg-red-700 p-2 text-4xl text-white" />
+        <PiBuildingOffice className="rounded-full bg-red-700 p-2 text-5xl text-white" />
       ),
-      title: "New Clients",
-      value: "120",
+      title: "Văn phòng",
+      value: listOffices?.total || 0,
     },
     {
       icon: (
-        <PieChartOutlined className="rounded-full bg-red-700 p-2 text-4xl text-white" />
+        <FaUserTie className="rounded-full bg-red-700 p-2 text-5xl text-white" />
       ),
-      title: "Total Orders",
-      value: "320",
+      title: "Nhà thầu phụ",
+      value: listSubContracts?.total || 0,
     },
   ];
 

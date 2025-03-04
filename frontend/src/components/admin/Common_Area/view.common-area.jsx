@@ -230,7 +230,7 @@ const ViewCommonArea = (props) => {
                     }
                   }}
                 >
-                  {x?.assessmentDate}
+                  {x?.assessmentDate} <br />
                 </a>
               ))
             ) : (

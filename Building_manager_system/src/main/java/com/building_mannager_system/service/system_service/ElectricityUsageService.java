@@ -106,11 +106,11 @@ public class ElectricityUsageService {
         String email = SecurityUtil.getCurrentUserLogin().orElse("");
 
         User user = userRepository.findByEmail(email);
-        if (user == null) throw new APIException(HttpStatus.NOT_FOUND, "User not found");
+        if (user == null) return null;
 
         if (user.getRole().getName().equals("Customer")) {
             Customer customer = user.getCustomer();
-            if (customer == null) throw new APIException(HttpStatus.NOT_FOUND, "Customer not found");
+            if (customer == null) return null;
 
             Contract contract = customer.getContracts().stream()
                     .findFirst()

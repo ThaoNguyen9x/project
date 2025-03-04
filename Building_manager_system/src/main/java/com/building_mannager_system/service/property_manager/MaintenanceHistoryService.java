@@ -8,6 +8,7 @@ import com.building_mannager_system.entity.property_manager.SystemMaintenanceSer
 import com.building_mannager_system.repository.UserRepository;
 import com.building_mannager_system.repository.system_manager.MaintenanceHistoryRepository;
 import com.building_mannager_system.repository.system_manager.SystemMaintenanceServiceRepository;
+import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.utils.exception.APIException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -73,11 +74,9 @@ public class MaintenanceHistoryService {
         }
 
         // Check Technician
-        if (maintenanceHistory.getTechnician() != null) {
-            User user = userRepository.findById(maintenanceHistory.getTechnician().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Technician not found with ID: " + maintenanceHistory.getTechnician().getId()));
-            maintenanceHistory.setTechnician(user);
-        }
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+        User account = userRepository.findByEmail(email);
+        maintenanceHistory.setTechnician(account);
 
         return modelMapper.map(maintenanceHistoryRepository.save(maintenanceHistory), MaintenanceHistoryDto.class);
     }
@@ -100,17 +99,9 @@ public class MaintenanceHistoryService {
             maintenanceHistory.setMaintenanceService(systemMaintenanceService);
         }
 
-        // Check Technician
-        if (maintenanceHistory.getTechnician() != null) {
-            User user = userRepository.findById(maintenanceHistory.getTechnician().getId())
-                    .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Technician not found with ID: " + maintenanceHistory.getTechnician().getId()));
-            maintenanceHistory.setTechnician(user);
-        }
-
         ex.setMaintenanceService(maintenanceHistory.getMaintenanceService());
         ex.setPerformedDate(maintenanceHistory.getPerformedDate());
         ex.setNotes(maintenanceHistory.getNotes());
-        ex.setTechnician(maintenanceHistory.getTechnician());
         ex.setFindings(maintenanceHistory.getFindings());
         ex.setResolution(maintenanceHistory.getResolution());
         ex.setPhone(maintenanceHistory.getPhone());

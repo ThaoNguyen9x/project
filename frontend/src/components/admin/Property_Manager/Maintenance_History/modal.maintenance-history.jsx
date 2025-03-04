@@ -27,12 +27,10 @@ const ModalMaintenanceHistory = (props) => {
   const {
     data,
     setData,
-    openModal,
-    setOpenModal,
+    openModalMaintenanceHistory,
+    setOpenModalMaintenanceHistory,
     fetchData,
     listSystemMaintenanceServices,
-    listUsers,
-    listSubcontractors,
     listDevices,
   } = props;
 
@@ -45,7 +43,6 @@ const ModalMaintenanceHistory = (props) => {
       const init = {
         ...data,
         maintenanceService: data?.maintenanceService?.id || null,
-        technician: data?.technician?.id || null,
         performedDate: data?.performedDate ? dayjs(data.performedDate) : null,
 
         status: riskAssessment?.status || null,
@@ -83,7 +80,6 @@ const ModalMaintenanceHistory = (props) => {
             ? dayjs(values.performedDate).startOf("day").format("YYYY-MM-DD")
             : null,
           values.notes,
-          { id: values.technician },
           values.findings,
           values.resolution,
           values.phone
@@ -122,7 +118,6 @@ const ModalMaintenanceHistory = (props) => {
         resMaintenanceHistory = await callCreateMaintenanceHistory(
           { id: values.maintenanceService },
           values.notes,
-          { id: values.technician },
           values.findings,
           values.resolution,
           values.phone
@@ -168,10 +163,22 @@ const ModalMaintenanceHistory = (props) => {
   };
 
   const handleReset = () => {
-    setOpenModal(false);
+    setOpenModalMaintenanceHistory(false);
     setData(null);
     form.resetFields();
   };
+
+  useEffect(() => {
+    if (data?.deviceId) {
+      const selectedDevice = listDevices.find(
+        (device) => device.deviceId === data.deviceId
+      );
+
+      form.setFieldsValue({
+        device: selectedDevice ? selectedDevice.deviceId : null,
+      });
+    }
+  }, [data, listDevices]);
 
   return (
     <Modal
@@ -181,7 +188,7 @@ const ModalMaintenanceHistory = (props) => {
           ? "Cập nhật lịch sử bảo trì và đánh giá rủi ro"
           : "Tạo lịch sử bảo trì và đánh giá rủi ro"
       }
-      open={openModal}
+      open={openModalMaintenanceHistory}
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}
@@ -190,7 +197,7 @@ const ModalMaintenanceHistory = (props) => {
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
         <h3 className="font-semibold text-base my-2">Lịch sử bảo trì</h3>
         <Row gutter={16}>
-          <Col lg={12} md={12} sm={24} xs={24}>
+          <Col xs={24}>
             <Form.Item
               label="Dịch vụ bảo trì"
               name="maintenanceService"
@@ -233,44 +240,6 @@ const ModalMaintenanceHistory = (props) => {
                       : "Hệ thống phòng cháy"}
                   </Select.Option>
                 ))}
-              </Select>
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Kỹ thuật viên"
-              name="technician"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
-                {listUsers
-                  ?.filter(
-                    (technician) =>
-                      technician?.status &&
-                      technician?.role?.name === "Technician_Employee"
-                  )
-                  .map((technician) => (
-                    <Select.Option
-                      key={technician.id}
-                      value={technician.id}
-                      label={technician.name}
-                    >
-                      {technician.name}
-                    </Select.Option>
-                  ))}
               </Select>
             </Form.Item>
           </Col>
@@ -346,6 +315,7 @@ const ModalMaintenanceHistory = (props) => {
               ]}
             >
               <Select
+                disabled={!!data?.deviceId}
                 placeholder="Vui lòng chọn"
                 optionLabelProp="label"
                 allowClear

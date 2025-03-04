@@ -9,7 +9,6 @@ import {
   message,
   notification,
   Space,
-  Spin,
 } from "antd";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
@@ -167,12 +166,29 @@ const AppHeader = () => {
   const fetchNotifications = async () => {
     setLoading(true);
 
-    const [res1] = await Promise.all([callGetAllNotifications()]);
+    // Fetch Users
+    let pageNotification = 1;
+    let hasMores = true;
+    let allNotifications = [];
 
-    const allResults = [...res1.data.result];
+    const query = `page=${pageNotification}&size=20`;
+
+    while (hasMores) {
+      const [res] = await Promise.all([callGetAllNotifications(query)]);
+
+      if (res && res.data) {
+        allNotifications = [...allNotifications, ...res.data.result];
+        hasMores = res.data.hasMore;
+        pageNotification += 1;
+      } else {
+        hasMores = false;
+      }
+    }
 
     setListNotifications(
-      allResults.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      allNotifications.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      )
     );
 
     setLoading(false);
@@ -187,7 +203,7 @@ const AppHeader = () => {
     let allUsers = [];
 
     while (hasMoreUsers) {
-      const query = `page=${pageUsers}&pageSize=20`;
+      const query = `page=${pageUsers}&size=20`;
       const res = await callGetChatRoomUsers(query);
 
       if (res && res.data) {
@@ -204,7 +220,7 @@ const AppHeader = () => {
     let allGroups = [];
 
     while (hasMoreGroups) {
-      const query = `page=${pageGroups}&pageSize=20`;
+      const query = `page=${pageGroups}&size=20`;
       const res = await callGetChatRoomGroups(query);
 
       if (res && res.data) {
@@ -232,8 +248,6 @@ const AppHeader = () => {
           const message = notification?.message
             ? JSON.parse(notification?.message)
             : null;
-
-          const recipient = notification?.type || null;
 
           const formattedDate = message?.paymentDate
             ? new Date(message?.paymentDate).toLocaleDateString()
@@ -276,7 +290,7 @@ const AppHeader = () => {
             } else if (
               notification?.recipient?.type === "Repair_Proposal_Notification"
             ) {
-              notificationText = `Bạn có yêu cầu bảo trì vào ngày ${new Date(
+              notificationText = `Bạn có báo giá và đề xuất bảo trì vào ngày ${new Date(
                 message?.requestDate
               ).toLocaleDateString("vi-VN")}`;
             } else if (
@@ -386,7 +400,7 @@ const AppHeader = () => {
                     ? "Thông báo đăng ký thi công"
                     : notification?.recipient?.type ===
                       "Repair_Proposal_Notification"
-                    ? "Thông báo yêu cầu bảo trì"
+                    ? "Thông báo đề xuất bảo trì"
                     : notification?.recipient?.type ===
                       "Due_Contract_Notification"
                     ? "Thông báo hợp đồng sắp hết hạn"
@@ -451,7 +465,11 @@ const AppHeader = () => {
           </Button>
 
           <Dropdown
-            menu={{ items: notificationItems }}
+            menu={{
+              items: notificationItems,
+              className:
+                "max-h-60 overflow-y-auto w-full h-[calc(100vh-25rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300",
+            }}
             trigger={["click"]}
             placement="bottomLeft"
             arrow

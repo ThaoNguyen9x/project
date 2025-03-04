@@ -28,8 +28,8 @@ const ModalQuotation = (props) => {
   const {
     data,
     setData,
-    openModal,
-    setOpenModal,
+    openModalQuotation,
+    setOpenModalQuotation,
     fetchData,
     listRiskAssessments,
   } = props;
@@ -156,7 +156,7 @@ const ModalQuotation = (props) => {
   };
 
   const handleReset = () => {
-    setOpenModal(false);
+    setOpenModalQuotation(false);
     setData(null);
     form.resetFields();
     setDataFile([]);
@@ -170,6 +170,21 @@ const ModalQuotation = (props) => {
     return isPdf || Upload.LIST_IGNORE;
   };
 
+  useEffect(() => {
+    if (data?.riskAssessmentID) {
+      const selectedRiskAssessment = listRiskAssessments.find(
+        (riskAssessment) =>
+          riskAssessment.riskAssessmentID === data.riskAssessmentID
+      );
+
+      form.setFieldsValue({
+        riskAssessment: selectedRiskAssessment
+          ? selectedRiskAssessment.riskAssessmentID
+          : null,
+      });
+    }
+  }, [data, listRiskAssessments]);
+
   return (
     <Modal
       title={
@@ -177,7 +192,7 @@ const ModalQuotation = (props) => {
           ? "Cập nhật báo giá & đề xuất bảo trì"
           : "Tạo báo giá & đề xuất bảo trì"
       }
-      open={openModal}
+      open={openModalQuotation}
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}
@@ -196,6 +211,7 @@ const ModalQuotation = (props) => {
               ]}
             >
               <Select
+                disabled={!!data?.riskAssessmentID}
                 placeholder="Vui lòng chọn"
                 optionLabelProp="label"
                 allowClear

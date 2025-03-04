@@ -59,13 +59,12 @@ instance.interceptors.response.use(
     //     return instance.request(error.config);
     //   }
     // }
-    
+
     if (+error?.response?.status === 401) {
       localStorage.setItem("redirectedFromExpiredSession", "true");
       window.location.href = "/login";
       localStorage.removeItem("access_token");
     }
-    
 
     if (+error?.response?.status === 403) {
       notification.error({

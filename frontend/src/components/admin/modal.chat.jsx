@@ -78,7 +78,7 @@ const ModalChat = (props) => {
     let hasMore = true;
 
     while (hasMore) {
-      const query = `page=${page}&pageSize=20`;
+      const query = `page=${page}&size=20`;
       const res = await callGetMessagesByRoomId(
         selectedChatRoomUser?.chatRoom?.id,
         query
@@ -174,6 +174,7 @@ const ModalChat = (props) => {
         fetchData();
         setOpenChat(false);
         setSelectedChatRoomUser(null);
+        setIsSidebarVisible(true);
       }}
       footer={null}
       closable={false}

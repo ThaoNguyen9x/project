@@ -1,42 +1,47 @@
 import { Table } from "antd";
 
-const Tables = () => {
+const Tables = (props) => {
+  const { listPayments } = props;
+
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
+      dataIndex: ["contract", "customer", "companyName"],
       key: "name",
       render: (text) => <a>{text}</a>,
     },
     {
-      title: "Date",
-      dataIndex: "date",
+      title: "Ngày thanh toán",
+      dataIndex: "paymentDate",
       key: "date",
     },
     {
-      title: "Amount",
-      dataIndex: "amount",
+      title: "Số tiền thanh toán",
+      dataIndex: "paymentAmount",
       key: "amount",
+      render: (amount) =>
+        amount?.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
     },
   ];
 
-  const data = [
-    { id: 1, name: "John Doe", date: "2023-01-15", amount: "$120.00" },
-    { id: 2, name: "Jane Smith", date: "2023-01-18", amount: "$80.00" },
-    { id: 3, name: "Alice Johnson", date: "2023-01-20", amount: "$250.00" },
-    { id: 4, name: "Bob Brown", date: "2023-01-25", amount: "$180.00" },
-    { id: 5, name: "Michael Green", date: "2023-02-01", amount: "$50.00" },
-  ];
+  const activePayments = Array.isArray(listPayments)
+    ? listPayments
+        .filter((payment) => payment?.paymentStatus === "PAID")
+        .slice(0, 5)
+    : [];
 
   return (
     <div className="flex-1 shadow-md rounded-md p-5 bg-white">
-      <h2 className="text-xl font-bold mb-5 text-blue-950">Receipt</h2>
+      <h2 className="text-xl font-bold mb-5 text-blue-950">Thanh toán</h2>
       <div className="relative overflow-x-auto">
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={activePayments}
           pagination={false}
-          rowKey={(record) => record.id}
+          rowKey={(record) => record?.id}
         />
       </div>
     </div>

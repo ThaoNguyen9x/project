@@ -19,9 +19,7 @@ import {
   callDeleteRiskAssessment,
   callGetAllDevices,
   callGetAllMaintenanceHistories,
-  callGetAllSubcontracts,
   callGetAllSystemMaintenanceServices,
-  callGetAllUsers,
   callGetMaintenanceHistory,
   callGetRiskAssessment,
 } from "../../services/api";
@@ -31,8 +29,6 @@ import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permissio
 import ViewMaintenanceHistory from "../../components/admin/Property_Manager/Maintenance_History/view.maintenance-history";
 import ModalMaintenanceHistory from "../../components/admin/Property_Manager/Maintenance_History/modal.maintenance-history";
 import Highlighter from "react-highlight-words";
-import HighlightText from "../../components/share/HighlightText";
-import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 import Column from "antd/es/table/Column";
 import ColumnGroup from "antd/es/table/ColumnGroup";
@@ -52,38 +48,51 @@ const MaintenanceHistory = () => {
   const searchInput = useRef(null);
 
   const [openViewDetail, setOpenViewDetail] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
+  const [openModalMaintenanceHistory, setOpenModalMaintenanceHistory] =
+    useState(false);
   const [data, setData] = useState(null);
 
   const [listSystemMaintenanceServices, setListSystemMaintenanceServices] =
     useState([]);
-  const [listUsers, setListUsers] = useState([]);
-  const [listSubcontractors, setListSubcontractors] = useState([]);
   const [listDevices, setListDevices] = useState([]);
+
+  const fetchAllPages = async (apiCall, pageSize) => {
+    let page = 1;
+    let allResults = [];
+    let hasMore = true;
+
+    while (hasMore) {
+      const query = `page=${page}&size=${pageSize}`;
+      const response = await apiCall(query);
+      const result = response?.data?.result || [];
+      allResults = [...allResults, ...result];
+
+      if (result.length < pageSize) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+    return allResults;
+  };
 
   useEffect(() => {
     const init = async () => {
-      const systemMaintenanceService =
-        await callGetAllSystemMaintenanceServices();
-      if (systemMaintenanceService && systemMaintenanceService.data) {
-        setListSystemMaintenanceServices(systemMaintenanceService.data?.result);
-      }
+      setIsLoading(true);
+      const pageSize = 20;
 
-      const users = await callGetAllUsers();
-      if (users && users.data) {
-        setListUsers(users.data?.result);
-      }
+      const systemMaintenanceServices = await fetchAllPages(
+        callGetAllSystemMaintenanceServices,
+        pageSize
+      );
+      setListSystemMaintenanceServices(systemMaintenanceServices);
 
-      const subcontractors = await callGetAllSubcontracts();
-      if (subcontractors && subcontractors.data) {
-        setListSubcontractors(subcontractors.data?.result);
-      }
+      const devices = await fetchAllPages(callGetAllDevices, pageSize);
+      setListDevices(devices);
 
-      const devices = await callGetAllDevices();
-      if (devices && devices.data) {
-        setListDevices(devices.data?.result);
-      }
+      setIsLoading(false);
     };
+
     init();
   }, []);
 
@@ -273,7 +282,7 @@ const MaintenanceHistory = () => {
           hideChildren
         >
           <Button
-            onClick={() => setOpenModal(true)}
+            onClick={() => setOpenModalMaintenanceHistory(true)}
             className="p-2 xl:p-3 gap-1 xl:gap-2"
           >
             <GoPlus className="h-4 w-4" />
@@ -378,7 +387,7 @@ const MaintenanceHistory = () => {
                       const res = await callGetMaintenanceHistory(record?.id);
                       if (res?.data) {
                         setData(res?.data);
-                        setOpenModal(true);
+                        setOpenModalMaintenanceHistory(true);
                       }
                     }}
                     className="cursor-pointer text-amber-900"
@@ -432,12 +441,10 @@ const MaintenanceHistory = () => {
         <ModalMaintenanceHistory
           data={data}
           setData={setData}
-          openModal={openModal}
-          setOpenModal={setOpenModal}
+          openModalMaintenanceHistory={openModalMaintenanceHistory}
+          setOpenModalMaintenanceHistory={setOpenModalMaintenanceHistory}
           fetchData={fetchData}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
-          listUsers={listUsers}
-          listSubcontractors={listSubcontractors}
           listDevices={listDevices}
         />
       </div>
