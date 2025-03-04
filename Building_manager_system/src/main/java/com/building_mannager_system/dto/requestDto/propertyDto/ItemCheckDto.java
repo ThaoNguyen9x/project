@@ -1,9 +1,8 @@
 package com.building_mannager_system.dto.requestDto.propertyDto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -11,9 +10,29 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ItemCheckDto {
     private Long id;
-    private Long deviceId;
+    private DeviceDto device;
     private String checkCategory;
     private String checkName;
     private String standard;
     private String frequency;
+
+    private List<ItemCheckResult> itemCheckResults;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DeviceDto {
+        private Long deviceId;
+        private String deviceName;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ItemCheckResult {
+        private Long id;
+        private String result;
+    }
 }

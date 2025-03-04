@@ -2,8 +2,11 @@ package com.building_mannager_system.entity.property_manager;
 
 import com.building_mannager_system.entity.BaseEntity;
 import com.building_mannager_system.enums.Frequency;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Setter
 @Getter
@@ -33,4 +36,8 @@ public class ItemCheck extends BaseEntity {
     @Enumerated(EnumType.STRING) // Liên kết với enum tần suất kiểm tra
     @Column(name = "frequency", length = 50)
     private Frequency frequency; // Enum cho tần suất kiểm tra (Hàng ngày, Hàng tháng, ...)
+
+    @OneToMany(mappedBy = "itemCheck", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ItemCheckResult> itemCheckResults;
 }

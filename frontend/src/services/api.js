@@ -1476,6 +1476,10 @@ export const callGetAllItemChecks = (query) => {
   return axios.get(`/api/item-checks?${query}`);
 };
 
+export const callGetItemCheck = (id) => {
+  return axios.get(`/api/item-checks/${id}`);
+};
+
 export const callGetAllItemChecksByDeviceId = (deviceId, query) => {
   return axios.get(`/api/item-checks/device/${deviceId}?${query}`);
 };
@@ -1519,11 +1523,15 @@ export const callDeleteItemCheck = (id) => {
 
 /**************** RESULT CHECKS ****************/
 export const callGetAllResultChecks = (query) => {
-  return axios.get(`/api/result-checks?${query}`);
+  return axios.get(`/api/item_check_result?${query}`);
+};
+
+export const callGetResultCheck = (id) => {
+  return axios.get(`/api/item_check_result/${id}`);
 };
 
 export const callGetAllResultsByCheckItemId = (itemCheckId, query) => {
-  return axios.get(`/api/result-checks/item-check/${itemCheckId}?${query}`);
+  return axios.get(`/api/item_check_result/item-check/${itemCheckId}?${query}`);
 };
 
 export const callCreateResultCheck = (
@@ -1533,7 +1541,7 @@ export const callCreateResultCheck = (
   technician,
   checkedAt
 ) => {
-  return axios.post("/api/result-checks", {
+  return axios.post("/api/item_check_result", {
     itemCheck,
     result,
     note,
@@ -1550,7 +1558,7 @@ export const callUpdateResultCheck = (
   technician,
   checkedAt
 ) => {
-  return axios.put(`/api/result-checks/${id}`, {
+  return axios.put(`/api/item_check_result/${id}`, {
     itemCheck,
     result,
     note,
@@ -1560,7 +1568,7 @@ export const callUpdateResultCheck = (
 };
 
 export const callDeleteResultCheck = (id) => {
-  return axios.delete(`/api/result-checks/${id}`);
+  return axios.delete(`/api/item_check_result/${id}`);
 };
 
 /**************** TRIPER ****************/

@@ -13,12 +13,12 @@ public interface ItemCheckMapper {
 
     // Map từ DTO sang Entity
     @Mapping(target = "id", ignore = true) // Bỏ qua trường ID khi thêm mới
-    @Mapping(target = "device.deviceId",source = "deviceId")
+    @Mapping(target = "device.deviceId",source = "device.deviceId")
 
     ItemCheck toEntity(ItemCheckDto dto);
 
     // Map từ Entity sang DTO
-    @Mapping(source = "device.deviceId",target = "deviceId")
+    @Mapping(source = "device.deviceId",target = "device.deviceId")
 
     ItemCheckDto toDto(ItemCheck entity);
 }

@@ -2,37 +2,34 @@ package com.building_mannager_system.service.system_service;
 
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
 import com.building_mannager_system.entity.property_manager.ItemCheck;
-import com.building_mannager_system.entity.property_manager.ItemCheckResult;
 import com.building_mannager_system.mapper.propertiMapper.ItemCheckMapper;
 import com.building_mannager_system.repository.system_manager.CheckResultRepository;
 import com.building_mannager_system.repository.system_manager.ItemCheckRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.building_mannager_system.utils.exception.APIException;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.beans.Transient;
-import java.util.List;
 
 @Service
 public class ItemCheckService {
 
-    @Autowired
     private final ItemCheckRepository itemCheckRepository;
-
-    @Autowired
     private final ItemCheckMapper itemCheckMapper;
+    private final CheckResultRepository checkResultRepository;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private  CheckResultRepository checkResultRepository;
-
-    // Constructor
-    public ItemCheckService(ItemCheckRepository itemCheckRepository, ItemCheckMapper itemCheckMapper) {
+    public ItemCheckService(ItemCheckRepository itemCheckRepository,
+                            ItemCheckMapper itemCheckMapper,
+                            CheckResultRepository checkResultRepository,
+                            ModelMapper modelMapper) {
         this.itemCheckRepository = itemCheckRepository;
         this.itemCheckMapper = itemCheckMapper;
+        this.checkResultRepository = checkResultRepository;
+        this.modelMapper = modelMapper;
     }
 
     // Lấy tất cả các mục kiểm tra theo deviceId
@@ -55,8 +52,8 @@ public class ItemCheckService {
     // Lấy chi tiết một mục kiểm tra theo ID
     public ItemCheckDto getItemCheckById(Long id) {
         ItemCheck itemCheck = itemCheckRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ItemCheck not found with id: " + id));
-        return itemCheckMapper.toDto(itemCheck); // Map từ Entity sang DTO
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "ItemCheck not found with ID: " + id));
+        return modelMapper.map(itemCheck, ItemCheckDto.class); // Map từ Entity sang DTO
     }
 
     // Cập nhật mục kiểm tra

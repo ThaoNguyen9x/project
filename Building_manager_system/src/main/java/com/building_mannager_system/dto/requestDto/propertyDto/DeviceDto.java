@@ -24,6 +24,7 @@ public class DeviceDto {
     private DeviceStatus status;
     private SystemMaintenanceServiceDto maintenanceService;
     private List<RiskAssessment> riskAssessments;
+    private List<ItemCheck> itemChecks;
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;
@@ -102,5 +103,14 @@ public class DeviceDto {
     public static class SystemDto {
         private Long id;
         private String systemName;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ItemCheck {
+        private Long id;
+        private String checkName;
     }
 }

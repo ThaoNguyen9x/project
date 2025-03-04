@@ -1,6 +1,7 @@
 package com.building_mannager_system.controller.propertyController;
 
 import com.building_mannager_system.dto.requestDto.propertyDto.CheckResultDto;
+import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
 import com.building_mannager_system.dto.responseDto.ApiResponce;
 import com.building_mannager_system.service.property_manager.ItemCheckResultService;
 import org.springframework.data.domain.Page;
@@ -36,12 +37,9 @@ public class ItemCheckResultController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // **3. Lấy chi tiết một kết quả kiểm tra theo ID**
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponce<CheckResultDto>> getResultById(@PathVariable Long id) {
-        CheckResultDto result = itemCheckResultService.getResultById(id);
-        ApiResponce<CheckResultDto> responce = new ApiResponce<>(200, result, "Result created successfully");
-        return ResponseEntity.ok(responce);
+    public ResponseEntity<CheckResultDto> getItemCheck(@PathVariable(name = "id") Long id) {
+        return ResponseEntity.ok(itemCheckResultService.getResultById(id));
     }
 
     // **4. Cập nhật một kết quả kiểm tra**

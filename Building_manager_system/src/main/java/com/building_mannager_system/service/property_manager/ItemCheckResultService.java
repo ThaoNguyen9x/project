@@ -5,22 +5,27 @@ import com.building_mannager_system.entity.property_manager.ItemCheckResult;
 import com.building_mannager_system.enums.ResultStatus;
 import com.building_mannager_system.mapper.propertiMapper.ItemCheckResultMapper;
 import com.building_mannager_system.repository.system_manager.CheckResultRepository;
+import com.building_mannager_system.utils.exception.APIException;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ItemCheckResultService {
     private final CheckResultRepository itemCheckResultRepository;
     private final ItemCheckResultMapper itemCheckResultMapper;
+    private final ModelMapper modelMapper;
 
-    public ItemCheckResultService(CheckResultRepository itemCheckResultRepository, ItemCheckResultMapper itemCheckResultMapper) {
+    public ItemCheckResultService(CheckResultRepository itemCheckResultRepository,
+                                  ItemCheckResultMapper itemCheckResultMapper,
+                                  ModelMapper modelMapper) {
         this.itemCheckResultRepository = itemCheckResultRepository;
         this.itemCheckResultMapper = itemCheckResultMapper;
+        this.modelMapper = modelMapper;
     }
 
     // Lấy kết quả kiểm tra theo checkItemId với phân trang
@@ -31,6 +36,7 @@ public class ItemCheckResultService {
         // Chuyển đổi từ Page<Entity> sang Page<DTO>
         return resultsPage.map(itemCheckResultMapper::toDto);
     }
+
     public Page<CheckResultDto> getResultsByCheckItemIdPaged(Long checkItemId, int page, int size) {
         Pageable pageable = PageRequest.of(page-1, size,Sort.by("checkedAt").descending());
 
@@ -39,10 +45,6 @@ public class ItemCheckResultService {
         return resultsPage.map(itemCheckResultMapper::toDto);
     }
 
-    public CheckResultDto getResultById(Long checkResultId) {
-        ItemCheckResult itemCheckResult = itemCheckResultRepository.findById(checkResultId).orElse(null);
-        return itemCheckResultMapper.toDto(itemCheckResult);
-    }
     // Thêm mới kết quả kiểm tra
     public CheckResultDto createResult(CheckResultDto resultDto) {
         ItemCheckResult result = itemCheckResultMapper.toEntity(resultDto); // Ánh xạ từ DTO sang Entity
@@ -69,5 +71,11 @@ public class ItemCheckResultService {
         ItemCheckResult result = itemCheckResultRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Result not found with id: " + id));
         itemCheckResultRepository.delete(result);
+    }
+
+    public CheckResultDto getResultById(Long id) {
+        ItemCheckResult result = itemCheckResultRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Result not found with ID: " + id));
+        return modelMapper.map(result, CheckResultDto.class); // Map từ Entity sang DTO
     }
 }

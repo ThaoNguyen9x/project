@@ -8,10 +8,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ItemCheckResultMapper {
     // Map từ Entity sang DTO
-    @Mapping(source = "itemCheck.id", target = "checkItemId") // Lấy ID từ `ItemCheck`
+    @Mapping(source = "itemCheck.id", target = "itemCheck.id") // Lấy ID từ `ItemCheck`
     CheckResultDto toDto(ItemCheckResult entity);
 
     // Map từ DTO sang Entity
-    @Mapping(source = "checkItemId", target = "itemCheck.id") // Gán ID của `ItemCheck`
+    @Mapping(source = "itemCheck.id", target = "itemCheck.id") // Gán ID của `ItemCheck`
     ItemCheckResult toEntity(CheckResultDto dto);
 }

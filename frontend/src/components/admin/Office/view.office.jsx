@@ -11,9 +11,11 @@ import {
   callGetCustomerType,
   callGetDevice,
   callGetDeviceType,
+  callGetItemCheck,
   callGetMaintenanceHistory,
   callGetMeter,
   callGetOffice,
+  callGetResultCheck,
   callGetRiskAssessment,
   callGetSubcontract,
   callGetSystem,
@@ -88,7 +90,8 @@ const ViewOffice = (props) => {
       data?.fileName ||
       data?.companyName ||
       data?.role?.name ||
-      data?.typeName
+      data?.typeName ||
+      data?.checkCategory
     );
 
   const generateItems = () => {
@@ -215,6 +218,28 @@ const ViewOffice = (props) => {
               ))
             ) : (
               <span>Chưa có đánh giá</span>
+            ),
+          span: 2,
+        },
+        {
+          label: "Kiểm tra mục",
+          children:
+            data?.itemChecks?.length > 0 ? (
+              data?.itemChecks?.map((x) => (
+                <a
+                  key={x?.id}
+                  onClick={async () => {
+                    const res = await callGetItemCheck(x?.id);
+                    if (res?.data) {
+                      handleViewDetail(res?.data);
+                    }
+                  }}
+                >
+                  {x?.checkName} <br />
+                </a>
+              ))
+            ) : (
+              <span>Chưa có kiểm tra mục</span>
             ),
           span: 2,
         },
@@ -836,6 +861,123 @@ const ViewOffice = (props) => {
           span: 2,
         },
       ];
+    } else if (data?.checkName) {
+      return [
+        {
+          label: "Tên mục kiểm tra",
+          children: data?.checkName || "N/A",
+          span: 2,
+        },
+        {
+          label: "Danh mục kiểm tra",
+          children: data?.checkCategory || "N/A",
+          span: 2,
+        },
+        {
+          label: "Tiêu chuẩn kiểm tra",
+          children: data?.standard || "N/A",
+          span: 2,
+        },
+        {
+          label: "Tần suất",
+          children:
+            data?.frequency === "HÀNG_NGÀY"
+              ? "Hàng ngày"
+              : data?.frequency === "HÀNG_TUẦN"
+              ? "Hàng tuần"
+              : data?.frequency === "HÀNG_THÁNG"
+              ? "Hàng tháng"
+              : data?.frequency === "HÀNG_QUÝ"
+              ? "Hàng quý"
+              : data?.frequency === "HÀNG_NĂM"
+              ? "Hàng năm"
+              : "N/A",
+          span: 2,
+        },
+        {
+          label: "Kết quả kiểm tra",
+          children:
+            data?.itemCheckResults?.length > 0 ? (
+              data?.itemCheckResults?.map((x) => (
+                <a
+                  key={x?.id}
+                  onClick={async () => {
+                    const res = await callGetResultCheck(x?.id);
+                    if (res?.data) {
+                      handleViewDetail(res?.data);
+                    }
+                  }}
+                >
+                  {x?.result} <br />
+                </a>
+              ))
+            ) : (
+              <span>Chưa có kết quả</span>
+            ),
+          span: 2,
+        },
+      ];
+    } else if (data?.note) {
+      return [
+        {
+          label: "Tên mục kiểm tra",
+          children: data?.itemCheck?.checkName ? (
+            <a
+              onClick={async () => {
+                const res = await callGetItemCheck(data?.itemCheck?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.itemCheck?.checkName}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Ghi chú",
+          children: data?.note || "N/A",
+          span: 2,
+        },
+        {
+          label: "Nhân viên phụ trách",
+          children: data?.technician?.name ? (
+            <a
+              onClick={async () => {
+                const res = await callGetUser(data?.technician?.id);
+                if (res?.data) {
+                  handleViewDetail(res?.data);
+                }
+              }}
+            >
+              {data?.technician?.name}
+            </a>
+          ) : (
+            "N/A"
+          ),
+          span: 2,
+        },
+        {
+          label: "Kết quả",
+          children:
+            data?.result === "ĐẠT"
+              ? "Đạt"
+              : data?.result === "KHÔNG_ĐẠT"
+              ? "Không đạt"
+              : data?.result === "CẦN_SỬA_CHỮA"
+              ? "Cần sửa chữa"
+              : "N/A",
+          span: 2,
+        },
+        {
+          label: "Thời gian kiểm tra",
+          children: dayjs(data?.checkedAt).format(FORMAT_DATE_DISPLAY) || "N/A",
+          span: 2,
+        },
+      ];
     } else {
       return [
         {
@@ -913,6 +1055,10 @@ const ViewOffice = (props) => {
       title={`${
         data?.deviceId
           ? "Thông tin thiết bị"
+          : data?.checkName
+          ? "Thông tin kiểm tra mục"
+          : data?.result
+          ? "Thông tin kết quả kiểm tra mục"
           : data?.description
           ? "Thông tin loại thiết bị"
           : data?.systemName

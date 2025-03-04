@@ -1,10 +1,6 @@
 package com.building_mannager_system.dto.requestDto.propertyDto;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,9 +10,27 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CheckResultDto {
     private Long id;
-    private Long checkItemId;
+    private CheckItemDto itemCheck;
     private String result;
-    private String  technichanName;
+    private UserDto technician;
     private String note;
     private LocalDateTime checkedAt;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CheckItemDto {
+        private int id;
+        private String checkName;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserDto {
+        private int id;
+        private String name;
+    }
 }

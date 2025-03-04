@@ -4,9 +4,11 @@ package com.building_mannager_system.controller.propertyController;
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.ItemCheckWithResultsDto;
 import com.building_mannager_system.dto.responseDto.ApiResponce;
+import com.building_mannager_system.dto.responseDto.ResUserDTO;
 import com.building_mannager_system.entity.property_manager.ItemCheck;
 import com.building_mannager_system.service.property_manager.ItemCheckWithResultsService;
 import com.building_mannager_system.service.system_service.ItemCheckService;
+import com.building_mannager_system.utils.annotation.ApiMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,11 +43,10 @@ public class ItemCheckController {
 
     // **2. Lấy chi tiết ItemCheck theo ID**
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponce<ItemCheckDto>> getItemCheckById(@PathVariable Long id) {
-        ItemCheckDto itemCheck = itemCheckService.getItemCheckById(id);
-        ApiResponce<ItemCheckDto> responce = new ApiResponce(200,itemCheck,"success");
-        return ResponseEntity.ok(responce);
+    public ResponseEntity<ItemCheckDto> getItemCheck(@PathVariable(name = "id") Long id) {
+        return ResponseEntity.ok(itemCheckService.getItemCheckById(id));
     }
+
     @GetMapping("/with-results/{deviceId}")
     public ResponseEntity<List<ItemCheckWithResultsDto>> getItemChecksWithResults(
             @PathVariable Long deviceId,
