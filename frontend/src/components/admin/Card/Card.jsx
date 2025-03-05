@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 import {
   callGetAllCustomers,
   callGetAllOffices,
+  callGetAllSubcontracts,
   callGetAllUsers,
-  callGetSubcontract,
 } from "../../../services/api";
 
 const Card = () => {
@@ -34,7 +34,7 @@ const Card = () => {
         setListOffices(offices?.data?.meta);
       }
 
-      const subContracts = await callGetSubcontract();
+      const subContracts = await callGetAllSubcontracts();
       if (subContracts && subContracts?.data) {
         setListSubContracts(subContracts?.data?.meta);
       }

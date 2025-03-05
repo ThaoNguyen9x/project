@@ -81,7 +81,7 @@ const Dashboard = () => {
     const sock = new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`);
     const client = Stomp.over(sock);
 
-    // client.debug = () => {};
+    client.debug = () => {};
 
     client.connect({}, () => {
       setStompClient(client);

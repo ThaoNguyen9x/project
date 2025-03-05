@@ -468,7 +468,7 @@ const AppHeader = () => {
             menu={{
               items: notificationItems,
               className:
-                "max-h-60 overflow-y-auto w-full h-[calc(100vh-25rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300",
+                "max-h-60 max-h-fit overflow-y-auto w-full h-[calc(100vh-25rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300",
             }}
             trigger={["click"]}
             placement="bottomLeft"

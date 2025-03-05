@@ -92,55 +92,52 @@ const Office = () => {
     return allResults;
   };
 
-  useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
-      const pageSize = 20;
+  const init = async () => {
+    setIsLoading(true);
+    const pageSize = 20;
 
-      const customerTypes = await fetchAllPages(
-        callGetAllCustomerTypes,
-        pageSize
-      );
-      setListCustomerTypes(customerTypes);
+    const customerTypes = await fetchAllPages(
+      callGetAllCustomerTypes,
+      pageSize
+    );
+    setListCustomerTypes(customerTypes);
 
-      const locations = await fetchAllPages(callGetAllLocations, pageSize);
-      setListLocations(locations);
+    const locations = await fetchAllPages(callGetAllLocations, pageSize);
+    setListLocations(locations);
 
-      const customerTypeDocuments = await fetchAllPages(
-        callGetAllCustomerTypeDocuments,
-        pageSize
-      );
-      setListCustomerTypeDocuments(customerTypeDocuments);
+    const customerTypeDocuments = await fetchAllPages(
+      callGetAllCustomerTypeDocuments,
+      pageSize
+    );
+    setListCustomerTypeDocuments(customerTypeDocuments);
 
-      const systems = await fetchAllPages(callGetAllSystems, pageSize);
-      setListSystems(systems);
+    const systems = await fetchAllPages(callGetAllSystems, pageSize);
+    setListSystems(systems);
 
-      const deviceTypes = await fetchAllPages(callGetAllDeviceTypes, pageSize);
-      setListDeviceTypes(deviceTypes);
+    const deviceTypes = await fetchAllPages(callGetAllDeviceTypes, pageSize);
+    setListDeviceTypes(deviceTypes);
 
-      const systemMaintenanceServices = await fetchAllPages(
-        callGetAllSystemMaintenanceServices,
-        pageSize
-      );
-      setListSystemMaintenanceServices(systemMaintenanceServices);
+    const systemMaintenanceServices = await fetchAllPages(
+      callGetAllSystemMaintenanceServices,
+      pageSize
+    );
+    setListSystemMaintenanceServices(systemMaintenanceServices);
 
-      const devices = await fetchAllPages(callGetAllDevices, pageSize);
-      setListDevices(devices);
+    const devices = await fetchAllPages(callGetAllDevices, pageSize);
+    setListDevices(devices);
 
-      const riskAssessments = await fetchAllPages(
-        callGetAllRiskAssessments,
-        pageSize
-      );
-      setListRiskAssessments(riskAssessments);
+    const riskAssessments = await fetchAllPages(
+      callGetAllRiskAssessments,
+      pageSize
+    );
+    setListRiskAssessments(riskAssessments);
 
-      setIsLoading(false);
-    };
-
-    init();
-  }, []);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     fetchData();
+    init();
   }, [filter]);
 
   const fetchData = async () => {
@@ -152,6 +149,7 @@ const Office = () => {
       setLocation(res.data);
     }
 
+    init();
     setIsLoading(false);
   };
 
@@ -459,9 +457,9 @@ const Office = () => {
                   deviceImages["default"];
 
                 const imageWidth =
-                  device?.deviceType?.typeName === "fcu" ? 2 : 1.75;
+                  device?.deviceType?.typeName === "fcu" ? 1.75 : 1.75;
                 const imageHeight =
-                  device?.deviceType?.typeName === "fcu" ? 3 : 1.75;
+                  device?.deviceType?.typeName === "fcu" ? 2 : 1.75;
 
                 return (
                   <div
