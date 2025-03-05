@@ -17,10 +17,6 @@ const Breadcrumbs = ({ title, page }) => {
     { path: `/${page}/:pid/${title}`, breadcrumb: title },
   ];
 
-  const formatBreadcrumb = (breadcrumb) => {
-    return breadcrumb.replace(/-/g, " ").toUpperCase();
-  };
-
   const translateBreadcrumb = (breadcrumb) => {
     return (
       vietnameseMapping[breadcrumb] ||

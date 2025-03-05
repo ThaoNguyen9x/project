@@ -82,7 +82,7 @@ const ChatInfo = ({
                         image?.imageUrl
                       }`}
                       alt={`Image ${index + 1}`}
-                      className="rounded-md"
+                      className="rounded-md !h-20 !w-20"
                     />
                   </div>
                 ))}
@@ -99,7 +99,7 @@ const ChatInfo = ({
                     onClick={() =>
                       setImageShowCount(imageShowCount + imageShowCount)
                     }
-                    className="absolute w-full min-h-full bg-gray-900/90 hover:bg-gray-900/50 transition-all duration-300 rounded-lg flex items-center justify-center"
+                    className="absolute  !h-20 !w-20 bg-gray-900/90 hover:bg-gray-900/50 transition-all duration-300 rounded-lg flex items-center justify-center"
                   >
                     <span className="text-xl font-medium text-white">
                       +
@@ -122,7 +122,7 @@ const ChatInfo = ({
                         return ["jpg", "jpeg", "png"].includes(fileExtension);
                       })[imageShowCount]?.imageUrl
                     }`}
-                    className="rounded-lg"
+                    className="rounded-lg !h-20 !w-20"
                     alt="Additional images"
                   />
                 </div>
@@ -269,7 +269,7 @@ const ChatInfo = ({
       className={`absolute rounded-lg bg-white border border-r rounded-r-lg h-full transition-all duration-300 z-50 top-0 
         ${
           openInfo
-            ? "opacity-100 !max-w-full right-0"
+            ? "opacity-100 !max-w-fit right-0"
             : "opacity-0 w-0 right-[0%]"
         }  overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300`}
     >
