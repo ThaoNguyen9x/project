@@ -32,7 +32,7 @@ const Navbar = () => {
               to="/"
               className="text-2xl text-blue-950 font-bold transition-all duration-300"
             >
-              LOGO
+              B-MS
             </Link>
             <div
               className="sm:hidden"

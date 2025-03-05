@@ -56,7 +56,7 @@ const LayoutAdmin = () => {
         }}
       >
         <div className="text-xl font-bold uppercase text-white text-center py-3">
-          Logo
+          B-MS
         </div>
         <MenuItem
           activeMenu={location.pathname}

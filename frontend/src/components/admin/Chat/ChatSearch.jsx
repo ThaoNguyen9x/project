@@ -187,7 +187,7 @@ const ChatSearch = ({
       className={`absolute rounded-lg bg-white border border-r rounded-r-lg h-full transition-all duration-300 z-50 top-0 overflow-x-hidden
         ${
           openSearch
-            ? "opacity-100 w-full lg:w-[calc(100vw-65rem)] right-0"
+            ? "opacity-100 !max-w-fit right-0"
             : "opacity-0 w-0 right-[0%]"
         }  overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300`}
     >

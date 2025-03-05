@@ -137,7 +137,6 @@ const Office = () => {
 
   useEffect(() => {
     fetchData();
-    init();
   }, [filter]);
 
   const fetchData = async () => {

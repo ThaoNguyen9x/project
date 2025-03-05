@@ -214,7 +214,11 @@ public class UserServiceImpl implements UserService {
             throw new APIException(HttpStatus.BAD_REQUEST, "Token đặt lại mật khẩu đã hết hạn");
         }
 
-        User user = new User();
+        User user = resetToken.getUser(); // Lấy user từ token
+        if (user == null) {
+            throw new APIException(HttpStatus.BAD_REQUEST, "Không tìm thấy người dùng liên quan đến token");
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
