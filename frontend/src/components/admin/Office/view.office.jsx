@@ -641,7 +641,7 @@ const ViewOffice = (props) => {
                   <a
                     href={`${
                       import.meta.env.VITE_BACKEND_URL
-                    }/storage/handover_status/${data?.drawingFile}`}
+                    }/storage/handover_status/${x?.drawingFile}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -651,7 +651,7 @@ const ViewOffice = (props) => {
                   <a
                     href={`${
                       import.meta.env.VITE_BACKEND_URL
-                    }/storage/handover_status/${data?.equipmentFile}`}
+                    }/storage/handover_status/${x?.equipmentFile}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

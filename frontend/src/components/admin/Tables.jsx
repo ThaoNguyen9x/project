@@ -41,7 +41,7 @@ const Tables = (props) => {
           columns={columns}
           dataSource={activePayments}
           pagination={false}
-          rowKey={(record) => record?.id}
+          rowKey={(record) => record?.paymentId}
         />
       </div>
     </div>
