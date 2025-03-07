@@ -50,6 +50,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.hellosign</groupId>
+			<artifactId>hellosign-java-sdk</artifactId>
+			<version>5.2.1</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>

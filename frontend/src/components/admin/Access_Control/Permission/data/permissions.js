@@ -98,6 +98,11 @@ export const ALL_PERMISSIONS = {
       apiPath: "/api/repair-requests",
       module: "REPAIR_REQUEST",
     },
+    SEND: {
+      method: "PATCH",
+      apiPath: "/api/repair-requests/send/{id}",
+      module: "REPAIR_REQUEST",
+    },
     UPDATE: {
       method: "PUT",
       apiPath: "/api/repair-requests/{id}",
@@ -338,6 +343,11 @@ export const ALL_PERMISSIONS = {
     GET_PAGINATE: {
       method: "GET",
       apiPath: "/api/contracts",
+      module: "CONTRACTS",
+    },
+    SEND: {
+      method: "PATCH",
+      apiPath: "/api/contracts/send/{id}",
       module: "CONTRACTS",
     },
     CREATE: {

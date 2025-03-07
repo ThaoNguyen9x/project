@@ -111,10 +111,12 @@ function App() {
         { index: true, element: <Dashboard /> },
         {
           path: "users",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.USERS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.USERS.GET_PAGINATE.apiPath
+            ) ? (
             <User />
           ) : (
             <Navigate to="/dashboard" />
@@ -122,10 +124,12 @@ function App() {
         },
         {
           path: "roles",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.ROLES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.ROLES.GET_PAGINATE.apiPath
+            ) ? (
             <Role />
           ) : (
             <Navigate to="/dashboard" />
@@ -133,10 +137,13 @@ function App() {
         },
         {
           path: "permissions",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.PERMISSIONS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.PERMISSIONS.GET_PAGINATE.apiPath
+            ) ? (
             <Permission />
           ) : (
             <Navigate to="/dashboard" />
@@ -144,11 +151,13 @@ function App() {
         },
         {
           path: "customer-type-documents",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.CUSTOMER_TYPE_DOCUMENTS.GET_PAGINATE.apiPath
+            ) ? (
             <CustomerTypeDocument />
           ) : (
             <Navigate to="/dashboard" />
@@ -156,11 +165,13 @@ function App() {
         },
         {
           path: "customer-types",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.CUSTOMER_TYPES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.CUSTOMER_TYPES.GET_PAGINATE.apiPath
+            ) ? (
             <CustomerType />
           ) : (
             <Navigate to="/dashboard" />
@@ -168,10 +179,12 @@ function App() {
         },
         {
           path: "offices",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.OFFICES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.OFFICES.GET_PAGINATE.apiPath
+            ) ? (
             <OfficeAdmin />
           ) : (
             <Navigate to="/dashboard" />
@@ -180,10 +193,13 @@ function App() {
         {
           path: "customer-contracts",
           element: (() => {
-            const hasPermission = user?.role?.permissions?.some(
-              (perm) =>
-                perm.apiPath === ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath
-            );
+            const hasPermission = user?.role?.permissions
+              ?.filter((perm) => perm.status)
+              ?.some(
+                (perm) =>
+                  perm.apiPath ===
+                  ALL_PERMISSIONS.CONTRACTS.GET_PAGINATE.apiPath
+              );
 
             return hasPermission ? (
               <CustomerContract />
@@ -195,11 +211,13 @@ function App() {
 
         {
           path: "payment-contracts",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.PAYMENT_CONTRACTS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.PAYMENT_CONTRACTS.GET_PAGINATE.apiPath
+            ) ? (
             <PaymentContract />
           ) : (
             <Navigate to="/dashboard" />
@@ -207,10 +225,12 @@ function App() {
         },
         {
           path: "systems",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.SYSTEMS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.SYSTEMS.GET_PAGINATE.apiPath
+            ) ? (
             <System />
           ) : (
             <Navigate to="/dashboard" />
@@ -218,10 +238,13 @@ function App() {
         },
         {
           path: "subcontracts",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.SUBCONTRACTS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.SUBCONTRACTS.GET_PAGINATE.apiPath
+            ) ? (
             <Subcontractor />
           ) : (
             <Navigate to="/dashboard" />
@@ -229,11 +252,13 @@ function App() {
         },
         {
           path: "maintenance-services",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.SYSTEM_MAINTENANCE_SERVICES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.SYSTEM_MAINTENANCE_SERVICES.GET_PAGINATE.apiPath
+            ) ? (
             <SystemMaintenanceService />
           ) : (
             <Navigate to="/dashboard" />
@@ -241,11 +266,13 @@ function App() {
         },
         {
           path: "maintenance-histories",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.MAINTENANCE_HISTORIES.GET_PAGINATE.apiPath
+            ) ? (
             <MaintenanceHistory />
           ) : (
             <Navigate to="/dashboard" />
@@ -253,10 +280,12 @@ function App() {
         },
         {
           path: "devices",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.DEVICES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.DEVICES.GET_PAGINATE.apiPath
+            ) ? (
             <Device />
           ) : (
             <Navigate to="/dashboard" />
@@ -264,10 +293,13 @@ function App() {
         },
         {
           path: "device-types",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.DEVICE_TYPES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.DEVICE_TYPES.GET_PAGINATE.apiPath
+            ) ? (
             <DeviceType />
           ) : (
             <Navigate to="/dashboard" />
@@ -275,11 +307,13 @@ function App() {
         },
         {
           path: "electricity-usages",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.ELECTRICITY_USAGES.GET_PAGINATE.apiPath
+            ) ? (
             <ElectricityUsage />
           ) : (
             <Navigate to="/dashboard" />
@@ -287,10 +321,12 @@ function App() {
         },
         {
           path: "quotations-repair-proposals",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.QUOTATIONS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.QUOTATIONS.GET_PAGINATE.apiPath
+            ) ? (
             <Quotation />
           ) : (
             <Navigate to="/dashboard" />
@@ -298,11 +334,13 @@ function App() {
         },
         {
           path: "notifications",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.apiPath
+            ) ? (
             <NotificationMaintenance />
           ) : (
             <Navigate to="/dashboard" />
@@ -310,11 +348,13 @@ function App() {
         },
         {
           path: "work-registrations",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.WORK_REGISTRATIONS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.WORK_REGISTRATIONS.GET_PAGINATE.apiPath
+            ) ? (
             <WorkRegistration />
           ) : (
             <Navigate to="/dashboard" />
@@ -322,11 +362,13 @@ function App() {
         },
         {
           path: "repair-requests",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath ===
-              ALL_PERMISSIONS.REPAIR_REQUEST.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.REPAIR_REQUEST.GET_PAGINATE.apiPath
+            ) ? (
             <RepairRequest />
           ) : (
             <Navigate to="/dashboard" />
@@ -334,10 +376,12 @@ function App() {
         },
         {
           path: "locations",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.LOCATIONS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath === ALL_PERMISSIONS.LOCATIONS.GET_PAGINATE.apiPath
+            ) ? (
             <Location />
           ) : (
             <Navigate to="/dashboard" />
@@ -345,10 +389,13 @@ function App() {
         },
         {
           path: "common-areas",
-          element: user?.role?.permissions?.some(
-            (perm) =>
-              perm.apiPath === ALL_PERMISSIONS.COMMON_AREAS.GET_PAGINATE.apiPath
-          ) ? (
+          element: user?.role?.permissions
+            ?.filter((perm) => perm.status)
+            ?.some(
+              (perm) =>
+                perm.apiPath ===
+                ALL_PERMISSIONS.COMMON_AREAS.GET_PAGINATE.apiPath
+            ) ? (
             <CommonArea />
           ) : (
             <Navigate to="/dashboard" />

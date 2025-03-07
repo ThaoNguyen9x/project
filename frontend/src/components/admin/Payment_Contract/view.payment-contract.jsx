@@ -175,22 +175,6 @@ const ViewPaymentContract = (props) => {
           span: 2,
         },
         {
-          label: "File",
-          children:
-            (
-              <a
-                href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
-                  data?.fileName
-                }`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {data?.fileName}
-              </a>
-            ) || "N/A",
-          span: 2,
-        },
-        {
           label: "Trạng thái",
           children: (
             <span

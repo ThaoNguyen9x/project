@@ -46,6 +46,7 @@ const CustomerType = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -166,7 +167,7 @@ const CustomerType = () => {
             onClick={async () => {
               const res = await callGetCustomerType(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -348,8 +349,8 @@ const CustomerType = () => {
 
         <ViewCustomerType
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

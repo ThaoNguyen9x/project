@@ -974,11 +974,29 @@ const ModalCustomerContract = (props) => {
                   <Option value="Active" label="Hoạt động">
                     Hoạt động
                   </Option>
-                  <Option value="Pending" label="Đang chờ gia hạn">
+                  <Option value="Rejected" label="Từ chối">
+                    Từ chối
+                  </Option>
+                  <Option value="Approve" label="Chấp thuận">
+                    Chấp thuận
+                  </Option>
+                  <Option value="Wait" label="Đang chờ gia hạn">
                     Đang chờ gia hạn
                   </Option>
                   <Option value="Inactive" label="Đã chấm dứt">
                     Đã chấm dứt
+                  </Option>
+                  <Option value="Corrected" label="Đã sửa">
+                    Đã sửa
+                  </Option>
+                  <Option value="W_Confirmation" label="Đang chờ xác nhận">
+                    Đang chờ xác nhận
+                  </Option>
+                  <Option
+                    value="W_Confirmation_2"
+                    label="Đang chờ xác nhận lần 2"
+                  >
+                    Đang chờ xác nhận lần 2
                   </Option>
                 </Select>
               </Form.Item>
@@ -1055,7 +1073,7 @@ const ModalCustomerContract = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="startX"
+              label="Tọa độ bắt đầu X"
               name="startX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1067,7 +1085,7 @@ const ModalCustomerContract = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="startY"
+              label="Tọa độ bắt đầu Y"
               name="startY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1079,7 +1097,7 @@ const ModalCustomerContract = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="endX"
+              label="Tọa độ kết thúc X"
               name="endX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
@@ -1091,7 +1109,7 @@ const ModalCustomerContract = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="endY"
+              label="Tọa độ kết thúc Y"
               name="endY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },

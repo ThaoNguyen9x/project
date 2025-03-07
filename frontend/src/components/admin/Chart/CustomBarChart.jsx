@@ -101,11 +101,13 @@ const CustomBarChart = (props) => {
                 dataKey="Đã thanh toán"
                 fill="#b91c1c"
                 animationDuration={800}
+                key="paidPaymentsBar"
               />
               <Bar
                 dataKey="Chưa thanh toán"
                 fill="#7f1d1d"
                 animationDuration={800}
+                key="unpaidPaymentsBar"
               />
             </>
           )}
@@ -115,8 +117,14 @@ const CustomBarChart = (props) => {
                 dataKey="Mức tiêu thụ điện"
                 fill="#7f1d1d"
                 animationDuration={800}
+                key="electricityUsageBar"
               />
-              <Bar dataKey="Tiền điện" fill="#b91c1c" animationDuration={800} />
+              <Bar
+                dataKey="Tiền điện"
+                fill="#b91c1c"
+                animationDuration={800}
+                key="electricityCostBar"
+              />
             </>
           )}
         </BarChart>

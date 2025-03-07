@@ -50,6 +50,7 @@ const RepairProposal = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listRiskAssessments, setRiskAssessments] = useState([]);
 
@@ -169,7 +170,7 @@ const RepairProposal = () => {
             onClick={async () => {
               const res = await callGetRepairProposal(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -416,7 +417,7 @@ const RepairProposal = () => {
       const fetchRequest = async () => {
         const res = await callGetAllRepairProposals(`filter=id~'${id}'`);
         if (res?.data?.result.length) {
-          setData(res.data.result[0]);
+          setDataView(res.data.result[0]);
           setOpenViewDetail(true);
         }
       };
@@ -460,8 +461,8 @@ const RepairProposal = () => {
 
         <ViewRepairProposal
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

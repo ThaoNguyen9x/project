@@ -50,6 +50,7 @@ const ElectricityUsage = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
@@ -185,7 +186,7 @@ const ElectricityUsage = () => {
             onClick={async () => {
               const res = await callGetElectricityUsage(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -433,7 +434,7 @@ const ElectricityUsage = () => {
       const fetchRequest = async () => {
         const res = await callGetElectricityUsage(id);
         if (res?.data) {
-          setData(res?.data);
+          setDataView(res?.data);
           setOpenViewDetail(true);
 
           navigate(location.pathname, { replace: true });
@@ -479,8 +480,8 @@ const ElectricityUsage = () => {
 
         <ViewElectricityUsage
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
           fetchData={fetchData}

@@ -118,6 +118,7 @@ const ModalRole = (props) => {
     setData(null);
     form.resetFields();
     setSelectedPermissions([]);
+    setPermissionsPage(1);
   };
 
   const handleSwitchChange = (checked, permissionId) => {

@@ -49,6 +49,7 @@ const WorkRegistration = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listUsers, setListUsers] = useState([]);
 
@@ -181,7 +182,7 @@ const WorkRegistration = () => {
             onClick={async () => {
               const res = await callGetWorkRegistration(record?.registrationID);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -272,23 +273,30 @@ const WorkRegistration = () => {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access
-            permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.UPDATE}
-            hideChildren
-          >
-            <div
-              onClick={async () => {
-                const res = await callGetWorkRegistration(record?.registrationID);
-                if (res?.data) {
-                  setData(res?.data);
-                  setOpenModal(true);
-                }
-              }}
-              className="cursor-pointer text-amber-900"
+          {user?.role?.name === "Technician_Manager" &&
+          record?.status !== "PENDING" ? (
+            ""
+          ) : (
+            <Access
+              permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.UPDATE}
+              hideChildren
             >
-              <CiEdit className="h-5 w-5" />
-            </div>
-          </Access>
+              <div
+                onClick={async () => {
+                  const res = await callGetWorkRegistration(
+                    record?.registrationID
+                  );
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenModal(true);
+                  }
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <CiEdit className="h-5 w-5" />
+              </div>
+            </Access>
+          )}
           <Access
             permission={ALL_PERMISSIONS.WORK_REGISTRATIONS.DELETE}
             hideChildren
@@ -440,8 +448,8 @@ const WorkRegistration = () => {
 
         <ViewWorkRegistration
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

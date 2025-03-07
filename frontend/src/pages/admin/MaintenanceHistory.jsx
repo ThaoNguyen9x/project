@@ -51,6 +51,7 @@ const MaintenanceHistory = () => {
   const [openModalMaintenanceHistory, setOpenModalMaintenanceHistory] =
     useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listSystemMaintenanceServices, setListSystemMaintenanceServices] =
     useState([]);
@@ -326,7 +327,7 @@ const MaintenanceHistory = () => {
                     onClick={async () => {
                       const res = await callGetMaintenanceHistory(record?.id);
                       if (res?.data) {
-                        setData(res?.data);
+                        setDataView(res?.data);
                         setOpenViewDetail(true);
                       }
                     }}
@@ -361,7 +362,7 @@ const MaintenanceHistory = () => {
                         record?.riskAssessments?.[0]?.riskAssessmentID
                       );
                       if (res?.data) {
-                        setData(res?.data);
+                        setDataView(res?.data);
                         setOpenViewDetail(true);
                       }
                     }}
@@ -432,8 +433,8 @@ const MaintenanceHistory = () => {
 
         <ViewMaintenanceHistory
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

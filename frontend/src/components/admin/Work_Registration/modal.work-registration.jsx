@@ -23,8 +23,7 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 const ModalWorkRegistration = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData, listUsers } =
-    props;
+  const { data, setData, openModal, setOpenModal, fetchData } = props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -34,25 +33,25 @@ const ModalWorkRegistration = (props) => {
     if (data?.registrationID) {
       const init = {
         ...data,
-        scheduledDate: data.scheduledDate ? dayjs(data.scheduledDate) : null,
+        scheduledDate: data?.scheduledDate ? dayjs(data?.scheduledDate) : null,
       };
 
-      if (data.drawingUrl) {
+      if (data?.drawingUrl) {
         setDataFile([
           {
             uid: "-1",
-            name: data.drawingUrl,
+            name: data?.drawingUrl,
             status: "done",
             url: `${
               import.meta.env.VITE_BACKEND_URL
-            }/storage/work_registrations/${data.drawingUrl}`,
+            }/storage/work_registrations/${data?.drawingUrl}`,
           },
         ]);
       }
 
       form.setFieldsValue(init);
     }
-  }, [data]);
+  }, [data, form]);
 
   const handleFinish = async (values) => {
     const { scheduledDate, note, status } = values;

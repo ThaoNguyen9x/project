@@ -1,9 +1,11 @@
 package com.building_mannager_system.service.customer_service;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.ContractDto.ConfirmationRequestDto;
 import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
 import com.building_mannager_system.dto.requestDto.customer.CustomerTypeDocumentDto;
 import com.building_mannager_system.dto.requestDto.propertyDto.RepairProposalDto;
+import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
 import com.building_mannager_system.dto.responseDto.ContractReminderDto;
 import com.building_mannager_system.dto.responseDto.ContractResponceDto;
 import com.building_mannager_system.entity.User;
@@ -16,6 +18,7 @@ import com.building_mannager_system.entity.customer_service.customer_manager.Cus
 import com.building_mannager_system.entity.customer_service.system_manger.Meter;
 import com.building_mannager_system.entity.notification.Notification;
 import com.building_mannager_system.entity.notification.Recipient;
+import com.building_mannager_system.entity.work_registration.RepairRequest;
 import com.building_mannager_system.enums.StatusNotifi;
 import com.building_mannager_system.repository.Contract.ContractRepository;
 import com.building_mannager_system.repository.Contract.CustomerDocumentRepository;
@@ -26,6 +29,7 @@ import com.building_mannager_system.repository.office.OfficeRepository;
 import com.building_mannager_system.repository.system_manager.MeterRepository;
 import com.building_mannager_system.security.SecurityUtil;
 import com.building_mannager_system.service.ConfigService.FileService;
+import com.building_mannager_system.service.EmailService;
 import com.building_mannager_system.service.notification.NotificationService;
 import com.building_mannager_system.service.notification.RecipientService;
 import com.building_mannager_system.untils.JsonUntils;
@@ -49,10 +53,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,6 +65,7 @@ public class ContractService {
     private final MeterRepository meterRepository;
     private final RecipientService recipientService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
     @Value("${upload-file.base-uri}")
     private String baseURI;
     private String folder = "contracts";
@@ -87,7 +89,7 @@ public class ContractService {
                            MeterRepository meterRepository,
                            RecipientService recipientService,
                            NotificationService notificationService,
-                           SimpMessagingTemplate messagingTemplate) {
+                           SimpMessagingTemplate messagingTemplate, EmailService emailService) {
         this.contractRepository = contractRepository;
         this.modelMapper = modelMapper;
         this.officeRepository = officeRepository;
@@ -101,6 +103,7 @@ public class ContractService {
         this.recipientService = recipientService;
         this.notificationService = notificationService;
         this.messagingTemplate = messagingTemplate;
+        this.emailService = emailService;
     }
 
     public ResultPaginationDTO getAllContracts(Specification<Contract> spec, Pageable pageable) {
@@ -109,7 +112,9 @@ public class ContractService {
                 : "";
 
         User user = userRepository.findByEmail(email);
-        if (user == null) return null;
+        if (user == null) {
+            return null;
+        }
 
         if ("Customer".equals(user.getRole().getName())) {
             spec = spec.and((root, query, builder) ->
@@ -366,7 +371,9 @@ public class ContractService {
         List<String> roles = List.of("Application_Admin");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-        if (recipients.isEmpty()) return;
+        if (recipients.isEmpty()) {
+            return;
+        }
 
         String message = null;
         try {
@@ -495,4 +502,83 @@ public class ContractService {
 //                ))
 //                .collect(Collectors.toList());
 //    }
+    public ContractDto sendMailContractCustomer(int id) {
+        Contract contractRequest = contractRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found with ID: " + id));
+
+        if (contractRequest.getLeaseStatus().equals("Pending")) {
+            contractRequest.setLeaseStatus("W_Confirmation");
+            contractRepository.saveAndFlush(contractRequest);
+
+            emailService.sendEmailFromTemplateSync(
+                    contractRequest.getCustomer().getUser().getEmail(),
+                    "Xác nhận hợp đồng khách hàng",
+                    "contract-confirm-template",
+                    contractRequest.getCustomer().getUser().getName(),
+                    contractRequest.getCustomer().getCompanyName(),
+                    contractRequest.getCustomer().getUser().getEmail(),
+                    "1"
+            );
+        } else {
+            contractRequest.setLeaseStatus("W_Confirmation_2");
+            contractRepository.saveAndFlush(contractRequest);
+
+            emailService.sendEmailFromTemplateSync(
+                    contractRequest.getCustomer().getUser().getEmail(),
+                    "Thông báo xác nhận hợp đồng",
+                    "contract-confirm-again-template",
+                    contractRequest.getCustomer().getUser().getName(),
+                    contractRequest.getCustomer().getCompanyName(),
+                    contractRequest.getCustomer().getUser().getEmail(),
+                    "1"
+            );
+        }
+
+        return modelMapper.map(contractRequest, ContractDto.class);
+    }
+
+    public ContractDto sendContractConfirmation(int id, ConfirmationRequestDto confirmationRequestDto) {
+        Contract contractRequest = contractRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Contract not found with ID: " + id));
+
+        contractRequest.setLeaseStatus(confirmationRequestDto.getStatus());
+        contractRepository.saveAndFlush(contractRequest);
+
+        Map<String, Object> contractMap = new HashMap<>();
+        contractMap.put("contract", modelMapper.map(contractRequest, ContractDto.class));
+        contractMap.put("comment", confirmationRequestDto.getComment()); // Lấy comment từ DTO
+
+        String message;
+        try {
+            message = JsonUntils.toJson(contractMap);
+        } catch (JsonProcessingException e) {
+            throw new APIException(HttpStatus.INTERNAL_SERVER_ERROR, "Error converting to JSON: " + e.getMessage());
+        }
+
+        List<String> roles = List.of("Application_Admin");
+        List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+        if (recipients.isEmpty()) {
+            return null;
+        }
+
+        for (User user : recipients) {
+            Recipient rec = new Recipient();
+            rec.setType("Contract_Customer_Confirmation");
+            rec.setName("Send Contract Customer Confirmation");
+            rec.setReferenceId(user.getId());
+
+            Recipient recipientEntity = recipientService.createRecipient(rec);
+
+            Notification notification = new Notification();
+            notification.setRecipient(recipientEntity);
+            notification.setMessage(message);
+            notification.setStatus(StatusNotifi.PENDING);
+            notification.setCreatedAt(LocalDateTime.now());
+
+            notificationService.createNotification(notification);
+            messagingTemplate.convertAndSend("/topic/contract-customer-confirmation/" + user.getId(), message);
+        }
+        return modelMapper.map(contractRequest, ContractDto.class);
+    }
 }

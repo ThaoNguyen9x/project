@@ -53,12 +53,32 @@ public class EmailService {
             String to,
             String subject,
             String templateName,
-            String username,
-            Object value) {
+            String name,
+            String customerCompany,
+            String email,
+            String password) {
 
         Context context = new Context();
-        context.setVariable("name", username);
-        context.setVariable("jobs", value);
+        context.setVariable("name", name);
+        context.setVariable("customerCompany", customerCompany);
+        context.setVariable("email", email);
+        context.setVariable("password", password);
+
+        String content = templateEngine.process(templateName, context);
+        this.sendEmailSync(to, subject, content, false, true);
+    }
+
+    @Async
+    public void sendEmailForgotPasswordFromTemplateSync(
+            String to,
+            String subject,
+            String templateName,
+            String name,
+            String resetLink) {
+
+        Context context = new Context();
+        context.setVariable("name", name);
+        context.setVariable("resetLink", resetLink);
 
         String content = templateEngine.process(templateName, context);
         this.sendEmailSync(to, subject, content, false, true);

@@ -10,7 +10,6 @@ import {
   notification,
   Row,
   Select,
-  DatePicker,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
@@ -24,8 +23,7 @@ import TextArea from "antd/es/input/TextArea";
 const { Option } = Select;
 
 const ModalRepairRequest = (props) => {
-  const { user, data, setData, openModal, setOpenModal, fetchData, listUsers } =
-    props;
+  const { data, setData, openModal, setOpenModal, fetchData } = props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -35,17 +33,17 @@ const ModalRepairRequest = (props) => {
     if (data?.requestID) {
       const init = {
         ...data,
-        requestDate: data.requestDate ? dayjs(data.requestDate) : null,
+        requestDate: data?.requestDate ? dayjs(data?.requestDate) : null,
       };
 
-      if (data.imageUrl) {
+      if (data?.imageUrl) {
         setDataFile([
           {
             uid: "-1",
-            name: data.imageUrl,
+            name: data?.imageUrl,
             status: "done",
             url: `${import.meta.env.VITE_BACKEND_URL}/storage/repair_requests/${
-              data.imageUrl
+              data?.imageUrl
             }`,
           },
         ]);
@@ -65,9 +63,8 @@ const ModalRepairRequest = (props) => {
 
     setIsSubmit(true);
 
-    if (data?.requestID) {
-      const res = await callUpdateRepairRequest(
-        data?.requestID,
+    if (!data?.requestID) {
+      const res = await callCreateRepairRequest(
         dayjs(requestDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         content,
         image,
@@ -85,7 +82,8 @@ const ModalRepairRequest = (props) => {
         });
       }
     } else {
-      const res = await callCreateRepairRequest(
+      const res = await callUpdateRepairRequest(
+        data?.requestID,
         dayjs(requestDate).startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
         content,
         image,
@@ -154,6 +152,7 @@ const ModalRepairRequest = (props) => {
               ]}
             >
               <Upload
+                disabled={!!data?.requestID}
                 name="image"
                 beforeUpload={beforeUpload}
                 onChange={({ fileList }) => setDataFile(fileList)}
@@ -176,11 +175,15 @@ const ModalRepairRequest = (props) => {
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
-              <TextArea autoSize={{ minRows: 3, maxRows: 5 }} allowClear />
+              <TextArea
+                disabled={!!data?.requestID}
+                autoSize={{ minRows: 3, maxRows: 5 }}
+                allowClear
+              />
             </Form.Item>
           </Col>
 
-          {data?.requestID ? (
+          {data?.requestID && (
             <Col lg={12} md={12} sm={24} xs={24}>
               <Form.Item
                 label="Trạng thái"
@@ -212,8 +215,6 @@ const ModalRepairRequest = (props) => {
                 </Select>
               </Form.Item>
             </Col>
-          ) : (
-            ""
           )}
         </Row>
 

@@ -40,7 +40,7 @@ public class Contract extends BaseEntity {
 
     @Lob
     @Column(name = "LeaseStatus")
-    private String leaseStatus = "Active";
+    private String leaseStatus = "Pending";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "OfficeID")

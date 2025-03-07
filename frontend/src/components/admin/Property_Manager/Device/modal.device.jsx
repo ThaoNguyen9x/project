@@ -50,7 +50,7 @@ const ModalDevice = (props) => {
 
       form.setFieldsValue(init);
     }
-  }, [data]);
+  }, [data, form]);
 
   const handleFinish = async (values) => {
     const {
@@ -137,7 +137,12 @@ const ModalDevice = (props) => {
       confirmLoading={isSubmit}
       className="w-full lg:!w-1/3"
     >
-      <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+      <Form
+        name="device-basic"
+        onFinish={handleFinish}
+        layout="vertical"
+        form={form}
+      >
         <Row gutter={16}>
           <Col xs={24}>
             <Form.Item

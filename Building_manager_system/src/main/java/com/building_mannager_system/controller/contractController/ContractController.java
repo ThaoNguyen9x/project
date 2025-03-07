@@ -1,7 +1,9 @@
 package com.building_mannager_system.controller.contractController;
 
 import com.building_mannager_system.dto.ResultPaginationDTO;
+import com.building_mannager_system.dto.requestDto.ContractDto.ConfirmationRequestDto;
 import com.building_mannager_system.dto.requestDto.ContractDto.ContractDto;
+import com.building_mannager_system.dto.requestDto.work_registration.RepairRequestDto;
 import com.building_mannager_system.entity.customer_service.contact_manager.Contract;
 import com.building_mannager_system.service.customer_service.ContractService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URISyntaxException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/contracts")
@@ -57,5 +60,18 @@ public class ContractController {
     public ResponseEntity<Void> deleteContract(@PathVariable(name = "id") int id) throws URISyntaxException {
         contractService.deleteContract(id);
         return ResponseEntity.ok(null);
+    }
+
+    @PutMapping("/send/{id}")
+    @ApiMessage("Gửi tài khoản đăng nhập cho khách hàng thành công")
+    public ResponseEntity<ContractDto> sendContract(@PathVariable(name = "id") int id){
+        return ResponseEntity.ok(contractService.sendMailContractCustomer(id));
+    }
+
+    @PutMapping("/confirmation/{id}")
+    @ApiMessage("Khách hàng gửi xác nhận hợp đồng thành công")
+    public ResponseEntity<ContractDto> sendConfirmationContract(@PathVariable(name = "id") int id,
+                                                                @RequestBody ConfirmationRequestDto confirmationRequestDto) {
+        return ResponseEntity.ok(contractService.sendContractConfirmation(id, confirmationRequestDto));
     }
 }

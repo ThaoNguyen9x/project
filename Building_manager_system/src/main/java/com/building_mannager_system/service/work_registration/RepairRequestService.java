@@ -83,7 +83,7 @@ public class RepairRequestService {
             throw new RuntimeException(e);
         }
 
-        List<String> roles = List.of("Application_Admin", "Technician_Manager", "Technician_Employee");
+        List<String> roles = List.of("Application_Admin", "Technician_Manager");
         List<User> recipients = userRepository.findByRole_NameIn(roles);
 
         if (recipients.isEmpty()) {
@@ -125,6 +125,9 @@ public class RepairRequestService {
         if (user.getRole().getName().equals("Customer")) {
             spec = Specification.where((root, query, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get("account").get("id"), user.getId()));
+        } else if (user.getRole().getName().equals("Technician_Employee")) {
+            spec = Specification.where((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("technician").get("id"), user.getId()));
         }
 
         Page<RepairRequest> page = repairRequestRepository.findAll(spec, pageable);
@@ -192,5 +195,41 @@ public class RepairRequestService {
         }
 
         repairRequestRepository.delete(ex);
+    }
+
+    public RepairRequestDto sendRepairRequest(Long id, int technician) {
+        RepairRequest repairRequest = repairRequestRepository.findById(id)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Repair Request not found with ID: " + id));
+
+        String message = null;
+        try {
+            message = JsonUntils.toJson(modelMapper.map(repairRequest, RepairRequestDto.class));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        User technicianUser = userRepository.findById(technician)
+                .orElseThrow(() -> new APIException(HttpStatus.NOT_FOUND, "Technician not found with ID: " + technician));
+
+        repairRequest.setTechnician(technicianUser);
+        repairRequest = repairRequestRepository.saveAndFlush(repairRequest);
+
+        Recipient rec = new Recipient();
+        rec.setType("Repair_Request_Notification_Technician");
+        rec.setName("Send Repair Request Notification Technician");
+        rec.setReferenceId(technician);
+
+        Recipient recipientEntity = recipientService.createRecipient(rec);
+
+        Notification notification = new Notification();
+        notification.setRecipient(recipientEntity);
+        notification.setMessage(message);
+        notification.setStatus(StatusNotifi.PENDING);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        notificationService.createNotification(notification);
+        messagingTemplate.convertAndSend("/topic/repair-request-notifications/" + technicianUser.getId(), message);
+
+        return modelMapper.map(repairRequest, RepairRequestDto.class);
     }
 }

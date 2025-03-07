@@ -118,6 +118,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     new Permission("Update a contract", "/api/contracts/{id}", "PUT", "CONTRACTS"),
                     new Permission("Delete a contract", "/api/contracts/{id}", "DELETE", "CONTRACTS"),
                     new Permission("Get contracts with pagination", "/api/contracts", "GET", "CONTRACTS"),
+                    new Permission("Send a contract", "/api/contracts/send/{id}", "PATCH", "CONTRACTS"),
 
                     new Permission("Create a payment contract", "/api/payments", "POST", "PAYMENT_CONTRACTS"),
                     new Permission("Update a payment contract", "/api/payments/{id}", "PUT", "PAYMENT_CONTRACTS"),
@@ -186,6 +187,7 @@ public class DatabaseInitializer implements CommandLineRunner {
                     new Permission("Get tasks with pagination", "/api/tasks", "GET", "TASKS"),
 
                     new Permission("Create a repair request", "/api/repair-requests", "POST", "REPAIR_REQUEST"),
+                    new Permission("Send a repair request", "/api/repair-requests/send/{id}", "PATCH", "REPAIR_REQUEST"),
                     new Permission("Update a repair request", "/api/repair-requests/{id}", "PUT", "REPAIR_REQUEST"),
                     new Permission("Delete a repair request", "/api/repair-requests/{id}", "DELETE", "REPAIR_REQUEST"),
                     new Permission("Get repair requests with pagination", "/api/repair-requests", "GET", "REPAIR_REQUEST"),
@@ -233,12 +235,14 @@ public class DatabaseInitializer implements CommandLineRunner {
                     "SYSTEMS", "ELECTRICITY_USAGES", "WORK_REGISTRATIONS", "REPAIR_REQUEST", "OFFICES"
             );
             Set<String> technicianManagerPostModules = Set.of("REPAIR_PROPOSALS", "SUBCONTRACTS", "SYSTEM_MAINTENANCE_SERVICES");
+            Set<String> technicianManagerPatchModules = Set.of("REPAIR_PROPOSALS");
             Set<String> technicianManagerPutModules = Set.of("WORK_REGISTRATIONS", "REPAIR_REQUEST");
             List<Permission> technicianManagerPermissions = allPermissions.stream()
                     .filter(permission ->
                             ("GET".equals(permission.getMethod()) && technicianManagerGetModules.contains(permission.getModule())) ||
                                     ("POST".equals(permission.getMethod()) && technicianManagerPostModules.contains(permission.getModule())) ||
-                                    ("PUT".equals(permission.getMethod()) && technicianManagerPutModules.contains(permission.getModule()))
+                                    ("PUT".equals(permission.getMethod()) && technicianManagerPutModules.contains(permission.getModule())) ||
+                                    ("PATCH".equals(permission.getMethod()) && technicianManagerPatchModules.contains(permission.getModule()))
                     )
                     .collect(Collectors.toList());
 

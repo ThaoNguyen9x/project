@@ -49,6 +49,7 @@ const Subcontractor = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listSystems, setListSystems] = useState([]);
 
@@ -181,7 +182,7 @@ const Subcontractor = () => {
             onClick={async () => {
               const res = await callGetSubcontract(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -231,7 +232,7 @@ const Subcontractor = () => {
             onClick={async () => {
               const res = await callGetSystem(system?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -392,8 +393,8 @@ const Subcontractor = () => {
 
         <ViewSubcontractor
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

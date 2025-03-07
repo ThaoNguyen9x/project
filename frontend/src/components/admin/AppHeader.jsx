@@ -69,6 +69,8 @@ const AppHeader = () => {
         `/topic/birthday-notifications/${user.id}`,
         `/topic/repair-proposal-notifications/${user.id}`,
         `/topic/exp-payment-notifications/${user.id}`,
+
+        `/topic/contract-customer-confirmation/${user.id}`,
       ];
 
       topics.forEach((topic) => {
@@ -163,32 +165,35 @@ const AppHeader = () => {
     },
   ];
 
+  const fetchAllPages = async (apiCall, pageSize) => {
+    let page = 1;
+    let allResults = [];
+    let hasMore = true;
+
+    while (hasMore) {
+      const query = `page=${page}&size=${pageSize}`;
+      const response = await apiCall(query);
+      const result = response?.data?.result || [];
+      allResults = [...allResults, ...result];
+
+      if (result.length < pageSize) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+    return allResults;
+  };
+
   const fetchNotifications = async () => {
     setLoading(true);
 
-    // Fetch Users
-    let pageNotification = 1;
-    let hasMores = true;
-    let allNotifications = [];
+    const pageSize = 20;
 
-    const query = `page=${pageNotification}&size=20`;
-
-    while (hasMores) {
-      const [res] = await Promise.all([callGetAllNotifications(query)]);
-
-      if (res && res.data) {
-        allNotifications = [...allNotifications, ...res.data.result];
-        hasMores = res.data.hasMore;
-        pageNotification += 1;
-      } else {
-        hasMores = false;
-      }
-    }
+    const res = await fetchAllPages(callGetAllNotifications, pageSize);
 
     setListNotifications(
-      allNotifications.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      )
+      res.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     );
 
     setLoading(false);
@@ -197,40 +202,10 @@ const AppHeader = () => {
   const fetchData = async () => {
     setLoading(true);
 
-    // Fetch Users
-    let pageUsers = 1;
-    let hasMoreUsers = true;
-    let allUsers = [];
+    const pageSize = 20;
 
-    while (hasMoreUsers) {
-      const query = `page=${pageUsers}&size=20`;
-      const res = await callGetChatRoomUsers(query);
-
-      if (res && res.data) {
-        allUsers = [...allUsers, ...res.data.result];
-        hasMoreUsers = res.data.hasMore;
-        pageUsers += 1;
-      } else {
-        hasMoreUsers = false;
-      }
-    }
-
-    let pageGroups = 1;
-    let hasMoreGroups = true;
-    let allGroups = [];
-
-    while (hasMoreGroups) {
-      const query = `page=${pageGroups}&size=20`;
-      const res = await callGetChatRoomGroups(query);
-
-      if (res && res.data) {
-        allGroups = [...allGroups, ...res.data.result];
-        hasMoreGroups = res.data.hasMore;
-        pageGroups += 1;
-      } else {
-        hasMoreGroups = false;
-      }
-    }
+    const allUsers = await fetchAllPages(callGetChatRoomUsers, pageSize);
+    const allGroups = await fetchAllPages(callGetChatRoomGroups, pageSize);
 
     setListChatRoomUsers(allUsers);
     setListChatRoomGroups(allGroups);
@@ -242,179 +217,120 @@ const AppHeader = () => {
     fetchData();
   }, []);
 
+  const notificationMessages = {
+    Contact: (msg) =>
+      `Khách hàng có một khoản thanh toán với tổng số tiền ${msg?.paymentAmount}, hạn chót thanh toán vào ngày ${msg?.paymentDate}.`,
+    Payment_Notification_Success: (msg) =>
+      `Khách hàng vừa thanh toán thành công khoản tiền ${msg?.paymentAmount} vào ngày ${msg?.paymentDate}.`,
+    Electricity_Usage_Verification: (msg) =>
+      `Khách hàng vui lòng kiểm tra đồng hồ số ${msg?.meter?.serialNumber} đã được ghi chỉ số vào ngày ${msg?.readingDate}.`,
+    Birthday_Notification: (msg) =>
+      `Khách hàng ${msg?.directorName} của công ty ${msg?.companyName} sau 3 ngày nữa sẽ đến sinh nhật.`,
+    Due_Payment_Notification: (msg) =>
+      `Khoản thanh toán đến hạn, thời hạn cuối là ngày ${formatDate(
+        msg?.dueDate
+      )}.`,
+    Exp_Payment_Notification: (msg) =>
+      `Khoản thanh toán hết hạn, ${formatDate(msg?.dueDate)}.`,
+    Maintenance_Task_Notification: () =>
+      `Bạn có nhiệm vụ bảo trì cần kiểm tra.`,
+    Due_Contract_Notification: (msg) =>
+      `Hợp đồng của khách hàng công ty ${msg?.customer?.companyName} sắp hết hạn.`,
+    Repair_Proposal_Notification: (msg) =>
+      `Bạn có báo giá và đề xuất bảo trì vào ngày ${formatDate(
+        msg?.requestDate
+      )}.`,
+    Repair_Request_Notification: (msg) =>
+      `Bạn có yêu cầu sửa chữa vào ngày ${formatDate(msg?.requestDate)}.`,
+    Repair_Request_Notification_Customer: (msg) =>
+      `Yêu cầu sửa chữa của bạn đã ${
+        msg?.status === "SUCCESS" ? "hoàn thành" : "thất bại"
+      }, đơn yêu cầu của bạn vào ngày ${formatDate(msg?.requestDate)}.`,
+    Repair_Request_Notification_Complete: (msg) =>
+      `Yêu cầu sửa chữa được phân bổ nhiệm vụ cho kỹ thuật viên đã ${
+        msg?.status === "SUCCESS" ? "hoàn thành" : "thất bại"
+      }.`,
+    Electricity_Usage_Customer: (msg) =>
+      msg?.status === "NO"
+        ? `Khách hàng không chấp nhận số điện đã ghi. Vui lòng kiểm tra lại và liên hệ để xác nhận.`
+        : `Khách hàng đã đồng ý với số điện đã ghi. Vui lòng tiến hành tạo hóa đơn thanh toán.`,
+    Work_Registration_Notification: (msg) =>
+      `Bạn có yêu cầu đăng ký thi công vào ngày ${formatDate(
+        msg?.registrationDate
+      )}.`,
+    Work_Register_Notification_Customer: (msg) =>
+      `Yêu cầu đăng ký thi công của bạn vào ngày ${formatDate(
+        msg?.registrationDate
+      )}.`,
+    Repair_Request_Notification_Technician: (msg) =>
+      `Bạn có yêu cầu sửa chữa vào ngày ${formatDate(msg?.requestDate)}.`,
+    Contract_Customer_Confirmation: (msg) =>
+      `Khách hàng công ty ${msg?.contract?.customer?.companyName} vừa phản hồi về hợp đồng.`,
+  };
+
+  const notificationLabels = {
+    Contact: "Thanh toán chờ xử lý",
+    Payment_Notification_Success: "Thanh toán thành công",
+    Electricity_Usage_Verification: "Chưa được xác nhận",
+    Birthday_Notification: "Thông báo sinh nhật",
+    Due_Payment_Notification: "Thông báo đến hạn thanh toán",
+    Exp_Payment_Notification: "Thông báo hết hạn thanh toán",
+    Maintenance_Task_Notification: "Thông báo nhiệm vụ bảo trì",
+    Due_Contract_Notification: "Thông báo hợp đồng sắp hết hạn",
+    Repair_Proposal_Notification: "Thông báo đề xuất bảo trì",
+    Repair_Request_Notification: "Thông báo yêu cầu sửa chữa",
+    Repair_Request_Notification_Customer: "Thông báo yêu cầu sửa chữa",
+    Repair_Request_Notification_Technician: "Thông báo yêu cầu sửa chữa",
+    Repair_Request_Notification_Complete: "Thông báo yêu cầu sửa chữa",
+    Electricity_Usage_Customer: "Thông báo ghi chỉ số điện",
+    Work_Registration_Notification: "Thông báo đăng ký thi công",
+    Work_Register_Notification_Customer: "Thông báo đăng ký thi công",
+    Contract_Customer_Confirmation: "Thông báo phản hồi về hợp đồng",
+  };
+
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleDateString("vi-VN") : "N/A";
+
+  const NotificationCard = ({ text, label, onClick, isRead }) => (
+    <div
+      onClick={onClick}
+      className={`${
+        isRead ? "text-gray-400" : "text-black"
+      } hover:text-blue-500 transition duration-300 ease-in-out`}
+    >
+      <p className="font-bold">{label}</p>
+      <p>{text.length > 40 ? text.substring(0, 40) + " ..." : text}</p>
+    </div>
+  );
+
   const notificationItems =
     listNotifications.length > 0
-      ? listNotifications.map((notification, index) => {
+      ? listNotifications.map((notification) => {
           const message = notification?.message
             ? JSON.parse(notification?.message)
             : null;
 
-          const formattedDate = message?.paymentDate
-            ? new Date(message?.paymentDate).toLocaleDateString()
-            : "N/A";
+          const notificationText =
+            notificationMessages[notification?.recipient?.type]?.(message) ||
+            "Thông báo không xác định";
 
-          const formattedAmount = message?.paymentAmount
-            ? message?.paymentAmount.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-              })
-            : "N/A";
-
-          let notificationText = "";
-
-          if (message) {
-            if (notification?.recipient?.type === "Contact") {
-              notificationText = `Khách hàng có một khoản thanh toán với tổng số tiền ${formattedAmount}, hạn chót thanh toán vào ngày ${formattedDate}.`;
-            } else if (
-              notification?.recipient?.type === "Payment_Notification_Success"
-            ) {
-              notificationText = `Khách hàng vừa thanh toán thành công khoản tiền ${formattedAmount} vào ngày ${formattedDate}.`;
-            } else if (
-              notification?.recipient?.type === "Electricity_Usage_Verification"
-            ) {
-              notificationText = `Khách hàng vui lòng kiểm tra đồng hồ số ${message?.meter?.serialNumber} đã được ghi chỉ số vào ngày ${message?.readingDate}.`;
-            } else if (
-              notification?.recipient?.type === "Electricity_Usage_Customer" &&
-              message?.status === "NO"
-            ) {
-              notificationText = `Khách hàng không chấp nhận số điện đã ghi. Vui lòng kiểm tra lại và liên hệ để xác nhận.`;
-            } else if (
-              notification?.recipient?.type === "Electricity_Usage_Customer" &&
-              message?.status === "YES"
-            ) {
-              notificationText = `Khách hàng đã đồng ý với số điện đã ghi. Vui lòng tiến hành tạo hóa đơn thanh toán.`;
-            } else if (
-              notification?.recipient?.type === "Birthday_Notification"
-            ) {
-              notificationText = `Khách hàng ${message?.directorName} của công ty ${message?.companyName} sau 3 ngày nữa sẽ đến sinh nhật.`;
-            } else if (
-              notification?.recipient?.type === "Repair_Proposal_Notification"
-            ) {
-              notificationText = `Bạn có báo giá và đề xuất bảo trì vào ngày ${new Date(
-                message?.requestDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              notification?.recipient?.type === "Repair_Request_Notification"
-            ) {
-              notificationText = `Bạn có yêu cầu sửa chữa vào ngày ${new Date(
-                message?.requestDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              (notification?.recipient?.type ===
-                "Repair_Request_Notification_Customer" &&
-                message.status === "SUCCESS") ||
-              message.status === "FAILED"
-            ) {
-              notificationText = `Yêu cầu sửa chữa của bạn đã ${
-                message?.status === "SUCCESS" ? "hoàn thành" : "thất bại"
-              }, đơn yêu cầu của bạn vào ngày ${new Date(
-                message?.requestDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              notification?.recipient?.type === "Work_Registration_Notification"
-            ) {
-              notificationText = `Bạn có yêu cầu đăng ký thi công vào ngày ${new Date(
-                message?.registrationDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              notification?.recipient?.type ===
-              "Work_Register_Notification_Customer"
-            ) {
-              notificationText = `Yêu cầu đăng ký thi công của bạn vào ngày ${new Date(
-                message?.registrationDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              notification?.recipient?.type === "Due_Payment_Notification"
-            ) {
-              notificationText = `Khoản thanh toán đến hạn, thời hạn cuối là ngày ${new Date(
-                message?.dueDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              notification?.recipient?.type === "Exp_Payment_Notification"
-            ) {
-              notificationText = `Khoản thanh toán hết hạn, ${new Date(
-                message?.dueDate
-              ).toLocaleDateString("vi-VN")}`;
-            } else if (
-              notification?.recipient?.type === "Maintenance_Task_Notification"
-            ) {
-              notificationText = `Bạn có nhiệm vụ bảo trì cần kiểm tra`;
-            } else if (
-              notification?.recipient?.type === "Due_Contract_Notification"
-            ) {
-              notificationText = `Hợp đồng của khách hàng công ty ${message?.customer?.companyName} sắp hết hạn`;
-            }
-          }
+          const label =
+            notificationLabels[notification?.recipient?.type] ||
+            "Thông báo không xác định";
 
           return {
             key: notification.id,
             label: (
-              <div
-                key={notification.id}
+              <NotificationCard
+                text={notificationText}
+                label={label}
+                isRead={notification.status === "READ"}
                 onClick={() => {
                   setNotificationDetails(notification);
                   handleReadNotification(notification?.id);
                   setOpenNotification(true);
                 }}
-                className={`${
-                  notification.status === "READ"
-                    ? "text-gray-400"
-                    : "text-black"
-                } hover:text-blue-500 transition duration-300 ease-in-out`}
-              >
-                <p className="font-bold">
-                  {notification?.recipient?.type === "Contact"
-                    ? "Thanh toán chờ xử lý"
-                    : notification?.recipient?.type ===
-                      "Payment_Notification_Success"
-                    ? "Thanh toán thành công"
-                    : notification?.recipient?.type ===
-                      "Electricity_Usage_Verification"
-                    ? "Chưa được xác nhận"
-                    : notification?.recipient?.type ===
-                        "Electricity_Usage_Customer" && message?.status === "NO"
-                    ? "Không chấp nhận"
-                    : notification?.recipient?.type ===
-                        "Electricity_Usage_Customer" &&
-                      message?.status === "YES"
-                    ? "Đã chấp nhận"
-                    : message?.status === "ACTIV"
-                    ? "Đã được xác nhận"
-                    : notification?.recipient?.type === "Birthday_Notification"
-                    ? "Thông báo sinh nhật"
-                    : notification?.recipient?.type ===
-                      "Due_Payment_Notification"
-                    ? "Thông báo đến hạn thanh toán"
-                    : notification?.recipient?.type ===
-                      "Exp_Payment_Notification"
-                    ? "Thông báo hết hạn thanh toán"
-                    : notification?.recipient?.type ===
-                        "Repair_Request_Notification" ||
-                      notification?.recipient?.type ===
-                        "Repair_Request_Notification_Customer"
-                    ? "Thông báo yêu cầu sửa chữa"
-                    : notification?.recipient?.type ===
-                        "Work_Registration_Notification" ||
-                      notification?.recipient?.type ===
-                        "Work_Register_Notification_Customer"
-                    ? "Thông báo đăng ký thi công"
-                    : notification?.recipient?.type ===
-                      "Repair_Proposal_Notification"
-                    ? "Thông báo đề xuất bảo trì"
-                    : notification?.recipient?.type ===
-                      "Due_Contract_Notification"
-                    ? "Thông báo hợp đồng sắp hết hạn"
-                    : notification?.recipient?.type ===
-                      "Maintenance_Task_Notification"
-                    ? "Thông báo nhiệm vụ bảo trì"
-                    : "Thông báo không xác định"}
-                </p>
-                <p>
-                  {notificationText.length > 40
-                    ? notificationText.substring(0, 40) + " ..."
-                    : notificationText}
-                </p>
-              </div>
+              />
             ),
           };
         })

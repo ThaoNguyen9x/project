@@ -27,6 +27,7 @@ import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permissio
 import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
+import Highlighter from "react-highlight-words";
 
 const Permission = () => {
   const { user } = useContext(AuthContext);
@@ -45,6 +46,7 @@ const Permission = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -165,7 +167,7 @@ const Permission = () => {
             onClick={async () => {
               const res = await callGetPermission(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -392,8 +394,8 @@ const Permission = () => {
 
         <ViewPermission
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

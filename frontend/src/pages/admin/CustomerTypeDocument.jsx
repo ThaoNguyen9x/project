@@ -48,6 +48,7 @@ const CustomerTypeDocument = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listCustomerTypes, setListCustomerTypes] = useState([]);
 
@@ -180,7 +181,7 @@ const CustomerTypeDocument = () => {
             onClick={async () => {
               const res = await callGetCustomerTypeDocument(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -209,7 +210,7 @@ const CustomerTypeDocument = () => {
             onClick={async () => {
               const res = await callGetCustomerType(customerType?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -397,8 +398,8 @@ const CustomerTypeDocument = () => {
 
         <ViewCustomerTypeDocument
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

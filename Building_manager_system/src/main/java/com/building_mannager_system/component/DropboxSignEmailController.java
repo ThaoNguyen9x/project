@@ -1,8 +1,7 @@
-package com.building_mannager_system.controller;
+package com.building_mannager_system.component;
 
 import com.hellosign.sdk.HelloSignException;
 import com.hellosign.sdk.resource.SignatureRequest;
-import com.building_mannager_system.component.DropboxSignEmailService;
 import com.building_mannager_system.utils.annotation.ApiMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

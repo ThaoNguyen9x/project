@@ -26,6 +26,10 @@ public class RepairRequest extends BaseEntity {
     @JoinColumn(name = "accountID", nullable = false)
     private User account;
 
+    @ManyToOne
+    @JoinColumn(name = "technicianID")
+    private User technician = null;
+
     @Column(nullable = false)
     private LocalDateTime requestDate;
 

@@ -16,9 +16,9 @@ import { ALL_PERMISSIONS } from "./Access_Control/Permission/data/permissions";
 const checkPermission = (permissions, apiPath, method, aclEnabled) => {
   return (
     aclEnabled === "false" ||
-    permissions?.some(
-      (item) => item.apiPath === apiPath && item.method === method
-    )
+    permissions
+      .filter((item) => item.status)
+      .some((item) => item.apiPath === apiPath && item.method === method)
   );
 };
 

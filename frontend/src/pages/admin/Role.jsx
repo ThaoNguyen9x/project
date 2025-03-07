@@ -27,6 +27,7 @@ import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permissio
 import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
+import Highlighter from "react-highlight-words";
 
 const Role = () => {
   const { user } = useContext(AuthContext);
@@ -45,6 +46,7 @@ const Role = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -165,7 +167,7 @@ const Role = () => {
             onClick={async () => {
               const res = await callGetRole(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -341,8 +343,8 @@ const Role = () => {
 
         <ViewRole
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

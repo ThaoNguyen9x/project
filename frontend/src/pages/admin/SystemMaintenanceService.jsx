@@ -48,6 +48,7 @@ const SystemMaintenanceService = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listSubcontractors, setListSubcontractors] = useState([]);
 
@@ -206,7 +207,7 @@ const SystemMaintenanceService = () => {
             onClick={async () => {
               const res = await callGetSystemMaintenanceService(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -239,7 +240,7 @@ const SystemMaintenanceService = () => {
             onClick={async () => {
               const res = await callGetSubcontract(subcontractor?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -447,8 +448,8 @@ const SystemMaintenanceService = () => {
 
         <ViewSystemMaintenanceService
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

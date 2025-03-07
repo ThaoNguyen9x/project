@@ -194,7 +194,12 @@ const ModalMaintenanceHistory = (props) => {
       confirmLoading={isSubmit}
       className="w-full lg:!w-1/2"
     >
-      <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+      <Form
+        name="maintenancehistorybasic"
+        onFinish={handleFinish}
+        layout="vertical"
+        form={form}
+      >
         <h3 className="font-semibold text-base my-2">Lịch sử bảo trì</h3>
         <Row gutter={16}>
           <Col xs={24}>

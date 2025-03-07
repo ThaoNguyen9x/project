@@ -16,7 +16,12 @@ const Access = (props) => {
           item.method === permission.method &&
           item.module === permission.module
       );
-      setAllow(!!check);
+
+      if (check) {
+        setAllow(check.status);
+      } else {
+        setAllow(false);
+      }
     }
   }, [user.role.permissions, permission]);
 

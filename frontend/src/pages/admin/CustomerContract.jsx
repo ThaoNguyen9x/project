@@ -14,7 +14,10 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  NotificationOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
 import {
   callDeleteContract,
   callGetAllContracts,
@@ -23,6 +26,7 @@ import {
   callGetAllCustomerTypeDocuments,
   callGetContract,
   callGetCustomer,
+  callSendMailContract,
 } from "../../services/api";
 
 import ModalCustomerContract from "../../components/admin/Customer_Service/Customer_Contract/modal.customer-contract";
@@ -55,6 +59,7 @@ const CustomerContract = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
@@ -258,9 +263,9 @@ const CustomerContract = () => {
 
     if (id) {
       const fetchRequest = async () => {
-        const res = await callGetCustomer(id);
+        const res = await callGetContract(id);
         if (res?.data) {
-          setData(res?.data);
+          setDataView(res?.data);
           setOpenViewDetail(true);
 
           navigate(location.pathname, { replace: true });
@@ -319,9 +324,9 @@ const CustomerContract = () => {
                 return (
                   <a
                     onClick={async () => {
-                      const res = await callGetCustomer(record?.customer?.id);
+                      const res = await callGetContract(record?.id);
                       if (res?.data) {
-                        setData(res?.data);
+                        setDataView(res?.data);
                         setOpenViewDetail(true);
                       }
                     }}
@@ -359,22 +364,10 @@ const CustomerContract = () => {
               sorter={(a, b) => a.startDate.localeCompare(b.startDate)}
               {...getColumnSearchProps("startDate")}
               render={(text, record) => {
-                return (
-                  <a
-                    onClick={async () => {
-                      const res = await callGetContract(record?.id);
-                      if (res?.data) {
-                        setData(res?.data);
-                        setOpenViewDetail(true);
-                      }
-                    }}
-                  >
-                    {searchedColumn === "startDate" ? (
-                      <HighlightText text={text} searchText={searchText} />
-                    ) : (
-                      FORMAT_TEXT_LENGTH(text, 20)
-                    )}
-                  </a>
+                return searchedColumn === "startDate" ? (
+                  <HighlightText text={text} searchText={searchText} />
+                ) : (
+                  FORMAT_TEXT_LENGTH(text, 20)
                 );
               }}
             />
@@ -447,33 +440,121 @@ const CustomerContract = () => {
                 },
                 {
                   text: "Đang chờ gia hạn",
+                  value: "Wait",
+                },
+                {
+                  text: "Đang chờ xử lý",
                   value: "Pending",
+                },
+                {
+                  text: "Đã sửa",
+                  value: "Corrected",
+                },
+                {
+                  text: "Đang chờ xác nhận",
+                  value: "W_Confirmation",
+                },
+                {
+                  text: "Đang chờ xác nhận lần 2",
+                  value: "W_Confirmation_2",
+                },
+                {
+                  text: "Từ chối",
+                  value: "Rejected",
+                },
+                {
+                  text: "Chấp nhận",
+                  value: "Approved",
                 },
               ]}
               onFilter={(value, record) => record?.leaseStatus === value}
-              render={(leaseStatus, record) => (
-                <span
-                  className={`${
-                    leaseStatus === "Active"
-                      ? "success"
-                      : leaseStatus === "Inactive"
-                      ? "danger"
-                      : "warning"
-                  } status`}
-                >
-                  {leaseStatus === "Active"
-                    ? "Hoạt động"
-                    : leaseStatus === "Inactive"
-                    ? "Đã chấm dứt"
-                    : "Đang chờ gia hạn"}
-                </span>
-              )}
+              render={(leaseStatus) => {
+                const statusMap = {
+                  Active: { text: "Hoạt động", className: "success" },
+                  Inactive: { text: "Đã chấm dứt", className: "danger" },
+                  Wait: { text: "Đang chờ gia hạn", className: "warning" },
+                  Pending: {
+                    text: "Đang chờ xử lý",
+                    className: "bg-gray-200",
+                  },
+                  Corrected: {
+                    text: "Đã sửa",
+                    className: "bg-gray-200",
+                  },
+                  W_Confirmation: {
+                    text: "Đang chờ xác nhận",
+                    className: "bg-red-500 text-white",
+                  },
+                  W_Confirmation_2: {
+                    text: "Đang chờ xác nhận lần 2",
+                    className: "bg-red-500 text-white",
+                  },
+                  Rejected: {
+                    text: "Từ chối",
+                    className: "bg-red-700 text-white",
+                  },
+                  Approved: {
+                    text: "Chấp nhận",
+                    className: "bg-blue-950 text-white",
+                  },
+                };
+
+                const status = statusMap[leaseStatus] || {
+                  text: leaseStatus,
+                  className: "",
+                };
+
+                return (
+                  <span className={`${status.className} status`}>
+                    {status.text}
+                  </span>
+                );
+              }}
             />
           </ColumnGroup>
           <Column
             title="Thao tác"
             render={(text, record) => (
               <div className="flex items-center gap-3">
+                {record?.leaseStatus === "Pending" ||
+                record?.leaseStatus === "Corrected" ? (
+                  <Access
+                    permission={ALL_PERMISSIONS.CONTRACTS.SEND}
+                    hideChildren
+                  >
+                    <Popconfirm
+                      placement="leftBottom"
+                      okText="Có"
+                      cancelText="Không"
+                      title="Xác nhận"
+                      description="Bạn có muốn gửi mail xác nhận không?"
+                      onConfirm={async () => {
+                        const res = await callSendMailContract(record?.id);
+                        if (res && res.statusCode === 200) {
+                          message.success(res.message);
+                          fetchData();
+                        } else {
+                          notification.error({
+                            message: "Có lỗi xảy ra",
+                            description: res.error,
+                          });
+                        }
+                      }}
+                      icon={
+                        <QuestionCircleOutlined
+                          style={{
+                            color: "red",
+                          }}
+                        />
+                      }
+                      className="cursor-pointer text-amber-900"
+                    >
+                      <NotificationOutlined className="h-5 w-5" />
+                    </Popconfirm>
+                  </Access>
+                ) : (
+                  ""
+                )}
                 <Access
                   permission={ALL_PERMISSIONS.CONTRACTS.UPDATE}
                   hideChildren
@@ -525,8 +606,8 @@ const CustomerContract = () => {
 
         <ViewCustomerContract
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

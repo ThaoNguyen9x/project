@@ -74,22 +74,23 @@ const ModalChat = (props) => {
     setLoading(true);
 
     let allMessages = [];
-    let page = 1;
+    let pageSize = 20;
     let hasMore = true;
 
     while (hasMore) {
-      const query = `page=${page}&size=20`;
+      const query = `page=1&size=${pageSize}`;
       const res = await callGetMessagesByRoomId(
         selectedChatRoomUser?.chatRoom?.id,
         query
       );
 
-      if (res && res.data) {
+      if (res?.data) {
         const messages = res.data.result || [];
-        allMessages = [...allMessages, ...messages];
-
-        hasMore = res.data.hasMore || messages.length === 20;
-        page += 1;
+        allMessages = [...messages];
+        hasMore = res.data.hasMore && messages.length === pageSize;
+        pageSize += 20;
+      } else {
+        hasMore = false;
       }
     }
 

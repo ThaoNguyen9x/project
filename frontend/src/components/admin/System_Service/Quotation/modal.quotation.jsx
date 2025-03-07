@@ -70,7 +70,7 @@ const ModalQuotation = (props) => {
 
       form.setFieldsValue(init);
     }
-  }, [data]);
+  }, [data, form]);
 
   const handleFinish = async (values) => {
     try {
@@ -198,7 +198,12 @@ const ModalQuotation = (props) => {
       confirmLoading={isSubmit}
       className="w-full lg:!w-1/2"
     >
-      <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+      <Form
+        name="quotation_basic"
+        onFinish={handleFinish}
+        layout="vertical"
+        form={form}
+      >
         <h3 className="font-semibold text-base my-2">Đề xuất bảo trì</h3>
 
         <Row gutter={16}>

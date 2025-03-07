@@ -50,6 +50,7 @@ const Quotation = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModalQuotation, setOpenModalQuotation] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
@@ -185,7 +186,7 @@ const Quotation = () => {
             onClick={async () => {
               const res = await callGetQuotation(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -214,7 +215,7 @@ const Quotation = () => {
             onClick={async () => {
               const res = await callGetRepairProposal(repairProposal?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -473,8 +474,8 @@ const Quotation = () => {
 
         <ViewQuotation
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

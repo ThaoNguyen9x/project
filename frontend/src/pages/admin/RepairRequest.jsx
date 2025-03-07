@@ -16,7 +16,10 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  NotificationOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
 import {
   callDeleteRepairRequest,
   callGetAllRepairRequests,
@@ -32,6 +35,7 @@ import { FORMAT_DATE_DISPLAY, FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 import Access from "../../components/share/Access";
 import HighlightText from "../../components/share/HighlightText";
+import ModalSendRepairRequest from "../../components/admin/Repair_Request/modal.send-repair-request";
 
 const RepairRequest = () => {
   const { user } = useContext(AuthContext);
@@ -49,7 +53,9 @@ const RepairRequest = () => {
 
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [openModalSend, setOpenModalSend] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listUsers, setListUsers] = useState([]);
 
@@ -182,7 +188,7 @@ const RepairRequest = () => {
             onClick={async () => {
               const res = await callGetRepairRequest(record?.requestID);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -222,7 +228,7 @@ const RepairRequest = () => {
       dataIndex: "status",
       filters: [
         {
-          text: "Đang chờ duyệt",
+          text: "Đang chờ xử lý",
           value: "PENDING",
         },
         {
@@ -257,23 +263,47 @@ const RepairRequest = () => {
       title: "Thao tác",
       render: (text, record) => (
         <div className="flex items-center gap-3">
-          <Access
-            permission={ALL_PERMISSIONS.REPAIR_REQUEST.UPDATE}
-            hideChildren
-          >
-            <div
-              onClick={async () => {
-                const res = await callGetRepairRequest(record?.requestID);
-                if (res?.data) {
-                  setData(res?.data);
-                  setOpenModal(true);
-                }
-              }}
-              className="cursor-pointer text-amber-900"
+          {record?.technician === null ? (
+            <Access
+              permission={ALL_PERMISSIONS.REPAIR_REQUEST.SEND}
+              hideChildren
             >
-              <CiEdit className="h-5 w-5" />
-            </div>
-          </Access>
+              <div
+                onClick={() => {
+                  setOpenModalSend(true);
+                  setData(record);
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <NotificationOutlined className="h-5 w-5" />
+              </div>
+            </Access>
+          ) : (
+            ""
+          )}
+          {user?.role?.name === "Technician_Employee" &&
+          record?.status !== "PENDING" ? (
+            ""
+          ) : (
+            <Access
+              permission={ALL_PERMISSIONS.REPAIR_REQUEST.UPDATE}
+              hideChildren
+            >
+              <div
+                onClick={async () => {
+                  const res = await callGetRepairRequest(record?.requestID);
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenModal(true);
+                  }
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <CiEdit className="h-5 w-5" />
+              </div>
+            </Access>
+          )}
+
           <Access
             permission={ALL_PERMISSIONS.REPAIR_REQUEST.DELETE}
             hideChildren
@@ -357,7 +387,7 @@ const RepairRequest = () => {
   const handleDelete = async (requestID) => {
     const res = await callDeleteRepairRequest(requestID);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
@@ -381,7 +411,6 @@ const RepairRequest = () => {
         if (res?.data) {
           setData(res?.data);
           setOpenViewDetail(true);
-
           navigate(location.pathname, { replace: true });
         }
       };
@@ -395,7 +424,9 @@ const RepairRequest = () => {
         <h2 className="text-base xl:text-xl font-bold">Yêu cầu sửa chữa</h2>
         <Access permission={ALL_PERMISSIONS.REPAIR_REQUEST.CREATE} hideChildren>
           <Button
-            onClick={() => setOpenModal(true)}
+            onClick={() => {
+              setOpenModal(true);
+            }}
             className="p-2 xl:p-3 gap-1 xl:gap-2"
           >
             <GoPlus className="h-4 w-4" />
@@ -421,19 +452,29 @@ const RepairRequest = () => {
         />
 
         <ViewRepairRequest
+          key="ViewRepairRequest"
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
+          fetchData={fetchData}
         />
 
         <ModalRepairRequest
-          user={user}
           data={data}
           setData={setData}
           openModal={openModal}
           setOpenModal={setOpenModal}
+          fetchData={fetchData}
+          listUsers={listUsers}
+        />
+
+        <ModalSendRepairRequest
+          data={data}
+          setData={setData}
+          openModalSend={openModalSend}
+          setOpenModalSend={setOpenModalSend}
           fetchData={fetchData}
           listUsers={listUsers}
         />

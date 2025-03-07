@@ -593,7 +593,12 @@ const ModalOffice = (props) => {
       confirmLoading={isSubmit}
       className="w-full lg:!w-1/2"
     >
-      <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
+      <Form
+        name="office-basic"
+        onFinish={handleFinish}
+        layout="vertical"
+        form={form}
+      >
         <h3 className="font-semibold text-base my-2">Thông tin khách hàng</h3>
 
         <Row gutter={16}>

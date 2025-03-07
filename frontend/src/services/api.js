@@ -508,6 +508,17 @@ export const callUpdateContract = (
   );
 };
 
+export const callSendMailContract = (id) => {
+  return axios.put(`/api/contracts/send/${id}`);
+};
+
+export const callConfirmationContract = (id, status, comment) => {
+  return axios.put(`/api/contracts/confirmation/${id}`, {
+    status,
+    comment,
+  });
+};
+
 export const callDeleteContract = (id) => {
   return axios.delete(`/api/contracts/${id}`);
 };
@@ -1343,6 +1354,12 @@ export const callUpdateRepairRequest = (
       headers: { "Content-Type": "multipart/form-data" },
     }
   );
+};
+
+export const callSendRepairRequest = (id, technician) => {
+  return axios.put(`/api/repair-requests/send/${id}`, {
+    technician,
+  });
 };
 
 export const callDeleteRepairRequest = (id) => {

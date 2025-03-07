@@ -49,6 +49,7 @@ const CommonArea = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listLocations, setListLocations] = useState([]);
 
@@ -181,7 +182,7 @@ const CommonArea = () => {
             onClick={async () => {
               const res = await callGetCommonArea(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -206,7 +207,7 @@ const CommonArea = () => {
             onClick={async () => {
               const res = await callGetLocation(location?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -386,8 +387,8 @@ const CommonArea = () => {
 
         <ViewCommonArea
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

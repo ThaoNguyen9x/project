@@ -299,22 +299,6 @@ const ViewLocation = (props) => {
           span: 2,
         },
         {
-          label: "File hợp đồng",
-          children:
-            (
-              <a
-                href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
-                  data?.fileName
-                }`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Xem
-              </a>
-            ) || "N/A",
-          span: 2,
-        },
-        {
           label: "Trạng thái",
           children: (
             <span
@@ -686,39 +670,6 @@ const ViewLocation = (props) => {
             </a>
           ) : (
             "N/A"
-          ),
-          span: 2,
-        },
-        {
-          label: "Hồ sơ",
-          children: (
-            <Steps
-              direction="vertical"
-              size="small"
-              current={1}
-              items={
-                data?.customerType?.customerTypeDocuments?.map((x) => {
-                  const filePath = x?.customerDocuments?.[0]?.filePath;
-                  return {
-                    title: x?.documentType,
-                    description: filePath ? (
-                      <a
-                        href={`${
-                          import.meta.env.VITE_BACKEND_URL
-                        }/storage/customer_documents/${filePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Xem
-                      </a>
-                    ) : (
-                      <span style={{ color: "red" }}>Đang thiếu</span>
-                    ),
-                    status: filePath ? "finish" : "error",
-                  };
-                }) || []
-              }
-            />
           ),
           span: 2,
         },

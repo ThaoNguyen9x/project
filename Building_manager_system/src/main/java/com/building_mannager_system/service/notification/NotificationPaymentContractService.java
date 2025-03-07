@@ -120,26 +120,45 @@ public class NotificationPaymentContractService {
 
         try {
             String message = JsonUntils.toJson(repairRequestDto);
-            Recipient rec = new Recipient();
 
-            rec.setType("Repair_Request_Notification_Customer");
-            rec.setName("Send Repair Request Notification");
-            rec.setReferenceId(user.getId());
+            List<String> roles = List.of("Application_Admin", "Technician_Manager");
+            List<User> recipients = userRepository.findByRole_NameIn(roles);
 
-            Recipient recipient = recipientService.createRecipient(rec);
+            for (User admin : recipients) {
+                Recipient adminRec = new Recipient();
+                adminRec.setType("Repair_Request_Notification_Complete");
+                adminRec.setName("Send Repair Request Notification Complete");
+                adminRec.setReferenceId(admin.getId());
 
-            Notification notification = new Notification();
-            notification.setRecipient(recipient);
-            notification.setMessage(message);
-            notification.setStatus(StatusNotifi.PENDING);
-            notification.setCreatedAt(LocalDateTime.now());
+                Recipient savedAdminRec = recipientService.createRecipient(adminRec);
 
-            notificationService.createNotification(notification);
+                Notification adminNoti = new Notification();
+                adminNoti.setRecipient(savedAdminRec);
+                adminNoti.setMessage(message);
+                adminNoti.setStatus(StatusNotifi.PENDING);
+                adminNoti.setCreatedAt(LocalDateTime.now());
 
-            messagingTemplate.convertAndSend(
-                    "/topic/repair-request-notifications/" + user.getId(),
-                    repairRequestDto
-            );
+                notificationService.createNotification(adminNoti);
+
+                messagingTemplate.convertAndSend("/topic/repair-request-notifications/" + admin.getId(), message);
+            }
+
+            Recipient customerRec = new Recipient();
+            customerRec.setType("Repair_Request_Notification_Customer");
+            customerRec.setName("Send Repair Request Notification");
+            customerRec.setReferenceId(user.getId());
+
+            Recipient savedCustomerRec = recipientService.createRecipient(customerRec);
+
+            Notification customerNoti = new Notification();
+            customerNoti.setRecipient(savedCustomerRec);
+            customerNoti.setMessage(message);
+            customerNoti.setStatus(StatusNotifi.PENDING);
+            customerNoti.setCreatedAt(LocalDateTime.now());
+
+            notificationService.createNotification(customerNoti);
+
+            messagingTemplate.convertAndSend("/topic/repair-request-notifications/" + user.getId(), message);
             System.out.println("Notification sent successfully!");
         } catch (Exception e) {
             e.printStackTrace();

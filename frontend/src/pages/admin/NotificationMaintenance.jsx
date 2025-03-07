@@ -47,6 +47,7 @@ const NotificationMaintenance = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listMaintenanceTasks, setListMaintenanceTasks] = useState([]);
 
@@ -179,7 +180,7 @@ const NotificationMaintenance = () => {
             onClick={async () => {
               const res = await callGetNotificationMaintenance(record?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -328,7 +329,7 @@ const NotificationMaintenance = () => {
           `filter=id~'${id}'`
         );
         if (res?.data?.result.length) {
-          setData(res.data.result[0]);
+          setDataView(res.data.result[0]);
           setOpenViewDetail(true);
         }
       };
@@ -374,8 +375,8 @@ const NotificationMaintenance = () => {
 
         <ViewNotificationMaintenance
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />

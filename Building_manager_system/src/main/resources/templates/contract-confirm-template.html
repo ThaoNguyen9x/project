@@ -8,6 +8,7 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
+            background-color: #f5f5f5;
         }
 
         table {
@@ -16,11 +17,17 @@
             margin: 20px auto;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             background-color: #ffffff;
+            border-radius: 5px;
         }
 
         th {
             height: 60px;
             background-color: rgb(23, 37, 84);
+            color: #ffffff;
+            font-size: 20px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            text-align: center;
         }
 
         td {
@@ -54,7 +61,7 @@
 <table>
     <thead>
     <tr>
-        <th>&nbsp;</th>
+        <th>Thông tin tài khoản đăng nhập</th>
     </tr>
     </thead>
     <tbody>
@@ -65,15 +72,15 @@
             <p>Thông tin này được cung cấp cho quý khách thuộc công ty <b><span th:text="${customerCompany}"></span></b>.</p>
             <p><b>Thông tin chi tiết:</b></p>
             <ul>
-                <li><b>Website:</b> <a href="http://localhost:3000/login" target="_blank" rel="noopener noreferrer">Click
-                    vào đây</a></li>
+                <li>
+                    <b>Website:</b>
+                    <a href="http://localhost:3000/login" target="_blank" rel="noopener noreferrer">Click vào đây</a>
+                </li>
                 <li><b>Email:</b> <span th:text="${email}"></span></li>
                 <li><b>Password:</b> <span th:text="${password}"></span></li>
             </ul>
-            <p>Quý khách vui lòng sử dụng thông tin trên để đăng nhập, kiểm tra thông tin hợp đồng và thay đổi mật khẩu
-                trong lần đầu tiên sử dụng để đảm bảo tính bảo mật.</p>
-            <p>Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua <a
-                    href="tel:+0931313329">+0 931-313-329</a>.</p>
+            <p>Quý khách vui lòng sử dụng thông tin trên để đăng nhập, kiểm tra thông tin hợp đồng và thay đổi mật khẩu trong lần đầu tiên sử dụng để đảm bảo tính bảo mật.</p>
+            <p>Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua số điện thoại <a href="tel:+0931313329">+0 931-313-329</a>.</p>
             <p>Trân trọng,</p>
             <p><small><i>Đây là tin nhắn tự động, vui lòng không trả lời trực tiếp email này.</i></small></p>
         </td>

@@ -198,7 +198,13 @@ public class UserServiceImpl implements UserService {
         String resetUrl = frontendUrl + "/reset-password?token=" + token;
 
         // Send email to user
-        emailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
+        emailService.sendEmailForgotPasswordFromTemplateSync(
+                user.getEmail(),
+                "Yêu cầu đặt lại mật khẩu",
+                "forgot-password-template",
+                user.getName(),
+                resetUrl
+        );
     }
 
     @Override

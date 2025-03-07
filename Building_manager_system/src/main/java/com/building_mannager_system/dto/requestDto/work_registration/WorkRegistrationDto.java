@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class WorkRegistrationDto {
     private Long registrationID;
-    private RepairRequestDto.CustomerDto account;
+    private RepairRequestDto.UserDto account;
     private LocalDateTime registrationDate;
     private LocalDateTime scheduledDate;
     private String status;

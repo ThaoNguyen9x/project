@@ -53,6 +53,7 @@ const PaymentContract = () => {
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState(null);
+  const [dataView, setDataView] = useState(null);
 
   const [listContracts, setListContracts] = useState([]);
 
@@ -185,7 +186,7 @@ const PaymentContract = () => {
             onClick={async () => {
               const res = await callGetPaymentContract(record?.paymentId);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -219,7 +220,7 @@ const PaymentContract = () => {
             onClick={async () => {
               const res = await callGetContract(contract?.id);
               if (res?.data) {
-                setData(res?.data);
+                setDataView(res?.data);
                 setOpenViewDetail(true);
               }
             }}
@@ -486,7 +487,7 @@ const PaymentContract = () => {
       const fetchRequest = async () => {
         const res = await callGetPaymentContract(id);
         if (res?.data) {
-          setData(res?.data);
+          setDataView(res?.data);
           setOpenViewDetail(true);
 
           navigate(location.pathname, { replace: true });
@@ -532,8 +533,8 @@ const PaymentContract = () => {
 
         <ViewPaymentContract
           user={user}
-          data={data}
-          setData={setData}
+          data={dataView}
+          setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
         />
