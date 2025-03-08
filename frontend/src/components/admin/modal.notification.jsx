@@ -259,7 +259,7 @@ const ModalNotification = (props) => {
         </p>
 
         <Link
-          to={`/dashboard/payment-contracts?openViewDetail=true&paymentId=${message?.paymentId}`}
+          to={`/dashboard/payment-contracts?openViewDetail=true&id=${message?.paymentId}`}
           onClick={() => setOpenNotification(false)}
         >
           Kiểm tra thông tin chi tiết trong hệ thống.
@@ -290,7 +290,7 @@ const ModalNotification = (props) => {
           muốn gia hạn, vui lòng hướng dẫn các thủ tục thanh lý hợp đồng.
         </p>
         <Link
-          to={`/dashboard/customer-contracts?openViewDetail=true&id=${message?.id}`}
+          to={`/dashboard/customer-contracts?openViewDetail=true&id=${message?.contract?.id}`}
           onClick={() => setOpenNotification(false)}
         >
           Kiểm tra thông tin chi tiết trong hệ thống.
