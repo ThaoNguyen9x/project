@@ -274,7 +274,7 @@ const ModalNotification = (props) => {
         </p>
 
         <Link
-          to={`/dashboard/payment-contracts?openViewDetail=true&paymentId=${message?.paymentId}`}
+          to={`/dashboard/payment-contracts?openViewDetail=true&id=${message?.paymentId}`}
           onClick={() => setOpenNotification(false)}
         >
           Kiểm tra thông tin chi tiết trong hệ thống.
