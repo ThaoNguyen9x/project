@@ -24,7 +24,8 @@ import {
 const { Option } = Select;
 
 const ModalRole = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -110,6 +111,7 @@ const ModalRole = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -185,40 +187,42 @@ const ModalRole = (props) => {
       ),
       children: (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {permissions.map((permission) => (
-            <Card size="small" key={permission.id}>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={selectedPermissions.includes(permission.id)}
-                  onChange={(checked) =>
-                    handleSwitchChange(checked, permission.id)
-                  }
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <div>
-                  <p>{permission.name}</p>
-                  <p>
-                    <span
-                      className={`font-bold ${
-                        permission.method === "GET"
-                          ? "GET"
-                          : permission.method === "POST"
-                          ? "POST"
-                          : permission.method === "PUT"
-                          ? "PUT"
-                          : permission.method === "DELETE"
-                          ? "DELETE"
-                          : "text-purple-700"
-                      }`}
-                    >
-                      {permission.method}
-                    </span>
-                    <span>: {permission.apiPath}</span>
-                  </p>
+          {permissions
+            .filter((permission) => permission.status)
+            .map((permission) => (
+              <Card size="small" key={permission.id}>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={selectedPermissions.includes(permission.id)}
+                    onChange={(checked) =>
+                      handleSwitchChange(checked, permission.id)
+                    }
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div>
+                    <p>{permission.name}</p>
+                    <p>
+                      <span
+                        className={`font-bold ${
+                          permission.method === "GET"
+                            ? "GET"
+                            : permission.method === "POST"
+                            ? "POST"
+                            : permission.method === "PUT"
+                            ? "PUT"
+                            : permission.method === "DELETE"
+                            ? "DELETE"
+                            : "text-purple-700"
+                        }`}
+                      >
+                        {permission.method}
+                      </span>
+                      <span>: {permission.apiPath}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
         </div>
       ),
     }));

@@ -28,6 +28,7 @@ const ModalDevice = (props) => {
     listLocations,
     listDeviceTypes,
     listSystemMaintenanceServices,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -119,6 +120,7 @@ const ModalDevice = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -256,7 +258,7 @@ const ModalDevice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Tọa độ x"
+              label="Tọa độ X"
               name="x"
               rules={[
                 {
@@ -281,7 +283,7 @@ const ModalDevice = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Tọa độ y"
+              label="Tọa độ Y"
               name="y"
               rules={[
                 {

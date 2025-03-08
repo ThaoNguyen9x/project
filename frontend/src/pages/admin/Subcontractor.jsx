@@ -55,7 +55,7 @@ const Subcontractor = () => {
 
   useEffect(() => {
     const init = async () => {
-      const system = await callGetAllSystems();
+      const system = await callGetAllSystems(`page=1&size=100`);
       if (system && system.data) {
         setListSystems(system.data?.result);
       }
@@ -67,6 +67,7 @@ const Subcontractor = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -308,16 +309,18 @@ const Subcontractor = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllSubcontracts(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -325,20 +328,21 @@ const Subcontractor = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -406,6 +410,7 @@ const Subcontractor = () => {
           setOpenModal={setOpenModal}
           fetchData={fetchData}
           listSystems={listSystems}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

@@ -25,8 +25,15 @@ import {
 import { QuestionCircleOutlined } from "@ant-design/icons";
 
 const ViewElectricityUsage = (props) => {
-  const { user, data, setData, openViewDetail, setOpenViewDetail, fetchData } =
-    props;
+  const {
+    user,
+    data,
+    setData,
+    openViewDetail,
+    setOpenViewDetail,
+    fetchData,
+    setCurrent,
+  } = props;
   const [historyStack, setHistoryStack] = useState([]);
 
   const onClose = () => {
@@ -113,13 +120,22 @@ const ViewElectricityUsage = (props) => {
         },
         {
           label: "Chi phí điện",
-          children: data?.electricityCost || 0,
+          children:
+            data?.electricityCost.toLocaleString("vi-VI", {
+              style: "currency",
+              currency: "VND",
+            }) || 0,
         },
         ...(data?.previousMonthReadingDate !== null
           ? [
               {
                 label: "Tháng trước",
-                children: `${data?.previousMonthElectricityCost || 0}`,
+                children: `${
+                  data?.previousMonthElectricityCost.toLocaleString("vi-VI", {
+                    style: "currency",
+                    currency: "VND",
+                  }) || 0
+                }`,
               },
             ]
           : []),
@@ -210,7 +226,7 @@ const ViewElectricityUsage = (props) => {
           span: 2,
         },
       ];
-    } else if (data?.fileName) {
+    } else if (data?.startDate) {
       return [
         {
           label: "Khách hàng",
@@ -251,22 +267,6 @@ const ViewElectricityUsage = (props) => {
           span: 2,
         },
         {
-          label: "File",
-          children:
-            (
-              <a
-                href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
-                  data?.fileName
-                }`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {data?.fileName}
-              </a>
-            ) || "N/A",
-          span: 2,
-        },
-        {
           label: "Trạng thái",
           children: (
             <span
@@ -275,14 +275,42 @@ const ViewElectricityUsage = (props) => {
                   ? "success"
                   : data?.leaseStatus === "Inactive"
                   ? "danger"
-                  : "warning"
+                  : data?.leaseStatus === "Wait"
+                  ? "warning"
+                  : data?.leaseStatus === "Pending"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "Corrected"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "W_Confirmation"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "W_Confirmation_2"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Rejected"
+                  ? "bg-red-700 text-white"
+                  : data?.leaseStatus === "Approved"
+                  ? "bg-blue-950 text-white"
+                  : ""
               } status`}
             >
               {data?.leaseStatus === "Active"
                 ? "Hoạt động"
                 : data?.leaseStatus === "Inactive"
                 ? "Đã chấm dứt"
-                : "Đang chờ gia hạn"}
+                : data?.leaseStatus === "Wait"
+                ? "Đang chờ gia hạn"
+                : data?.leaseStatus === "Pending"
+                ? "Đang chờ xử lý"
+                : data?.leaseStatus === "Corrected"
+                ? "Đã sửa"
+                : data?.leaseStatus === "W_Confirmation"
+                ? "Đang chờ xác nhận"
+                : data?.leaseStatus === "W_Confirmation_2"
+                ? "Đang chờ xác nhận lần 2"
+                : data?.leaseStatus === "Rejected"
+                ? "Thông tin sai"
+                : data?.leaseStatus === "Approved"
+                ? "Thông tin đúng"
+                : ""}
             </span>
           ),
           span: 2,
@@ -500,6 +528,7 @@ const ViewElectricityUsage = (props) => {
     if (res && res.data) {
       message.success("Bạn đã xác nhận thành công");
       fetchData();
+      setCurrent(1);
       onClose();
     } else {
       notification.error({

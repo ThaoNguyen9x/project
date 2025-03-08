@@ -21,8 +21,15 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 const ModalPaymentContract = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData, listContracts } =
-    props;
+  const {
+    data,
+    setData,
+    openModal,
+    setOpenModal,
+    fetchData,
+    listContracts,
+    setCurrent,
+  } = props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -83,6 +90,7 @@ const ModalPaymentContract = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -163,7 +171,7 @@ const ModalPaymentContract = (props) => {
                 },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input prefix="$" suffix="USD" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
@@ -179,36 +187,38 @@ const ModalPaymentContract = (props) => {
             </Form.Item>
           </Col>
 
-          {
-            data?.paymentId ? <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Trạng thái"
-              name="paymentStatus"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Select
-                placeholder="Vui lòng chọn"
-                optionLabelProp="label"
-                allowClear
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+          {data?.paymentId ? (
+            <Col lg={12} md={12} sm={24} xs={24}>
+              <Form.Item
+                label="Trạng thái"
+                name="paymentStatus"
+                rules={[
+                  { required: true, message: "Vui lòng không được để trống" },
+                ]}
               >
-                <Option value="UNPAID" label="Chưa thanh toán">
-                  Chưa thanh toán
-                </Option>
-                <Option value="PAID" label="Đã thanh toán">
-                  Đã thanh toán
-                </Option>
-              </Select>
-            </Form.Item>
-          </Col> : ""
-          }
+                <Select
+                  placeholder="Vui lòng chọn"
+                  optionLabelProp="label"
+                  allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  <Option value="UNPAID" label="Chưa thanh toán">
+                    Chưa thanh toán
+                  </Option>
+                  <Option value="PAID" label="Đã thanh toán">
+                    Đã thanh toán
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          ) : (
+            ""
+          )}
         </Row>
 
         <Button

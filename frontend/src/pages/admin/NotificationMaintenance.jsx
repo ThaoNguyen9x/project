@@ -7,6 +7,7 @@ import {
   Popconfirm,
   message,
   notification,
+  Tooltip,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
@@ -27,8 +28,9 @@ import HighlightText from "../../components/share/HighlightText";
 import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import ModalNotificationMaintenance from "../../components/admin/Notification_Manager/Notification_Maintenance/modal.notification-maintenance";
 import ViewNotificationMaintenance from "../../components/admin/Notification_Manager/Notification_Maintenance/view.notification-maintenance";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../components/share/Context";
+import Highlighter from "react-highlight-words";
 
 const NotificationMaintenance = () => {
   const { user } = useContext(AuthContext);
@@ -49,22 +51,11 @@ const NotificationMaintenance = () => {
   const [data, setData] = useState(null);
   const [dataView, setDataView] = useState(null);
 
-  const [listMaintenanceTasks, setListMaintenanceTasks] = useState([]);
-
-  useEffect(() => {
-    const init = async () => {
-      const res = await callGetAllTasks();
-      if (res && res.data) {
-        setListMaintenanceTasks(res.data?.result);
-      }
-    };
-    init();
-  }, []);
-
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -213,40 +204,47 @@ const NotificationMaintenance = () => {
             permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.UPDATE}
             hideChildren
           >
-            <div
-              onClick={() => {
-                setData(record);
-                setOpenModal(true);
-              }}
-              className="cursor-pointer text-amber-900"
-            >
-              <CiEdit className="h-5 w-5" />
-            </div>
+            <Tooltip placement="bottom" title="Chỉnh sửa">
+              <div
+                onClick={async () => {
+                  const res = await callGetNotificationMaintenance(record?.id);
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenModal(true);
+                  }
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <CiEdit className="h-5 w-5" />
+              </div>
+            </Tooltip>
           </Access>
           <Access
             permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.DELETE}
             hideChildren
           >
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.id)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
+            <Tooltip placement="bottom" title="Xóa">
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc chắn muốn xóa không?"
+                onConfirm={() => handleDelete(record.id)}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+                className="cursor-pointer DELETE"
+              >
+                <>
+                  <AiOutlineDelete className="h-5 w-5" />
+                </>
+              </Popconfirm>
+            </Tooltip>
           </Access>
         </div>
       ),
@@ -318,6 +316,7 @@ const NotificationMaintenance = () => {
   };
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -325,17 +324,19 @@ const NotificationMaintenance = () => {
 
     if (id) {
       const fetchRequest = async () => {
-        const res = await callGetAllNotificationMaintenances(
-          `filter=id~'${id}'`
-        );
-        if (res?.data?.result.length) {
-          setDataView(res.data.result[0]);
+        fetchData();
+
+        const res = await callGetNotificationMaintenance(id);
+        if (res?.data) {
+          setDataView(res?.data);
           setOpenViewDetail(true);
+
+          navigate(location.pathname, { replace: true });
         }
       };
       fetchRequest();
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   return (
     <div className="p-4 xl:p-6 min-h-full rounded-md bg-white">
@@ -347,13 +348,14 @@ const NotificationMaintenance = () => {
           permission={ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.CREATE}
           hideChildren
         >
-          <Button
-            onClick={() => setOpenModal(true)}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => setOpenModal(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -387,7 +389,7 @@ const NotificationMaintenance = () => {
           openModal={openModal}
           setOpenModal={setOpenModal}
           fetchData={fetchData}
-          listMaintenanceTasks={listMaintenanceTasks}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

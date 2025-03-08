@@ -485,6 +485,7 @@ const ElectricityUsage = () => {
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
           fetchData={fetchData}
+          setCurrent={setCurrent}
         />
 
         <ModalElectricityUsage
@@ -494,6 +495,7 @@ const ElectricityUsage = () => {
           setOpenModal={setOpenModal}
           fetchData={fetchData}
           listMeters={listMeters}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

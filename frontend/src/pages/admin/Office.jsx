@@ -30,14 +30,14 @@ import { GrRestroomMen, GrRestroomWomen } from "react-icons/gr";
 import { FaPumpMedical } from "react-icons/fa6";
 import { GiElectricalResistance } from "react-icons/gi";
 import { PiSelectionPlusFill } from "react-icons/pi";
-import { MdOutlineWaterDamage } from "react-icons/md";
+import { MdOutlineDeviceHub, MdOutlineWaterDamage } from "react-icons/md";
 import { SiDwavesystems } from "react-icons/si";
+import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
 
-import { Button, Form, Input, Select } from "antd";
+import { Button, Form, Input, Select, Tooltip } from "antd";
 import ViewOffice from "../../components/admin/Office/view.office";
 import { AuthContext } from "../../components/share/Context";
 import Access from "../../components/share/Access";
-import { GoPlus } from "react-icons/go";
 import { ALL_PERMISSIONS } from "../../components/admin/Access_Control/Permission/data/permissions";
 import ModalOffice from "../../components/admin/Office/modal.office";
 import ModalDevice from "../../components/admin/Property_Manager/Device/modal.device";
@@ -72,6 +72,8 @@ const Office = () => {
   const [listDevices, setListDevices] = useState([]);
   const [listRiskAssessments, setListRiskAssessments] = useState([]);
 
+  const [current, setCurrent] = useState(1);
+
   const fetchAllPages = async (apiCall, pageSize) => {
     let page = 1;
     let allResults = [];
@@ -92,48 +94,46 @@ const Office = () => {
     return allResults;
   };
 
-  const init = async () => {
-    setIsLoading(true);
-    const pageSize = 20;
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      const pageSize = 20;
 
-    const customerTypes = await fetchAllPages(
-      callGetAllCustomerTypes,
-      pageSize
-    );
-    setListCustomerTypes(customerTypes);
+      const customerTypes = await fetchAllPages(
+        callGetAllCustomerTypes,
+        pageSize
+      );
+      setListCustomerTypes(customerTypes);
 
-    const locations = await fetchAllPages(callGetAllLocations, pageSize);
-    setListLocations(locations);
+      const locations = await fetchAllPages(callGetAllLocations, pageSize);
+      setListLocations(locations);
 
-    const customerTypeDocuments = await fetchAllPages(
-      callGetAllCustomerTypeDocuments,
-      pageSize
-    );
-    setListCustomerTypeDocuments(customerTypeDocuments);
+      const customerTypeDocuments = await fetchAllPages(
+        callGetAllCustomerTypeDocuments,
+        pageSize
+      );
+      setListCustomerTypeDocuments(customerTypeDocuments);
 
-    const systems = await fetchAllPages(callGetAllSystems, pageSize);
-    setListSystems(systems);
+      const systems = await fetchAllPages(callGetAllSystems, pageSize);
+      setListSystems(systems);
 
-    const deviceTypes = await fetchAllPages(callGetAllDeviceTypes, pageSize);
-    setListDeviceTypes(deviceTypes);
+      const deviceTypes = await fetchAllPages(callGetAllDeviceTypes, pageSize);
+      setListDeviceTypes(deviceTypes);
 
-    const systemMaintenanceServices = await fetchAllPages(
-      callGetAllSystemMaintenanceServices,
-      pageSize
-    );
-    setListSystemMaintenanceServices(systemMaintenanceServices);
+      const systemMaintenanceServices = await fetchAllPages(
+        callGetAllSystemMaintenanceServices,
+        pageSize
+      );
+      setListSystemMaintenanceServices(systemMaintenanceServices);
 
-    const devices = await fetchAllPages(callGetAllDevices, pageSize);
-    setListDevices(devices);
+      const devices = await fetchAllPages(callGetAllDevices, pageSize);
+      setListDevices(devices);
 
-    const riskAssessments = await fetchAllPages(
-      callGetAllRiskAssessments,
-      pageSize
-    );
-    setListRiskAssessments(riskAssessments);
+      setIsLoading(false);
+    };
 
-    setIsLoading(false);
-  };
+    init();
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -142,13 +142,20 @@ const Office = () => {
   const fetchData = async () => {
     setIsLoading(true);
 
+    const pageSize = 20;
+
     const res = await callGetLocation(filter || 1);
 
     if (res && res.data) {
       setLocation(res.data);
     }
 
-    init();
+    const riskAssessments = await fetchAllPages(
+      callGetAllRiskAssessments,
+      pageSize
+    );
+    setListRiskAssessments(riskAssessments);
+
     setIsLoading(false);
   };
 
@@ -260,22 +267,24 @@ const Office = () => {
           <h2 className="text-base xl:text-xl font-bold">Sơ đồ văn phòng</h2>
           <div className="flex flex-col lg:flex-row gap-2">
             <Access permission={ALL_PERMISSIONS.OFFICES.CREATE} hideChildren>
-              <Button
-                onClick={() => setOpenModal(true)}
-                className="p-2 xl:p-3 gap-1 xl:gap-2"
-              >
-                <GoPlus className="h-4 w-4" />
-                Thêm hợp đồng khách hàng
-              </Button>
+              <Tooltip placement="bottom" title="Thêm hợp đồng khách hàng">
+                <Button
+                  onClick={() => setOpenModal(true)}
+                  className="p-2 xl:p-3 gap-1 xl:gap-2"
+                >
+                  <HiOutlineClipboardDocumentCheck className="h-4 w-4" />
+                </Button>
+              </Tooltip>
             </Access>
             <Access permission={ALL_PERMISSIONS.DEVICES.CREATE} hideChildren>
-              <Button
-                onClick={() => setOpenModalDevice(true)}
-                className="p-2 xl:p-3 gap-1 xl:gap-2"
-              >
-                <GoPlus className="h-4 w-4" />
-                Thêm thiết bị
-              </Button>
+              <Tooltip placement="bottom" title="Thêm thiết bị">
+                <Button
+                  onClick={() => setOpenModalDevice(true)}
+                  className="p-2 xl:p-3 gap-1 xl:gap-2"
+                >
+                  <MdOutlineDeviceHub className="h-4 w-4" />
+                </Button>
+              </Tooltip>
             </Access>
           </div>
         </div>
@@ -419,33 +428,35 @@ const Office = () => {
             ))}
 
             {/* Vẽ các Office */}
-            {location?.offices?.map((office, index) => (
-              <div
-                onClick={async () => {
-                  const res = await callGetOffice(office?.id);
-                  if (res?.data) {
-                    setData(res?.data);
-                    setOpenViewDetail(true);
-                  }
-                }}
-                className="absolute text-center border border-red-800 bg-blue-900 text-white cursor-pointer hover:bg-opacity-95"
-                key={index}
-                style={{
-                  left: `${office.startX * scaleFactor}px`,
-                  top: `${maxHeight - office.endY * scaleFactor}px`,
-                  width: `${(office.endX - office.startX) * scaleFactor}px`,
-                  height: `${(office.endY - office.startY) * scaleFactor}px`,
-                }}
-              >
-                {/* Hiển thị tên Office */}
+            {location?.offices
+              ?.filter((office) => office.status === "ACTIV")
+              ?.map((office, index) => (
                 <div
-                  style={{ fontSize: `${1.3 * scaleFactor}px` }}
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                  onClick={async () => {
+                    const res = await callGetOffice(office?.id);
+                    if (res?.data) {
+                      setData(res?.data);
+                      setOpenViewDetail(true);
+                    }
+                  }}
+                  className="absolute text-center border border-red-800 bg-blue-900 text-white cursor-pointer hover:bg-opacity-95"
+                  key={index}
+                  style={{
+                    left: `${office.startX * scaleFactor}px`,
+                    top: `${maxHeight - office.endY * scaleFactor}px`,
+                    width: `${(office.endX - office.startX) * scaleFactor}px`,
+                    height: `${(office.endY - office.startY) * scaleFactor}px`,
+                  }}
                 >
-                  {office.name}
+                  {/* Hiển thị tên Office */}
+                  <div
+                    style={{ fontSize: `${1.3 * scaleFactor}px` }}
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                  >
+                    {office.name}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
             {/* Vẽ các Device */}
             {location?.devices
@@ -527,6 +538,7 @@ const Office = () => {
           listCustomerTypes={listCustomerTypes}
           listLocations={listLocations}
           listCustomerTypeDocuments={listCustomerTypeDocuments}
+          setCurrent={setCurrent}
         />
 
         <ModalDevice
@@ -539,6 +551,7 @@ const Office = () => {
           listSystems={listSystems}
           listDeviceTypes={listDeviceTypes}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
+          setCurrent={setCurrent}
         />
 
         <ModalMaintenanceHistory
@@ -549,6 +562,7 @@ const Office = () => {
           fetchData={fetchData}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
           listDevices={listDevices}
+          setCurrent={setCurrent}
         />
 
         <ModalQuotation
@@ -558,6 +572,7 @@ const Office = () => {
           setOpenModalQuotation={setOpenModalQuotation}
           fetchData={fetchData}
           listRiskAssessments={listRiskAssessments}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

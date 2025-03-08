@@ -59,7 +59,7 @@ const PaymentContract = () => {
 
   useEffect(() => {
     const init = async () => {
-      const contracts = await callGetAllContracts();
+      const contracts = await callGetAllContracts(`page=1&size=100`);
       if (contracts && contracts.data) {
         setListContracts(contracts.data?.result);
       }
@@ -71,6 +71,7 @@ const PaymentContract = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -298,7 +299,7 @@ const PaymentContract = () => {
             ) : (
               ""
             )}
-            <Tooltip title="Chỉnh sửa">
+            <Tooltip placement="bottom" title="Chỉnh sửa">
               <>
                 <Access
                   permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.UPDATE}
@@ -321,7 +322,7 @@ const PaymentContract = () => {
                 </Access>
               </>
             </Tooltip>
-            <Tooltip title="Xóa">
+            <Tooltip placement="bottom" title="Xóa">
               <>
                 <Access
                   permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.DELETE}
@@ -399,16 +400,18 @@ const PaymentContract = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllPaymentContracts(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -416,20 +419,21 @@ const PaymentContract = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -438,7 +442,7 @@ const PaymentContract = () => {
   const handleDelete = async (paymentId) => {
     const res = await callDeletePaymentContract(paymentId);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
@@ -485,6 +489,8 @@ const PaymentContract = () => {
 
     if (id) {
       const fetchRequest = async () => {
+        fetchData();
+
         const res = await callGetPaymentContract(id);
         if (res?.data) {
           setDataView(res?.data);
@@ -505,13 +511,14 @@ const PaymentContract = () => {
           permission={ALL_PERMISSIONS.PAYMENT_CONTRACTS.CREATE}
           hideChildren
         >
-          <Button
-            onClick={() => setOpenModal(true)}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => setOpenModal(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -546,6 +553,7 @@ const PaymentContract = () => {
           setOpenModal={setOpenModal}
           fetchData={fetchData}
           listContracts={listContracts}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

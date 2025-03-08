@@ -8,16 +8,14 @@ import {
   message,
   notification,
   Modal,
+  Tooltip,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoSearchOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
 import { GoPlus } from "react-icons/go";
-import {
-  NotificationOutlined,
-  QuestionCircleOutlined,
-} from "@ant-design/icons";
+import { MailOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import {
   callDeleteContract,
   callGetAllContracts,
@@ -25,8 +23,8 @@ import {
   callGetAllCustomerTypes,
   callGetAllCustomerTypeDocuments,
   callGetContract,
-  callGetCustomer,
   callSendMailContract,
+  callSendContract,
 } from "../../services/api";
 
 import ModalCustomerContract from "../../components/admin/Customer_Service/Customer_Contract/modal.customer-contract";
@@ -72,17 +70,19 @@ const CustomerContract = () => {
 
   useEffect(() => {
     const init = async () => {
-      const customerTypes = await callGetAllCustomerTypes();
+      const customerTypes = await callGetAllCustomerTypes(`page=1&size=100`);
       if (customerTypes && customerTypes.data) {
         setListCustomerTypes(customerTypes.data?.result);
       }
 
-      const locations = await callGetAllLocations();
+      const locations = await callGetAllLocations(`page=1&size=100`);
       if (locations && locations.data) {
         setListLocations(locations.data?.result);
       }
 
-      const customerTypeDocuments = await callGetAllCustomerTypeDocuments();
+      const customerTypeDocuments = await callGetAllCustomerTypeDocuments(
+        `page=1&size=100`
+      );
       if (customerTypeDocuments && customerTypeDocuments.data) {
         setListCustomerTypeDocuments(customerTypeDocuments.data?.result);
       }
@@ -94,6 +94,7 @@ const CustomerContract = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -205,16 +206,18 @@ const CustomerContract = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllContracts(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -222,20 +225,21 @@ const CustomerContract = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -248,8 +252,8 @@ const CustomerContract = () => {
       fetchData();
     } else {
       notification.error({
-        message: "Có lỗi xảy ra",
-        description: res.error,
+        message: "Thông báo",
+        description: "Dữ liệu đang sử dụng, không thể xóa",
       });
     }
   };
@@ -262,6 +266,8 @@ const CustomerContract = () => {
     const id = queryParams.get("id");
 
     if (id) {
+      fetchData();
+
       const fetchRequest = async () => {
         const res = await callGetContract(id);
         if (res?.data) {
@@ -280,13 +286,14 @@ const CustomerContract = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Hợp đồng khách hàng</h2>
         <Access permission={ALL_PERMISSIONS.CONTRACTS.CREATE} hideChildren>
-          <Button
-            onClick={() => setOpenModal(true)}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => setOpenModal(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -422,7 +429,7 @@ const CustomerContract = () => {
                     Xem
                   </a>
                 ) : (
-                  "N/A"
+                  "Chưa có"
                 )
               }
             />
@@ -455,6 +462,10 @@ const CustomerContract = () => {
                   value: "W_Confirmation",
                 },
                 {
+                  text: "Đã gửi hợp đồng",
+                  value: "Send",
+                },
+                {
                   text: "Đang chờ xác nhận lần 2",
                   value: "W_Confirmation_2",
                 },
@@ -480,6 +491,10 @@ const CustomerContract = () => {
                   Corrected: {
                     text: "Đã sửa",
                     className: "bg-gray-200",
+                  },
+                  Send: {
+                    text: "Đã gửi hợp đồng",
+                    className: "bg-green-500 text-white",
                   },
                   W_Confirmation: {
                     text: "Đang chờ xác nhận",
@@ -517,40 +532,80 @@ const CustomerContract = () => {
             render={(text, record) => (
               <div className="flex items-center gap-3">
                 {record?.leaseStatus === "Pending" ||
-                record?.leaseStatus === "Corrected" ? (
+                record?.leaseStatus === "Corrected" ||
+                record?.leaseStatus === "Approved" ? (
                   <Access
                     permission={ALL_PERMISSIONS.CONTRACTS.SEND}
                     hideChildren
                   >
-                    <Popconfirm
-                      placement="leftBottom"
-                      okText="Có"
-                      cancelText="Không"
-                      title="Xác nhận"
-                      description="Bạn có muốn gửi mail xác nhận không?"
-                      onConfirm={async () => {
-                        const res = await callSendMailContract(record?.id);
-                        if (res && res.statusCode === 200) {
-                          message.success(res.message);
-                          fetchData();
-                        } else {
-                          notification.error({
-                            message: "Có lỗi xảy ra",
-                            description: res.error,
-                          });
-                        }
-                      }}
-                      icon={
-                        <QuestionCircleOutlined
-                          style={{
-                            color: "red",
-                          }}
-                        />
-                      }
-                      className="cursor-pointer text-amber-900"
+                    <Tooltip
+                      placement="bottom"
+                      title={`${
+                        record?.leaseStatus === "Pending"
+                          ? "Gửi mail cấp tài khoản"
+                          : record?.leaseStatus === "Approved"
+                          ? "Gửi hợp đồng cho khách hàng ký"
+                          : "Gửi mail xác nhận lần 2"
+                      }`}
                     >
-                      <NotificationOutlined className="h-5 w-5" />
-                    </Popconfirm>
+                      <Popconfirm
+                        placement="leftBottom"
+                        okText="Có"
+                        cancelText="Không"
+                        title="Xác nhận"
+                        description={`Bạn có muốn ${
+                          record?.leaseStatus === "Pending"
+                            ? "gửi mail cấp tài khoản"
+                            : record?.leaseStatus === "Approved"
+                            ? "gửi hợp đồng cho khách hàng ký"
+                            : "gửi mail xác nhận lần 2 không?"
+                        }`}
+                        onConfirm={async () => {
+                          if (record?.leaseStatus === "Approved") {
+                            const res = await callSendContract(record?.id);
+                            if (
+                              res &&
+                              typeof res === "string" &&
+                              res.includes(
+                                "Yêu cầu ký hợp đồng đã được gửi qua email"
+                              )
+                            ) {
+                              notification.error({
+                                message: "Có lỗi xảy ra",
+                                description:
+                                  "Không nhận được phản hồi từ server",
+                              });
+                            } else {
+                              message.success(
+                                "Yêu cầu ký đã được gửi qua email thành công"
+                              );
+                              fetchData();
+                            }
+                          } else {
+                            const res = await callSendMailContract(record?.id);
+                            if (res && res.statusCode === 200) {
+                              message.success(res.message);
+                              fetchData();
+                            } else {
+                              notification.error({
+                                message: "Có lỗi xảy ra",
+                                description: res.error,
+                              });
+                            }
+                          }
+                        }}
+                        icon={
+                          <QuestionCircleOutlined
+                            style={{
+                              color: "red",
+                            }}
+                          />
+                        }
+                        className="cursor-pointer text-amber-900"
+                      >
+                        <MailOutlined className="h-5 w-5" />
+                      </Popconfirm>
+                    </Tooltip>
                   </Access>
                 ) : (
                   ""
@@ -559,45 +614,49 @@ const CustomerContract = () => {
                   permission={ALL_PERMISSIONS.CONTRACTS.UPDATE}
                   hideChildren
                 >
-                  <div
-                    onClick={async () => {
-                      const res = await callGetContract(record?.id);
-                      if (res?.data) {
-                        setData(res?.data);
-                        setOpenModal(true);
-                      }
-                    }}
-                    className="cursor-pointer text-amber-900"
-                  >
-                    <CiEdit className="h-5 w-5" />
-                  </div>
+                  <Tooltip placement="bottom" title="Chỉnh sửa">
+                    <div
+                      onClick={async () => {
+                        const res = await callGetContract(record?.id);
+                        if (res?.data) {
+                          setData(res?.data);
+                          setOpenModal(true);
+                        }
+                      }}
+                      className="cursor-pointer text-amber-900"
+                    >
+                      <CiEdit className="h-5 w-5" />
+                    </div>
+                  </Tooltip>
                 </Access>
                 <Access
                   permission={ALL_PERMISSIONS.CONTRACTS.DELETE}
                   hideChildren
                 >
-                  <Popconfirm
-                    placement="leftBottom"
-                    okText="Có"
-                    cancelText="Không"
-                    title="Xác nhận"
-                    description="Bạn có chắc chắn muốn xóa không?"
-                    onConfirm={() =>
-                      handleDelete(record?.id, record?.customer?.id)
-                    }
-                    icon={
-                      <QuestionCircleOutlined
-                        style={{
-                          color: "red",
-                        }}
-                      />
-                    }
-                    className="cursor-pointer DELETE"
-                  >
-                    <>
-                      <AiOutlineDelete className="h-5 w-5" />
-                    </>
-                  </Popconfirm>
+                  <Tooltip placement="bottom" title="Xóa">
+                    <Popconfirm
+                      placement="leftBottom"
+                      okText="Có"
+                      cancelText="Không"
+                      title="Xác nhận"
+                      description="Bạn có chắc chắn muốn xóa không?"
+                      onConfirm={() =>
+                        handleDelete(record?.id, record?.customer?.id)
+                      }
+                      icon={
+                        <QuestionCircleOutlined
+                          style={{
+                            color: "red",
+                          }}
+                        />
+                      }
+                      className="cursor-pointer DELETE"
+                    >
+                      <>
+                        <AiOutlineDelete className="h-5 w-5" />
+                      </>
+                    </Popconfirm>
+                  </Tooltip>
                 </Access>
               </div>
             )}
@@ -610,6 +669,7 @@ const CustomerContract = () => {
           setData={setDataView}
           openViewDetail={openViewDetail}
           setOpenViewDetail={setOpenViewDetail}
+          fetchData={fetchData}
         />
 
         <ModalCustomerContract
@@ -621,6 +681,7 @@ const CustomerContract = () => {
           listCustomerTypes={listCustomerTypes}
           listLocations={listLocations}
           listCustomerTypeDocuments={listCustomerTypeDocuments}
+          setCurrent={setCurrent}
         />
 
         <Modal

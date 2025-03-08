@@ -32,6 +32,7 @@ const ModalQuotation = (props) => {
     setOpenModalQuotation,
     fetchData,
     listRiskAssessments,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -143,6 +144,7 @@ const ModalQuotation = (props) => {
       }
 
       fetchData();
+      setCurrent(1);
       handleReset();
     } catch (error) {
       notification.error({
@@ -421,7 +423,7 @@ const ModalQuotation = (props) => {
                 },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input prefix="$" suffix="USD" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 

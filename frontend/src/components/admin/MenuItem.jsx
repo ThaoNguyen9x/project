@@ -172,7 +172,7 @@ const MenuItem = ({ activeMenu, permissions }) => {
               path: "/dashboard/quotations-repair-proposals",
             },
             {
-              label: "Thông báo bảo trì",
+              label: "Thông báo sự cố bất thường",
               apiPath:
                 ALL_PERMISSIONS.NOTIFICATION_MAINTENANCES.GET_PAGINATE.apiPath,
               method:

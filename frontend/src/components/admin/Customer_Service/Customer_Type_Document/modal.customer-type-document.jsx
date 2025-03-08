@@ -26,6 +26,7 @@ const ModalCustomerTypeDocument = (props) => {
     setOpenModal,
     fetchData,
     listCustomerTypes,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -83,6 +84,7 @@ const ModalCustomerTypeDocument = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -111,7 +113,6 @@ const ModalCustomerTypeDocument = (props) => {
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
-              className="mb-2"
             >
               <Input autoComplete="off" allowClear />
             </Form.Item>
@@ -124,7 +125,6 @@ const ModalCustomerTypeDocument = (props) => {
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
-              className="mb-2"
             >
               <Select
                 placeholder="Vui lòng chọn"
@@ -160,7 +160,6 @@ const ModalCustomerTypeDocument = (props) => {
                 rules={[
                   { required: true, message: "Vui lòng không được để trống" },
                 ]}
-                className="mb-2"
               >
                 <Select
                   placeholder="Vui lòng chọn"

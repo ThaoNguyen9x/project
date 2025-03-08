@@ -1,5 +1,13 @@
 import dayjs from "dayjs";
-import { Button, Descriptions, Drawer, Rate, Space, Steps } from "antd";
+import {
+  Button,
+  Descriptions,
+  Drawer,
+  Rate,
+  Space,
+  Steps,
+  Tooltip,
+} from "antd";
 import {
   FORMAT_DATE_DISPLAY,
   FORMAT_DATE_TIME_DISPLAY,
@@ -194,21 +202,23 @@ const ViewOffice = (props) => {
                     permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.CREATE}
                     hideChildren
                   >
-                    {isDevice && (
-                      <Button
-                        onClick={() => {
-                          setOpenViewDetail(false);
-                          setData({ riskAssessmentID: x?.riskAssessmentID });
-                          setOpenModalQuotation(true);
-                        }}
-                        className="p-2 xl:p-3 gap-1 xl:gap-2"
-                      >
-                        <GoPlus className="h-4 w-4" />
-                        <p className="hidden lg:block">
-                          Tạo báo giá & đề xuất bảo trì
-                        </p>
-                      </Button>
-                    )}
+                    <Tooltip
+                      placement="bottom"
+                      title="Tạo báo giá & đề xuất bảo trì"
+                    >
+                      {isDevice && (
+                        <Button
+                          onClick={() => {
+                            setOpenViewDetail(false);
+                            setData({ riskAssessmentID: x?.riskAssessmentID });
+                            setOpenModalQuotation(true);
+                          }}
+                          className="p-2 xl:p-3 gap-1 xl:gap-2"
+                        >
+                          <GoPlus className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </Tooltip>
                   </Access>
                 </div>
               ))
@@ -255,7 +265,7 @@ const ViewOffice = (props) => {
           children: data?.maintenanceCycle || "N/A",
         },
       ];
-    } else if (data?.fileName) {
+    } else if (data?.startDate) {
       return [
         {
           label: "Khách hàng",
@@ -292,7 +302,7 @@ const ViewOffice = (props) => {
           children: dayjs(data?.endDate).format(FORMAT_DATE_DISPLAY) || "N/A",
         },
         {
-          label: "Trạng thái",
+          label: "Tình trạng hợp đồng",
           children: (
             <span
               className={`${
@@ -308,6 +318,8 @@ const ViewOffice = (props) => {
                   ? "bg-gray-200"
                   : data?.leaseStatus === "W_Confirmation"
                   ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Send"
+                  ? "bg-green-500 text-white"
                   : data?.leaseStatus === "W_Confirmation_2"
                   ? "bg-red-500 text-white"
                   : data?.leaseStatus === "Rejected"
@@ -327,14 +339,16 @@ const ViewOffice = (props) => {
                 ? "Đang chờ xử lý"
                 : data?.leaseStatus === "Corrected"
                 ? "Đã sửa"
+                : data?.leaseStatus === "Send"
+                ? "Đã gửi hợp đồng"
                 : data?.leaseStatus === "W_Confirmation"
                 ? "Đang chờ xác nhận"
                 : data?.leaseStatus === "W_Confirmation_2"
                 ? "Đang chờ xác nhận lần 2"
                 : data?.leaseStatus === "Rejected"
-                ? "Thông tin sai"
+                ? "Từ chối"
                 : data?.leaseStatus === "Approved"
-                ? "Thông tin đúng"
+                ? "Chấp nhận"
                 : ""}
             </span>
           ),
@@ -548,7 +562,7 @@ const ViewOffice = (props) => {
         },
         {
           label: "Tổng diện tích",
-          children: data?.totalArea + " m²" || "N/A",
+          children: data?.totalArea + " m²" || 0,
         },
         {
           label: "Giá thuê",
@@ -556,7 +570,7 @@ const ViewOffice = (props) => {
             data?.rentPrice?.toLocaleString("en-US", {
               style: "currency",
               currency: "USD",
-            }) || "N/A",
+            }) || 0,
         },
         {
           label: "Phí dịch vụ",
@@ -564,12 +578,12 @@ const ViewOffice = (props) => {
             data?.serviceFee?.toLocaleString("en-US", {
               style: "currency",
               currency: "USD",
-            }) || "N/A",
+            }) || 0,
         },
-        { label: "Tọa độ bắt đầu x", children: data?.startX || 0 },
-        { label: "Tọa độ bắt đầu y", children: data?.startY || 0 },
-        { label: "Tọa độ kết thúc x", children: data?.endX || 0 },
-        { label: "Tọa độ kết thúc y", children: data?.endY || 0 },
+        { label: "Tọa độ bắt đầu X", children: data?.startX || 0 },
+        { label: "Tọa độ bắt đầu Y", children: data?.startY || 0 },
+        { label: "Tọa độ kết thúc X", children: data?.endX || 0 },
+        { label: "Tọa độ kết thúc Y", children: data?.endY || 0 },
         {
           label: "Bản vẽ",
           children:
@@ -941,24 +955,20 @@ const ViewOffice = (props) => {
       ...items,
       {
         label: "Ngày tạo",
-
         children:
           dayjs(data?.createdAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Ngày cập nhật",
-
         children:
           dayjs(data?.updatedAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Tạo bởi",
-
         children: data?.createdBy || "N/A",
       },
       {
         label: "Cập nhật bởi",
-
         children: data?.updatedBy || "N/A",
       },
     ];
@@ -1007,62 +1017,66 @@ const ViewOffice = (props) => {
           )}
 
           <Access permission={ALL_PERMISSIONS.CONTRACTS.UPDATE} hideChildren>
-            {isOffice && (
-              <Button
-                type="primary"
-                onClick={async () => {
-                  const res = await callGetContract(data?.contracts[0]?.id);
-                  if (res?.data) {
-                    setOpenViewDetail(false);
-                    setData(res?.data);
-                    setOpenModal(res?.data);
-                  }
-                }}
-              >
-                <CiEdit className="h-4 w-4" />
-                <p className="hidden lg:block">Chỉnh sửa</p>
-              </Button>
-            )}
+            <Tooltip placement="bottom" title="Chỉnh sửa văn phòng">
+              {isOffice && (
+                <Button
+                  type="primary"
+                  onClick={async () => {
+                    const res = await callGetContract(data?.contracts[0]?.id);
+                    if (res?.data) {
+                      setOpenViewDetail(false);
+                      setData(res?.data);
+                      setOpenModal(res?.data);
+                    }
+                  }}
+                >
+                  <CiEdit className="h-4 w-4" />
+                </Button>
+              )}
+            </Tooltip>
           </Access>
 
           <Access permission={ALL_PERMISSIONS.DEVICES.UPDATE} hideChildren>
-            {isDevice && (
-              <Button
-                type="primary"
-                onClick={async () => {
-                  const res = await callGetDevice(data?.deviceId);
-                  if (res?.data) {
-                    setOpenViewDetail(false);
-                    setData(res?.data);
-                    setOpenModalDevice(res?.data);
-                  }
-                }}
-              >
-                <CiEdit className="h-4 w-4" />
-                <p className="hidden lg:block">Chỉnh sửa</p>
-              </Button>
-            )}
+            <Tooltip placement="bottom" title="Chỉnh sửa thiết bị">
+              {isDevice && (
+                <Button
+                  type="primary"
+                  onClick={async () => {
+                    const res = await callGetDevice(data?.deviceId);
+                    if (res?.data) {
+                      setOpenViewDetail(false);
+                      setData(res?.data);
+                      setOpenModalDevice(res?.data);
+                    }
+                  }}
+                >
+                  <CiEdit className="h-4 w-4" />
+                </Button>
+              )}
+            </Tooltip>
           </Access>
 
           <Access
             permission={ALL_PERMISSIONS.MAINTENANCE_HISTORIES.CREATE}
             hideChildren
           >
-            {isDevice && (
-              <Button
-                onClick={() => {
-                  setOpenViewDetail(false);
-                  setData({ deviceId: data?.deviceId });
-                  setOpenModalMaintenanceHistory(true);
-                }}
-                className="p-2 xl:p-3 gap-1 xl:gap-2"
-              >
-                <GoPlus className="h-4 w-4" />
-                <p className="hidden lg:block">
-                  Tạo lịch sử bảo trì và đánh giá rủi ro
-                </p>
-              </Button>
-            )}
+            <Tooltip
+              placement="bottom"
+              title="Tạo lịch sử bảo trì và đánh giá rủi ro"
+            >
+              {isDevice && (
+                <Button
+                  onClick={() => {
+                    setOpenViewDetail(false);
+                    setData({ deviceId: data?.deviceId });
+                    setOpenModalMaintenanceHistory(true);
+                  }}
+                  className="p-2 xl:p-3 gap-1 xl:gap-2"
+                >
+                  <GoPlus className="h-4 w-4" />
+                </Button>
+              )}
+            </Tooltip>
           </Access>
         </Space>
       }

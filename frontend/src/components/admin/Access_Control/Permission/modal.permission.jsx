@@ -19,7 +19,8 @@ import { ALL_MODULES } from "./data/permissions";
 const { Option } = Select;
 
 const ModalPermission = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -81,6 +82,7 @@ const ModalPermission = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 

@@ -204,7 +204,7 @@ const ViewDevice = (props) => {
           span: 2,
         },
         {
-          label: "Trạng thái",
+          label: "Tình trạng hợp đồng",
           children: (
             <span
               className={`${
@@ -212,17 +212,48 @@ const ViewDevice = (props) => {
                   ? "success"
                   : data?.leaseStatus === "Inactive"
                   ? "danger"
-                  : "warning"
+                  : data?.leaseStatus === "Wait"
+                  ? "warning"
+                  : data?.leaseStatus === "Pending"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "Corrected"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "W_Confirmation"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Send"
+                  ? "bg-green-500 text-white"
+                  : data?.leaseStatus === "W_Confirmation_2"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Rejected"
+                  ? "bg-red-700 text-white"
+                  : data?.leaseStatus === "Approved"
+                  ? "bg-blue-950 text-white"
+                  : ""
               } status`}
             >
               {data?.leaseStatus === "Active"
                 ? "Hoạt động"
                 : data?.leaseStatus === "Inactive"
                 ? "Đã chấm dứt"
-                : "Đang chờ gia hạn"}
+                : data?.leaseStatus === "Wait"
+                ? "Đang chờ gia hạn"
+                : data?.leaseStatus === "Pending"
+                ? "Đang chờ xử lý"
+                : data?.leaseStatus === "Corrected"
+                ? "Đã sửa"
+                : data?.leaseStatus === "Send"
+                ? "Đã gửi hợp đồng"
+                : data?.leaseStatus === "W_Confirmation"
+                ? "Đang chờ xác nhận"
+                : data?.leaseStatus === "W_Confirmation_2"
+                ? "Đang chờ xác nhận lần 2"
+                : data?.leaseStatus === "Rejected"
+                ? "Từ chối"
+                : data?.leaseStatus === "Approved"
+                ? "Chấp nhận"
+                : ""}
             </span>
           ),
-          span: 2,
         },
       ];
     } else if (data?.role?.name) {

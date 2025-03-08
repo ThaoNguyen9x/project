@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,9 +39,11 @@ public class NotificationMaintenanceService {
     private final RecipientService recipientService;
     private final NotificationRepository notificationRepository;
     private final RecipientRepository recipientRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public NotificationMaintenanceService(NotificationMaintenanceRepository notificationMaintenanceRepository,
                                           WebsocketService websocketService,
+                                          SimpMessagingTemplate messagingTemplate,
                                           ModelMapper modelMapper, MaintenanceTaskRepository maintenanceTaskRepository, UserRepository userRepository, RecipientService recipientService, NotificationRepository notificationRepository, RecipientRepository recipientRepository) {
         this.notificationMaintenanceRepository = notificationMaintenanceRepository;
         this.websocketService = websocketService;
@@ -50,6 +53,7 @@ public class NotificationMaintenanceService {
         this.recipientService = recipientService;
         this.notificationRepository = notificationRepository;
         this.recipientRepository = recipientRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public ResultPaginationDTO getAllNotifications(Specification<NotificationMaintenance> spec,
@@ -100,39 +104,39 @@ public class NotificationMaintenanceService {
             throw new RuntimeException(e);
         }
 
-        for (User recipientUser : recipients) {
-            List<Recipient> existingRecipients = recipientRepository.findByReferenceId(recipientUser.getId());
-
-            Recipient existingRecipient = null;
-            if (existingRecipients != null && !existingRecipients.isEmpty()) {
-                existingRecipient = existingRecipients.get(0);
-            }
+        for (User admin : recipients) {
+            Recipient existingRecipient = recipientRepository.findByReferenceId(admin.getId())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
             if (existingRecipient == null) {
-                Recipient rec = new Recipient();
-                rec.setType("Maintenance_Task_Notification");
-                rec.setName("Send Maintenance Task Notification");
-                rec.setReferenceId(recipientUser.getId());
-                existingRecipient = recipientService.createRecipient(rec);
+                Recipient newRecipient = new Recipient();
+                newRecipient.setType("Maintenance_Task_Notification");
+                newRecipient.setName("Send Maintenance Task Notification");
+                newRecipient.setReferenceId(admin.getId());
+                existingRecipient = recipientService.createRecipient(newRecipient);
             }
 
-            Notification notification = new Notification();
-            notification.setRecipient(existingRecipient);
-            notification.setMessage(message);
-            notification.setStatus(StatusNotifi.PENDING);
-            notification.setCreatedAt(LocalDateTime.now());
+            Notification adminNoti = new Notification();
+            adminNoti.setRecipient(existingRecipient);
+            adminNoti.setMessage(message);
+            adminNoti.setStatus(StatusNotifi.PENDING);
+            adminNoti.setCreatedAt(LocalDateTime.now());
 
-            notificationRepository.save(notification);
+            notificationRepository.save(adminNoti);
 
             try {
-                websocketService.sendNotificationToRecipients(recipientUser.getId(), notificationMaintenance);
+                messagingTemplate.convertAndSend("/topic/maintenance-task-notifications/" + admin.getId(), message);
+                System.out.println("Đã gửi cho user: " + admin.getId());
             } catch (Exception e) {
-                System.err.println("Error sending WebSocket notification for user ID: " + recipientUser.getId() + ", " + e.getMessage());
+                System.err.println("Error sending WebSocket notification for user ID: " + admin.getId() + ", " + e.getMessage());
             }
         }
 
         return modelMapper.map(no, NotificationMaintenanceDto.class);
     }
+
 
     public NotificationMaintenanceDto updateNotification(Long id, NotificationMaintenance notificationMaintenance) {
         NotificationMaintenance ex = notificationMaintenanceRepository.findById(id)

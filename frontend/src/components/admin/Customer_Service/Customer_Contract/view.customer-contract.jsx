@@ -20,7 +20,8 @@ import TextArea from "antd/es/input/TextArea";
 import { callConfirmationContract } from "../../../../services/api";
 
 const ViewCustomerContract = (props) => {
-  const { user, data, setData, openViewDetail, setOpenViewDetail } = props;
+  const { user, data, setData, openViewDetail, setOpenViewDetail, fetchData } =
+    props;
   const [inputValues, setInputValues] = useState({});
 
   const [form] = Form.useForm();
@@ -258,15 +259,20 @@ const ViewCustomerContract = (props) => {
             !checkedInfos["fileName"] ? "flex-col lg:flex-row" : ""
           } items-center justify-between gap-2`}
         >
-          <a
-            href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
-              data?.fileName
-            }`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Xem
-          </a>
+          {data?.fileName ? (
+            <a
+              href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
+                data?.fileName
+              }`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Xem
+            </a>
+          ) : (
+            "Chưa có"
+          )}
+
           {user?.role?.name === "Customer" &&
             (data?.leaseStatus === "W_Confirmation" ||
               data?.leaseStatus === "W_Confirmation_2") && (
@@ -314,6 +320,8 @@ const ViewCustomerContract = (props) => {
               ? "bg-gray-200"
               : data?.leaseStatus === "W_Confirmation"
               ? "bg-red-500 text-white"
+              : data?.leaseStatus === "Send"
+              ? "bg-green-500 text-white"
               : data?.leaseStatus === "W_Confirmation_2"
               ? "bg-red-500 text-white"
               : data?.leaseStatus === "Rejected"
@@ -333,6 +341,8 @@ const ViewCustomerContract = (props) => {
             ? "Đang chờ xử lý"
             : data?.leaseStatus === "Corrected"
             ? "Đã sửa"
+            : data?.leaseStatus === "Send"
+            ? "Đã gửi hợp đồng"
             : data?.leaseStatus === "W_Confirmation"
             ? "Đang chờ xác nhận"
             : data?.leaseStatus === "W_Confirmation_2"
@@ -344,7 +354,6 @@ const ViewCustomerContract = (props) => {
             : ""}
         </span>
       ),
-      span: 2,
     },
   ];
 
@@ -442,7 +451,7 @@ const ViewCustomerContract = (props) => {
             !checkedInfos?.office?.totalArea ? "flex-col lg:flex-row" : ""
           } items-center justify-between gap-2`}
         >
-          {data?.office?.totalArea}
+          {data?.office?.totalArea + " m²"}
           {user?.role?.name === "Customer" &&
             (data?.leaseStatus === "W_Confirmation" ||
               data?.leaseStatus === "W_Confirmation_2") && (
@@ -872,53 +881,62 @@ const ViewCustomerContract = (props) => {
           size="small"
           current={1}
           items={
-            data?.customer?.customerType?.customerTypeDocuments?.map((x) => {
-              const filePath = x?.customerDocuments?.[0]?.filePath;
-              const documentId = x?.id;
-              const checkedInfo = checkedInfos.customer.documents.find(
-                (item) => item.docId === documentId
-              );
+            data?.customer?.customerType?.customerTypeDocuments?.length > 0
+              ? data?.customer?.customerType?.customerTypeDocuments?.map(
+                  (x) => {
+                    const filePath = x?.customerDocuments?.[0]?.filePath;
+                    const documentId = x?.id;
+                    const checkedInfo = checkedInfos.customer.documents.find(
+                      (item) => item.docId === documentId
+                    );
 
-              return {
-                title: x?.documentType,
-                description: (
-                  <div
-                    className={`flex ${
-                      !checkedInfo?.checked ? "flex-col lg:flex-row" : ""
-                    } items-center justify-between gap-2`}
-                  >
-                    {filePath ? (
-                      <a
-                        href={`${
-                          import.meta.env.VITE_BACKEND_URL
-                        }/storage/customer_documents/${filePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Xem
-                      </a>
-                    ) : (
-                      <span style={{ color: "red" }}>Không có</span>
-                    )}
+                    return {
+                      title: x?.documentType,
+                      description: (
+                        <div
+                          className={`flex ${
+                            !checkedInfo?.checked ? "flex-col lg:flex-row" : ""
+                          } items-center justify-between gap-2`}
+                        >
+                          {filePath ? (
+                            <a
+                              href={`$${
+                                import.meta.env.VITE_BACKEND_URL
+                              }/storage/customer_documents/${filePath}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Xem
+                            </a>
+                          ) : (
+                            <span style={{ color: "red" }}>Chưa có</span>
+                          )}
 
-                    {user?.role?.name === "Customer" &&
-                      (data?.leaseStatus === "W_Confirmation" ||
-                        data?.leaseStatus === "W_Confirmation_2") && (
-                        <Checkbox
-                          checked={checkedInfo?.checked || false}
-                          onChange={(e) =>
-                            handleCheckboxChangeDoc(
-                              documentId,
-                              e.target.checked
-                            )
-                          }
-                        />
-                      )}
-                  </div>
-                ),
-                status: filePath ? "finish" : "error",
-              };
-            }) || []
+                          {user?.role?.name === "Customer" &&
+                            (data?.leaseStatus === "W_Confirmation" ||
+                              data?.leaseStatus === "W_Confirmation_2") && (
+                              <Checkbox
+                                checked={checkedInfo?.checked || false}
+                                onChange={(e) =>
+                                  handleCheckboxChangeDoc(
+                                    documentId,
+                                    e.target.checked
+                                  )
+                                }
+                              />
+                            )}
+                        </div>
+                      ),
+                      status: filePath ? "finish" : "error",
+                    };
+                  }
+                )
+              : [
+                  {
+                    description: "Chưa có",
+                    status: "error",
+                  },
+                ]
           }
         />
       ),

@@ -52,7 +52,7 @@ public class Office extends BaseEntity {
 
     @Lob
     @Column(name = "Status")
-    private String status = "ACTIV";
+    private String status = "UNACTIV";
 
     @Column(name = "DrawingFile")
     private String drawingFile;

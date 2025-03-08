@@ -46,18 +46,18 @@ public class DropboxSignEmailService {
         TemplateSignatureRequest sigRequest = new TemplateSignatureRequest();
         sigRequest.setTemplateId(hsTemplateId);
         sigRequest.setSigner("Customer", contract.getCustomer().getEmail(), contract.getCustomer().getDirectorName());
-         sigRequest.setTestMode(true); // Loại bỏ nếu muốn gửi email thật
+        sigRequest.setTestMode(true); // Loại bỏ nếu muốn gửi email thật
 
         Map<String, String> customFields = new HashMap<>();
-        customFields.put("contract_number", contract.getId().toString());
-        customFields.put("start_date", contract.getStartDate().toString());
-        customFields.put("end_date", contract.getEndDate().toString());
+        customFields.put("customerName", contract.getCustomer().getDirectorName());
         sigRequest.setCustomFields(customFields);
 
         HelloSignClient helloSignClient = new HelloSignClient(hsApiKey);
         SignatureRequest newRequest = helloSignClient.sendTemplateSignatureRequest(sigRequest);
         System.out.println("Yêu cầu ký hợp đồng đã được gửi qua email. Request ID: " + newRequest.getId());
 
+        contract.setLeaseStatus("Send");
+        contractRepository.save(contract);
         return newRequest;
     }
 }

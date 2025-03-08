@@ -8,6 +8,7 @@ import {
   message,
   notification,
   Modal,
+  Tooltip,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
@@ -32,6 +33,7 @@ import { FORMAT_TEXT_LENGTH } from "../../utils/constant";
 import { AuthContext } from "../../components/share/Context";
 import HighlightText from "../../components/share/HighlightText";
 import { useLocation, useNavigate } from "react-router-dom";
+import Highlighter from "react-highlight-words";
 
 const Quotation = () => {
   const { user } = useContext(AuthContext);
@@ -242,7 +244,7 @@ const Quotation = () => {
           record?.totalAmount.toLocaleString("en-US", {
             style: "currency",
             currency: "USD",
-          }) || "N/A";
+          }) || 0;
 
         return searchedColumn === "totalAmount" ? (
           <HighlightText text={formatted} searchText={searchText} />
@@ -314,40 +316,44 @@ const Quotation = () => {
       render: (text, record) => (
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.QUOTATIONS.UPDATE} hideChildren>
-            <div
-              onClick={async () => {
-                const res = await callGetQuotation(record?.id);
-                if (res?.data) {
-                  setData(res?.data);
-                  setOpenModalQuotation(true);
-                }
-              }}
-              className="cursor-pointer text-amber-900"
-            >
-              <CiEdit className="h-5 w-5" />
-            </div>
+            <Tooltip placement="bottom" title="Chỉnh sửa">
+              <div
+                onClick={async () => {
+                  const res = await callGetQuotation(record?.id);
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenModalQuotation(true);
+                  }
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <CiEdit className="h-5 w-5" />
+              </div>
+            </Tooltip>
           </Access>
           <Access permission={ALL_PERMISSIONS.QUOTATIONS.DELETE} hideChildren>
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.id)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
+            <Tooltip placement="bottom" title="Xóa">
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc chắn muốn xóa không?"
+                onConfirm={() => handleDelete(record.id)}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+                className="cursor-pointer DELETE"
+              >
+                <>
+                  <AiOutlineDelete className="h-5 w-5" />
+                </>
+              </Popconfirm>
+            </Tooltip>
           </Access>
         </div>
       ),
@@ -368,16 +374,18 @@ const Quotation = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllQuotations(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -385,20 +393,21 @@ const Quotation = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField}~${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -407,7 +416,7 @@ const Quotation = () => {
   const handleDelete = async (id) => {
     const res = await callDeleteQuotation(id);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
@@ -427,9 +436,11 @@ const Quotation = () => {
 
     if (id) {
       const fetchRequest = async () => {
+        fetchData();
+
         const res = await callGetRepairProposal(id);
         if (res?.data) {
-          setData(res?.data);
+          setDataView(res?.data);
           setOpenViewDetail(true);
 
           navigate(location.pathname, { replace: true });
@@ -446,13 +457,14 @@ const Quotation = () => {
           Báo giá & Đề xuất bảo trì
         </h2>
         <Access permission={ALL_PERMISSIONS.QUOTATIONS.CREATE} hideChildren>
-          <Button
-            onClick={() => setOpenModalQuotation(true)}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => setOpenModalQuotation(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -487,6 +499,7 @@ const Quotation = () => {
           setOpenModalQuotation={setOpenModalQuotation}
           fetchData={fetchData}
           listRiskAssessments={listRiskAssessments}
+          setCurrent={setCurrent}
         />
 
         <Modal

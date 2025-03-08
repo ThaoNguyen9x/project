@@ -54,7 +54,7 @@ const SystemMaintenanceService = () => {
 
   useEffect(() => {
     const init = async () => {
-      const system = await callGetAllSubcontracts();
+      const system = await callGetAllSubcontracts(`page=1&size=100`);
       if (system && system.data) {
         setListSubcontractors(system.data?.result);
       }
@@ -66,6 +66,7 @@ const SystemMaintenanceService = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -358,16 +359,18 @@ const SystemMaintenanceService = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllSystemMaintenanceServices(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -375,20 +378,21 @@ const SystemMaintenanceService = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -397,7 +401,7 @@ const SystemMaintenanceService = () => {
   const handleDelete = async (id) => {
     const res = await callDeleteSystemMaintenanceService(id);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
@@ -461,6 +465,7 @@ const SystemMaintenanceService = () => {
           setOpenModal={setOpenModal}
           fetchData={fetchData}
           listSubcontractors={listSubcontractors}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

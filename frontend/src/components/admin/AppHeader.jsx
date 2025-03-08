@@ -17,6 +17,7 @@ import { IoIosLogOut } from "react-icons/io";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaRegBell } from "react-icons/fa6";
 import {
+  callGetAccount,
   callGetAllNotifications,
   callGetChatRoomGroups,
   callGetChatRoomUsers,
@@ -58,10 +59,10 @@ const AppHeader = () => {
 
       const topics = [
         `/topic/user-status`,
-        `/topic/repair-request-notifications/${user.id}`, // Yêu cầu sửa chữa
-        `/topic/due-payment-notifications/${user.id}`, // Thông báo khoản thanh toán còn 1 ngày
-        `/topic/work-registration-notifications/${user.id}`, // Thông báo đăng ký công việc
-        `/topic/paymentNotifications/${user.id}`, // Gửi thông báo thanh toán đến khách hàng
+        `/topic/repair-request-notifications/${user.id}`,
+        `/topic/due-payment-notifications/${user.id}`,
+        `/topic/work-registration-notifications/${user.id}`,
+        `/topic/paymentNotifications/${user.id}`,
         `/topic/electricityUsageVerification/${user.id}`,
         `/topic/maintenance-task-notifications/${user.id}`,
         `/topic/messages/${user.id}`,
@@ -134,7 +135,7 @@ const AppHeader = () => {
         role: "",
       });
       message.success(res.message);
-      navigate("/");
+      navigate("/login");
     }
   };
 
@@ -232,11 +233,17 @@ const AppHeader = () => {
       )}.`,
     Exp_Payment_Notification: (msg) =>
       `Khoản thanh toán hết hạn, ${formatDate(msg?.dueDate)}.`,
-    Maintenance_Task_Notification: () =>
-      `Bạn có nhiệm vụ bảo trì cần kiểm tra.`,
+    Maintenance_Task_Notification: (msg) =>
+      `Bạn có sự cố bất thường cần kiểm tra vào ngày ${formatDate(
+        msg?.maintenanceDate
+      )}.`,
     Due_Contract_Notification: (msg) =>
       `Hợp đồng của khách hàng công ty ${msg?.customer?.companyName} sắp hết hạn.`,
     Repair_Proposal_Notification: (msg) =>
+      `Bạn có báo giá và đề xuất bảo trì vào ngày ${formatDate(
+        msg?.requestDate
+      )}.`,
+    Repair_Proposal_Notification_Verification: (msg) =>
       `Bạn có báo giá và đề xuất bảo trì vào ngày ${formatDate(
         msg?.requestDate
       )}.`,
@@ -275,7 +282,7 @@ const AppHeader = () => {
     Birthday_Notification: "Thông báo sinh nhật",
     Due_Payment_Notification: "Thông báo đến hạn thanh toán",
     Exp_Payment_Notification: "Thông báo hết hạn thanh toán",
-    Maintenance_Task_Notification: "Thông báo nhiệm vụ bảo trì",
+    Maintenance_Task_Notification: "Thông báo nhiệm vụ sự cố bất thường",
     Due_Contract_Notification: "Thông báo hợp đồng sắp hết hạn",
     Repair_Proposal_Notification: "Thông báo đề xuất bảo trì",
     Repair_Request_Notification: "Thông báo yêu cầu sửa chữa",

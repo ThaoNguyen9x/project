@@ -75,5 +75,6 @@ public class LocationDto {
         private double startY;
         private double endX;
         private double endY;
+        private String status;
     }
 }

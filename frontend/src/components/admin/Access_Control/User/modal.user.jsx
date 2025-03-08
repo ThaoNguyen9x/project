@@ -15,8 +15,15 @@ import { callCreateUser, callUpdateUser } from "../../../../services/api";
 const { Option } = Select;
 
 const ModalUser = (props) => {
-  const { data, setData, openModal, setOpenModal, listRoles, fetchData } =
-    props;
+  const {
+    data,
+    setData,
+    openModal,
+    setOpenModal,
+    listRoles,
+    fetchData,
+    setCurrent,
+  } = props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -25,8 +32,8 @@ const ModalUser = (props) => {
     if (data?.id) {
       const init = {
         ...data,
-        status: data.status ? "true" : "false",
-        role: data.role ? data.role.id : null,
+        status: data?.status ? "true" : "false",
+        role: data?.role ? data?.role?.id : null,
       };
 
       form.setFieldsValue(init);
@@ -70,6 +77,7 @@ const ModalUser = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -173,14 +181,14 @@ const ModalUser = (props) => {
                 }
               >
                 {listRoles
-                  ?.filter((role) => role.status)
+                  ?.filter((role) => role?.status)
                   .map((role) => (
                     <Select.Option
-                      key={role.id}
-                      value={role.id}
-                      label={role.name}
+                      key={role?.id}
+                      value={role?.id}
+                      label={role?.name}
                     >
-                      {role.name}
+                      {role?.name}
                     </Select.Option>
                   ))}
               </Select>

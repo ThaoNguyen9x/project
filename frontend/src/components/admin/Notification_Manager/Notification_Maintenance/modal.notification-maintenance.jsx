@@ -20,7 +20,8 @@ import {
 import TextArea from "antd/es/input/TextArea";
 
 const ModalNotificationMaintenance = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -118,6 +119,7 @@ const ModalNotificationMaintenance = (props) => {
       });
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -218,7 +220,7 @@ const ModalNotificationMaintenance = (props) => {
                 },
               ]}
             >
-              <Input allowClear />
+              <Input suffix="phút" allowClear />
             </Form.Item>
           </Col>
 

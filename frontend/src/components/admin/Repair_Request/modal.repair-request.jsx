@@ -23,7 +23,8 @@ import TextArea from "antd/es/input/TextArea";
 const { Option } = Select;
 
 const ModalRepairRequest = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -102,6 +103,7 @@ const ModalRepairRequest = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 

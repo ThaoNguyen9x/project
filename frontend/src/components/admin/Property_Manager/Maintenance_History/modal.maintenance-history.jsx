@@ -32,6 +32,7 @@ const ModalMaintenanceHistory = (props) => {
     fetchData,
     listSystemMaintenanceServices,
     listDevices,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -159,6 +160,7 @@ const ModalMaintenanceHistory = (props) => {
       });
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 

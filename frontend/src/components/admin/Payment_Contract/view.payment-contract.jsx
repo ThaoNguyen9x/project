@@ -9,9 +9,6 @@ import {
   callGetContract,
   callGetCustomer,
   callGetCustomerType,
-  callGetDeviceType,
-  callGetSubcontract,
-  callGetSystem,
   callGetUser,
 } from "../../../services/api";
 
@@ -57,7 +54,6 @@ const ViewPaymentContract = (props) => {
               Công ty - {data?.contract?.customer?.companyName || "N/A"}
             </a>
           ),
-          span: 2,
         },
         {
           label: "Số tiền thanh toán",
@@ -67,17 +63,14 @@ const ViewPaymentContract = (props) => {
                 currency: "USD",
               })
             : "N/A",
-          span: 2,
         },
         {
           label: "Hạn thanh toán",
           children: data?.dueDate || "N/A",
-          span: 2,
         },
         {
           label: "Ngày thanh toán",
           children: data?.paymentDate || "N/A",
-          span: 2,
         },
         {
           label: "Trạng thái",
@@ -93,45 +86,40 @@ const ViewPaymentContract = (props) => {
                   : "Đã thanh toán"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.contractEndDate) {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
         { label: "Điện thoại", children: data?.phone || "N/A" },
         {
           label: "Rating",
           children: (
             <Rate value={data?.rating} disabled style={{ fontSize: 16 }} />
           ),
-          span: 2,
         },
         {
           label: "Hệ thống",
           children: data?.system?.systemName || "N/A",
-          span: 2,
         },
         { label: "Ngày bắt đầu", children: data?.contractStartDate || "N/A" },
         { label: "Ngày kết thúc", children: data?.contractEndDate || "N/A" },
       ];
     } else if (data?.description) {
       return [
-        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        { label: "Tên", children: data?.typeName || "N/A" },
         {
           label: "Mô tả",
           children: data?.description || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.systemName) {
       return [
-        { label: "Tên", children: data?.systemName || "N/A", span: 2 },
-        { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+        { label: "Tên", children: data?.systemName || "N/A" },
+        { label: "Mô tả", children: data?.description || "N/A" },
         {
           label: "Chu kỳ bảo trì",
           children: data?.maintenanceCycle || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.fileName) {
@@ -152,7 +140,6 @@ const ViewPaymentContract = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Tổng số tiền",
@@ -162,20 +149,17 @@ const ViewPaymentContract = (props) => {
                 currency: "USD",
               })
             : 0,
-          span: 2,
         },
         {
           label: "Ngày bắt đầu",
           children: dayjs(data?.startDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
         },
         {
           label: "Ngày kết thúc",
           children: dayjs(data?.endDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
         },
         {
-          label: "Trạng thái",
+          label: "Tình trạng hợp đồng",
           children: (
             <span
               className={`${
@@ -183,32 +167,62 @@ const ViewPaymentContract = (props) => {
                   ? "success"
                   : data?.leaseStatus === "Inactive"
                   ? "danger"
-                  : "warning"
+                  : data?.leaseStatus === "Wait"
+                  ? "warning"
+                  : data?.leaseStatus === "Pending"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "Corrected"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "W_Confirmation"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Send"
+                  ? "bg-green-500 text-white"
+                  : data?.leaseStatus === "W_Confirmation_2"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Rejected"
+                  ? "bg-red-700 text-white"
+                  : data?.leaseStatus === "Approved"
+                  ? "bg-blue-950 text-white"
+                  : ""
               } status`}
             >
               {data?.leaseStatus === "Active"
                 ? "Hoạt động"
                 : data?.leaseStatus === "Inactive"
                 ? "Đã chấm dứt"
-                : "Đang chờ gia hạn"}
+                : data?.leaseStatus === "Wait"
+                ? "Đang chờ gia hạn"
+                : data?.leaseStatus === "Pending"
+                ? "Đang chờ xử lý"
+                : data?.leaseStatus === "Corrected"
+                ? "Đã sửa"
+                : data?.leaseStatus === "Send"
+                ? "Đã gửi hợp đồng"
+                : data?.leaseStatus === "W_Confirmation"
+                ? "Đang chờ xác nhận"
+                : data?.leaseStatus === "W_Confirmation_2"
+                ? "Đang chờ xác nhận lần 2"
+                : data?.leaseStatus === "Rejected"
+                ? "Từ chối"
+                : data?.leaseStatus === "Approved"
+                ? "Chấp nhận"
+                : ""}
             </span>
           ),
-          span: 2,
         },
       ];
     } else if (data?.companyName) {
       return [
-        { label: "Công ty", children: data?.companyName || "N/A", span: 2 },
-        { label: "Giám đốc", children: data?.directorName || "N/A", span: 2 },
+        { label: "Công ty", children: data?.companyName || "N/A" },
+        { label: "Giám đốc", children: data?.directorName || "N/A" },
         { label: "Email", children: data?.email || "N/A" },
         { label: "Điện thoại", children: data?.phone || "N/A" },
-        { label: "Địa chỉ", children: data?.address || "N/A", span: 2 },
+        { label: "Địa chỉ", children: data?.address || "N/A" },
         {
           label: "Ngày sinh",
           children: data?.birthday
             ? dayjs(data?.birthday).format("YYYY-DD-MM")
             : "N/A",
-          span: 2,
         },
         {
           label: "Liên hệ",
@@ -226,7 +240,6 @@ const ViewPaymentContract = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Loại khách hàng",
@@ -244,13 +257,12 @@ const ViewPaymentContract = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
       ];
     } else if (data?.role?.name) {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
-        { label: "Email", children: data?.email || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
+        { label: "Email", children: data?.email || "N/A" },
         { label: "Điện thoại", children: data?.mobile || "N/A" },
         { label: "Vai trò", children: data?.role?.name || "N/A" },
         {
@@ -261,18 +273,16 @@ const ViewPaymentContract = (props) => {
                 {data?.status ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.typeName) {
       return [
-        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        { label: "Tên", children: data?.typeName || "N/A" },
         {
           label: "Hồ sơ",
           children:
             data?.customerTypeDocuments?.map((x) => <p>{x.documentType}</p>) ||
             "N/A",
-          span: 2,
         },
         {
           label: "Trạng thái",
@@ -282,12 +292,11 @@ const ViewPaymentContract = (props) => {
                 {data?.status ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     } else {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
         {
           label: "Hợp đồng",
           children: (
@@ -308,12 +317,10 @@ const ViewPaymentContract = (props) => {
               )}
             </>
           ),
-          span: 2,
         },
         {
           label: "Tổng diện tích",
           children: data?.totalArea + " m²" || "N/A",
-          span: 2,
         },
         {
           label: "Giá thuê",
@@ -322,7 +329,6 @@ const ViewPaymentContract = (props) => {
               style: "currency",
               currency: "USD",
             }) || "N/A",
-          span: 2,
         },
         {
           label: "Phí dịch vụ",
@@ -331,7 +337,6 @@ const ViewPaymentContract = (props) => {
               style: "currency",
               currency: "USD",
             }) || "N/A",
-          span: 2,
         },
         { label: "Tọa độ bắt đầu x", children: data?.startX || "N/A" },
         { label: "Tọa độ bắt đầu y", children: data?.startY || "N/A" },
@@ -351,7 +356,6 @@ const ViewPaymentContract = (props) => {
                 {data?.drawingFile}
               </a>
             ) || "N/A",
-          span: 2,
         },
         {
           label: "Trạng thái",
@@ -365,7 +369,6 @@ const ViewPaymentContract = (props) => {
                 {data?.status === "ACTIV" ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     }
@@ -378,24 +381,20 @@ const ViewPaymentContract = (props) => {
       ...items,
       {
         label: "Ngày tạo",
-        span: 2,
         children:
           dayjs(data?.createdAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Ngày cập nhật",
-        span: 2,
         children:
           dayjs(data?.updatedAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Tạo bởi",
-        span: 2,
         children: data?.createdBy || "N/A",
       },
       {
         label: "Cập nhật bởi",
-        span: 2,
         children: data?.updatedBy || "N/A",
       },
     ];
@@ -433,11 +432,7 @@ const ViewPaymentContract = (props) => {
         </Space>
       }
     >
-      <Descriptions
-        items={items}
-        column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
-        bordered
-      />
+      <Descriptions items={items} column={1} bordered />
     </Drawer>
   );
 };

@@ -9,6 +9,7 @@ import {
   Popconfirm,
   message,
   notification,
+  Tooltip,
 } from "antd";
 import Highlighter from "react-highlight-words";
 
@@ -73,6 +74,7 @@ const RepairRequest = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -268,15 +270,17 @@ const RepairRequest = () => {
               permission={ALL_PERMISSIONS.REPAIR_REQUEST.SEND}
               hideChildren
             >
-              <div
-                onClick={() => {
-                  setOpenModalSend(true);
-                  setData(record);
-                }}
-                className="cursor-pointer text-amber-900"
-              >
-                <NotificationOutlined className="h-5 w-5" />
-              </div>
+              <Tooltip placement="bottom" title="Điều phối kỹ thuật">
+                <div
+                  onClick={() => {
+                    setOpenModalSend(true);
+                    setData(record);
+                  }}
+                  className="cursor-pointer text-amber-900"
+                >
+                  <NotificationOutlined className="h-5 w-5" />
+                </div>
+              </Tooltip>
             </Access>
           ) : (
             ""
@@ -289,18 +293,20 @@ const RepairRequest = () => {
               permission={ALL_PERMISSIONS.REPAIR_REQUEST.UPDATE}
               hideChildren
             >
-              <div
-                onClick={async () => {
-                  const res = await callGetRepairRequest(record?.requestID);
-                  if (res?.data) {
-                    setData(res?.data);
-                    setOpenModal(true);
-                  }
-                }}
-                className="cursor-pointer text-amber-900"
-              >
-                <CiEdit className="h-5 w-5" />
-              </div>
+              <Tooltip placement="bottom" title="Chỉnh sửa">
+                <div
+                  onClick={async () => {
+                    const res = await callGetRepairRequest(record?.requestID);
+                    if (res?.data) {
+                      setData(res?.data);
+                      setOpenModal(true);
+                    }
+                  }}
+                  className="cursor-pointer text-amber-900"
+                >
+                  <CiEdit className="h-5 w-5" />
+                </div>
+              </Tooltip>
             </Access>
           )}
 
@@ -308,26 +314,28 @@ const RepairRequest = () => {
             permission={ALL_PERMISSIONS.REPAIR_REQUEST.DELETE}
             hideChildren
           >
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.requestID)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
+            <Tooltip placement="bottom" title="Xóa">
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc chắn muốn xóa không?"
+                onConfirm={() => handleDelete(record.requestID)}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+                className="cursor-pointer DELETE"
+              >
+                <>
+                  <AiOutlineDelete className="h-5 w-5" />
+                </>
+              </Popconfirm>
+            </Tooltip>
           </Access>
         </div>
       ),
@@ -348,16 +356,18 @@ const RepairRequest = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllRepairRequests(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -365,20 +375,21 @@ const RepairRequest = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -406,10 +417,12 @@ const RepairRequest = () => {
     const id = queryParams.get("id");
 
     if (id) {
+      fetchData();
+
       const fetchRequest = async () => {
         const res = await callGetRepairRequest(id);
         if (res?.data) {
-          setData(res?.data);
+          setDataView(res?.data);
           setOpenViewDetail(true);
           navigate(location.pathname, { replace: true });
         }
@@ -423,15 +436,16 @@ const RepairRequest = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Yêu cầu sửa chữa</h2>
         <Access permission={ALL_PERMISSIONS.REPAIR_REQUEST.CREATE} hideChildren>
-          <Button
-            onClick={() => {
-              setOpenModal(true);
-            }}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => {
+                setOpenModal(true);
+              }}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -468,6 +482,7 @@ const RepairRequest = () => {
           setOpenModal={setOpenModal}
           fetchData={fetchData}
           listUsers={listUsers}
+          setCurrent={setCurrent}
         />
 
         <ModalSendRepairRequest
@@ -477,6 +492,7 @@ const RepairRequest = () => {
           setOpenModalSend={setOpenModalSend}
           fetchData={fetchData}
           listUsers={listUsers}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

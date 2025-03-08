@@ -23,7 +23,8 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 const ModalWorkRegistration = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -102,6 +103,7 @@ const ModalWorkRegistration = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -133,23 +135,11 @@ const ModalWorkRegistration = (props) => {
       onCancel={handleReset}
       footer={null}
       confirmLoading={isSubmit}
-      className="w-full lg:!w-1/2"
+      className="w-full"
     >
       <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
         <Row gutter={16}>
-          <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="Ghi chú"
-              name="note"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
-              <Input autoComplete="off" allowClear />
-            </Form.Item>
-          </Col>
-
-          <Col lg={12} md={12} sm={24} xs={24}>
+          <Col xs={24}>
             <Form.Item
               label="Bản vẽ"
               name={data?.image ? "image" : "drawingUrl"}
@@ -167,13 +157,25 @@ const ModalWorkRegistration = (props) => {
                 listType="text"
               >
                 {dataFile.length < 1 ? (
-                  <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                  <Button icon={<UploadOutlined />}>Bấm để tải lên</Button>
                 ) : null}
               </Upload>
             </Form.Item>
           </Col>
 
-          <Col lg={12} md={12} sm={24} xs={24}>
+          <Col xs={24}>
+            <Form.Item
+              label="Ghi chú"
+              name="note"
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
+            >
+              <Input autoComplete="off" allowClear />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24}>
             <Form.Item
               label="Ngày dự kiến"
               name="scheduledDate"
@@ -181,7 +183,11 @@ const ModalWorkRegistration = (props) => {
                 { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
-              <DatePicker format="YYYY-MM-DDTHH:mm:ss" className="w-full" />
+              <DatePicker
+                showTime
+                format="YYYY-MM-DD HH:mm:ss"
+                className="w-full"
+              />
             </Form.Item>
           </Col>
 

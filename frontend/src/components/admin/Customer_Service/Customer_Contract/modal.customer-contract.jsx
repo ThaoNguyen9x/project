@@ -54,6 +54,7 @@ const ModalCustomerContract = (props) => {
     listLocations,
     listCustomerTypes,
     listCustomerTypeDocuments,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -249,7 +250,6 @@ const ModalCustomerContract = (props) => {
 
         if (!resUser || !resUser.data) {
           await callDeleteOffice(resOffice.data.id);
-          await callDeleteMeter(resMeter.data.id);
           throw new Error(resUser?.error);
         }
 
@@ -268,9 +268,7 @@ const ModalCustomerContract = (props) => {
         );
 
         if (!resCustomer || !resCustomer.data) {
-          await callDeleteUser(resUser.data.id);
           await callDeleteOffice(resOffice.data.id);
-          await callDeleteMeter(resMeter.data.id);
           throw new Error(resCustomer?.error);
         }
 
@@ -305,10 +303,7 @@ const ModalCustomerContract = (props) => {
         );
 
         if (!resContract || !resContract.data) {
-          await callDeleteCustomer(resCustomer.data.id);
-          await callDeleteUser(resUser.data.id);
           await callDeleteOffice(resOffice.data.id);
-          await callDeleteMeter(resMeter.data.id);
           throw new Error(resContract?.error);
         }
       } else {
@@ -601,7 +596,9 @@ const ModalCustomerContract = (props) => {
             <Form.Item
               label="Công ty"
               name="companyName"
-              rules={[{ required: true, message: "Bắt buộc" }]}
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
             >
               <Input autoComplete="off" allowClear />
             </Form.Item>
@@ -611,7 +608,9 @@ const ModalCustomerContract = (props) => {
             <Form.Item
               label="Giám đốc"
               name="directorName"
-              rules={[{ required: true, message: "Bắt buộc" }]}
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
             >
               <Input autoComplete="off" allowClear />
             </Form.Item>
@@ -623,7 +622,7 @@ const ModalCustomerContract = (props) => {
               name="email"
               rules={[
                 { type: "email", message: "Email không hợp lệ" },
-                { required: true, message: "Bắt buộc" },
+                { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -670,9 +669,25 @@ const ModalCustomerContract = (props) => {
               name="birthday"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || value.isBefore(new Date(), "day")) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Ngày sinh không được lớn hơn ngày hiện tại")
+                    );
+                  },
+                }),
               ]}
             >
-              <DatePicker format="YYYY-MM-DD" className="w-full" />
+              <DatePicker
+                format="YYYY-MM-DD"
+                className="w-full"
+                disabledDate={(current) =>
+                  current && current.isAfter(new Date(), "day")
+                }
+              />
             </Form.Item>
           </Col>
 
@@ -718,7 +733,9 @@ const ModalCustomerContract = (props) => {
               <ul className="my-2">
                 {listCustomerTypeDocuments
                   ?.filter((doc) => {
-                    return doc.customerType.id === selectedCustomerType;
+                    return (
+                      doc.customerType.id === selectedCustomerType && doc.status
+                    );
                   })
                   ?.map((doc) => (
                     <li key={doc.id}>
@@ -858,7 +875,7 @@ const ModalCustomerContract = (props) => {
                     { required: true, message: "Vui lòng không được để trống" },
                   ]}
                 >
-                  <Input.Password autoComplete="off" />
+                  <Input.Password autoComplete="off" value={"1"} />
                 </Form.Item>
               </Col>
             </>
@@ -902,13 +919,7 @@ const ModalCustomerContract = (props) => {
 
         <Row gutter={16}>
           <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="File hợp đồng"
-              name="fileName"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
+            <Form.Item label="File hợp đồng" name="fileName">
               <Upload
                 name="fileName"
                 beforeUpload={beforeUpload}
@@ -943,8 +954,24 @@ const ModalCustomerContract = (props) => {
             <Form.Item
               label="Ngày kết thúc"
               name="endDate"
+              dependencies={["startDate"]}
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const startDate = getFieldValue("startDate");
+                    if (
+                      !value ||
+                      !startDate ||
+                      value.isAfter(startDate, "day")
+                    ) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu")
+                    );
+                  },
+                }),
               ]}
             >
               <DatePicker format="YYYY-MM-DD" className="w-full" />
@@ -977,8 +1004,11 @@ const ModalCustomerContract = (props) => {
                   <Option value="Rejected" label="Từ chối">
                     Từ chối
                   </Option>
-                  <Option value="Approve" label="Chấp thuận">
+                  <Option value="Approved" label="Chấp thuận">
                     Chấp thuận
+                  </Option>
+                  <Option value="Send" label="Đã gửi hợp đồng">
+                    Đã gửi hợp đồng
                   </Option>
                   <Option value="Wait" label="Đang chờ gia hạn">
                     Đang chờ gia hạn
@@ -1065,7 +1095,7 @@ const ModalCustomerContract = (props) => {
                 listType="text"
               >
                 {dataFileOffice.length < 1 ? (
-                  <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                  <Button icon={<UploadOutlined />}>Bấm để tải lên</Button>
                 ) : null}
               </Upload>
             </Form.Item>
@@ -1077,6 +1107,16 @@ const ModalCustomerContract = (props) => {
               name="startX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1089,6 +1129,16 @@ const ModalCustomerContract = (props) => {
               name="startY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1101,6 +1151,16 @@ const ModalCustomerContract = (props) => {
               name="endX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1113,6 +1173,16 @@ const ModalCustomerContract = (props) => {
               name="endY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1140,7 +1210,7 @@ const ModalCustomerContract = (props) => {
                 },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input prefix="$" suffix="USD" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
@@ -1165,7 +1235,7 @@ const ModalCustomerContract = (props) => {
                 },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input prefix="$" suffix="USD" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 

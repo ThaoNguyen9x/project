@@ -22,8 +22,15 @@ import dayjs from "dayjs";
 const { Option } = Select;
 
 const ModalSubcontractor = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData, listSystems } =
-    props;
+  const {
+    data,
+    setData,
+    openModal,
+    setOpenModal,
+    fetchData,
+    listSystems,
+    setCurrent,
+  } = props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -46,14 +53,8 @@ const ModalSubcontractor = (props) => {
   }, [data]);
 
   const handleFinish = async (values) => {
-    const {
-      name,
-      phone,
-      contractStartDate,
-      contractEndDate,
-      rating,
-      system,
-    } = values;
+    const { name, phone, contractStartDate, contractEndDate, rating, system } =
+      values;
 
     setIsSubmit(true);
 
@@ -100,6 +101,7 @@ const ModalSubcontractor = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -225,8 +227,23 @@ const ModalSubcontractor = (props) => {
               name="contractEndDate"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const contractStartDate =
+                      getFieldValue("contractStartDate");
+                    if (
+                      !value ||
+                      !contractStartDate ||
+                      value.isAfter(contractStartDate, "day")
+                    ) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu")
+                    );
+                  },
+                }),
               ]}
-              className="mb-2"
             >
               <DatePicker format="YYYY-MM-DD" className="w-full" />
             </Form.Item>

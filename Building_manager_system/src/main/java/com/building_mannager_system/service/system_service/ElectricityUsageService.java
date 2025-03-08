@@ -345,6 +345,8 @@ public class ElectricityUsageService {
         ex.setReadingDate(electricityUsage.getReadingDate());
         ex.setComments(electricityUsage.getComments());
 
+        ex.setStatus(electricityUsage.getStatus());
+
         // Save Updated Record
         ElectricityUsage savedEntity = electricityUsageRepository.save(ex);
 

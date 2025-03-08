@@ -66,7 +66,7 @@ const ViewWorkRegistration = (props) => {
                 }
               }}
             >
-              {data?.account?.name}
+              {data?.account?.name} - {data?.account?.customer?.companyName}
             </a>
           ) : (
             "N/A"
@@ -131,24 +131,20 @@ const ViewWorkRegistration = (props) => {
       ...items,
       {
         label: "Ngày tạo",
-
         children:
           dayjs(data?.createdAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Ngày cập nhật",
-
         children:
           dayjs(data?.updatedAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Tạo bởi",
-
         children: data?.createdBy || "N/A",
       },
       {
         label: "Cập nhật bởi",
-
         children: data?.updatedBy || "N/A",
       },
     ];

@@ -16,7 +16,8 @@ import { callCreateLocation, callUpdateLocation } from "../../../services/api";
 const { Option } = Select;
 
 const ModalLocation = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -92,6 +93,7 @@ const ModalLocation = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -130,6 +132,16 @@ const ModalLocation = (props) => {
               name="numberFloor"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -142,9 +154,19 @@ const ModalLocation = (props) => {
               name="commonArea"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input suffix="m²" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
@@ -154,18 +176,38 @@ const ModalLocation = (props) => {
               name="netArea"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input suffix="m²" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Start X"
+              label="Tọa độ bắt đầu X"
               name="startX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -174,10 +216,20 @@ const ModalLocation = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="start Y"
+              label="Tọa độ bắt đầu Y"
               name="startY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -186,10 +238,20 @@ const ModalLocation = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="End X"
+              label="Tọa độ kết thúc X"
               name="endX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -198,10 +260,20 @@ const ModalLocation = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="End Y"
+              label="Tọa độ kết thúc Y"
               name="endY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />

@@ -71,7 +71,7 @@ function App() {
       setLoading(true);
 
       const res = await callGetAccount();
-      await delay(3000);
+      await delay(1000);
 
       if (res?.data) {
         setUser(res.data);

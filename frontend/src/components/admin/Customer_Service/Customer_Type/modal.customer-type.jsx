@@ -19,7 +19,8 @@ import {
 const { Option } = Select;
 
 const ModalCustomerType = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData } = props;
+  const { data, setData, openModal, setOpenModal, fetchData, setCurrent } =
+    props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -68,6 +69,7 @@ const ModalCustomerType = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 

@@ -512,6 +512,10 @@ export const callSendMailContract = (id) => {
   return axios.put(`/api/contracts/send/${id}`);
 };
 
+export const callSendContract = (id) => {
+  return axios.post(`/dropboxsign/send-email/${id}`);
+};
+
 export const callConfirmationContract = (id, status, comment) => {
   return axios.put(`/api/contracts/confirmation/${id}`, {
     status,

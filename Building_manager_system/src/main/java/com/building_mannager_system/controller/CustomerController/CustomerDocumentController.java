@@ -82,4 +82,11 @@ public class CustomerDocumentController {
     public ResponseEntity<CustomerDocumentDto> getCustomerDocument(@PathVariable(name = "id") int id) {
         return ResponseEntity.ok(customerDocumentService.getCustomerDocument(id));
     }
+
+    @DeleteMapping("/{id}")
+    @ApiMessage("Xóa tài liệu khách hàng thành công")
+    public ResponseEntity<Void> deleteCustomerDocument(@PathVariable(name = "id") int id) {
+        customerDocumentService.deleteCustomerDocument(id);
+        return ResponseEntity.ok(null);
+    }
 }

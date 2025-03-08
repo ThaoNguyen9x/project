@@ -48,18 +48,17 @@ const ViewCommonArea = (props) => {
   const generateItems = () => {
     if (data?.floor) {
       return [
-        { label: "Tên", children: data?.floor || "N/A", span: 2 },
+        { label: "Tên", children: data?.floor || "N/A" },
         {
           label: "Tổng diện tích",
-          children: data?.totalArea + " m²" || "N/A",
-          span: 2,
+          children: data?.totalArea + " m²" || 0,
         },
         {
           label: "Khu vực chung",
           children: (
             <>
               <span>{data?.commonArea ? `${data.commonArea} m²` : 0}</span>
-              <div className="max-h-28 overflow-y-auto overflow-x-hidden space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+              <div className="max-h-32 overflow-y-auto overflow-x-hidden space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
                 {data?.commonAreas?.length > 0
                   ? data?.commonAreas?.map((x) => (
                       <a
@@ -78,12 +77,10 @@ const ViewCommonArea = (props) => {
               </div>
             </>
           ),
-          span: 2,
         },
         {
           label: "Diện tích ròng",
-          children: data?.netArea + " m²" || "N/A",
-          span: 2,
+          children: data?.netArea + " m²" || 0,
         },
         { label: "Tọa độ bắt đầu X", children: data?.startX || 0 },
         { label: "Tọa độ bắt đầu Y", children: data?.startY || 0 },
@@ -92,7 +89,7 @@ const ViewCommonArea = (props) => {
         {
           label: "Thiết bị",
           children: (
-            <div className="max-h-28 overflow-y-auto overflow-x-hidden space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+            <div className="max-h-32 overflow-y-auto overflow-x-hidden space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
               {data?.devices?.length > 0
                 ? data?.devices?.map((x) => (
                     <a
@@ -110,12 +107,11 @@ const ViewCommonArea = (props) => {
                 : "Chưa có"}
             </div>
           ),
-          span: 2,
         },
         {
           label: "Văn phòng",
           children: (
-            <div className="max-h-28 overflow-y-auto overflow-x-hidden space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+            <div className="max-h-32 overflow-y-auto overflow-x-hidden space-y-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
               {data?.offices?.length > 0
                 ? data?.offices?.map((x) => (
                     <a
@@ -133,7 +129,6 @@ const ViewCommonArea = (props) => {
                 : "Chưa có"}
             </div>
           ),
-          span: 2,
         },
       ];
     } else if (data?.deviceId) {
@@ -141,7 +136,6 @@ const ViewCommonArea = (props) => {
         {
           label: "Tên thiết bị",
           children: data?.deviceName || "N/A",
-          span: 2,
         },
         {
           label: "Loại thiết bị",
@@ -159,7 +153,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         { label: "Tuổi thọ", children: data?.lifespan || "N/A" },
         { label: "Ngày cài đặt", children: data?.installationDate || "N/A" },
@@ -180,7 +173,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         { label: "Tọa độ X", children: data?.x || 0 },
         { label: "Tọa độ Y", children: data?.y || 0 },
@@ -212,7 +204,6 @@ const ViewCommonArea = (props) => {
               )}
             </>
           ),
-          span: 2,
         },
         {
           label: "Đánh giá rủi ro",
@@ -236,26 +227,23 @@ const ViewCommonArea = (props) => {
             ) : (
               <span>Chưa có đánh giá</span>
             ),
-          span: 2,
         },
       ];
     } else if (data?.description) {
       return [
-        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        { label: "Tên", children: data?.typeName || "N/A" },
         {
           label: "Mô tả",
           children: data?.description || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.systemName) {
       return [
-        { label: "Tên", children: data?.systemName || "N/A", span: 2 },
-        { label: "Mô tả", children: data?.description || "N/A", span: 2 },
+        { label: "Tên", children: data?.systemName || "N/A" },
+        { label: "Mô tả", children: data?.description || "N/A" },
         {
           label: "Chu kỳ bảo trì",
           children: data?.maintenanceCycle || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.fileName) {
@@ -276,7 +264,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Tổng số tiền",
@@ -286,36 +273,17 @@ const ViewCommonArea = (props) => {
                 currency: "USD",
               })
             : 0,
-          span: 2,
         },
         {
           label: "Ngày bắt đầu",
           children: dayjs(data?.startDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
         },
         {
           label: "Ngày kết thúc",
           children: dayjs(data?.endDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
         },
         {
-          label: "File hợp đồng",
-          children:
-            (
-              <a
-                href={`${import.meta.env.VITE_BACKEND_URL}/storage/contracts/${
-                  data?.fileName
-                }`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Xem
-              </a>
-            ) || "N/A",
-          span: 2,
-        },
-        {
-          label: "Trạng thái",
+          label: "Tình trạng hợp đồng",
           children: (
             <span
               className={`${
@@ -323,23 +291,54 @@ const ViewCommonArea = (props) => {
                   ? "success"
                   : data?.leaseStatus === "Inactive"
                   ? "danger"
-                  : "warning"
+                  : data?.leaseStatus === "Wait"
+                  ? "warning"
+                  : data?.leaseStatus === "Pending"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "Corrected"
+                  ? "bg-gray-200"
+                  : data?.leaseStatus === "W_Confirmation"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Send"
+                  ? "bg-green-500 text-white"
+                  : data?.leaseStatus === "W_Confirmation_2"
+                  ? "bg-red-500 text-white"
+                  : data?.leaseStatus === "Rejected"
+                  ? "bg-red-700 text-white"
+                  : data?.leaseStatus === "Approved"
+                  ? "bg-blue-950 text-white"
+                  : ""
               } status`}
             >
               {data?.leaseStatus === "Active"
                 ? "Hoạt động"
                 : data?.leaseStatus === "Inactive"
                 ? "Đã chấm dứt"
-                : "Đang chờ gia hạn"}
+                : data?.leaseStatus === "Wait"
+                ? "Đang chờ gia hạn"
+                : data?.leaseStatus === "Pending"
+                ? "Đang chờ xử lý"
+                : data?.leaseStatus === "Corrected"
+                ? "Đã sửa"
+                : data?.leaseStatus === "Send"
+                ? "Đã gửi hợp đồng"
+                : data?.leaseStatus === "W_Confirmation"
+                ? "Đang chờ xác nhận"
+                : data?.leaseStatus === "W_Confirmation_2"
+                ? "Đang chờ xác nhận lần 2"
+                : data?.leaseStatus === "Rejected"
+                ? "Từ chối"
+                : data?.leaseStatus === "Approved"
+                ? "Chấp nhận"
+                : ""}
             </span>
           ),
-          span: 2,
         },
       ];
     } else if (data?.role?.name) {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
-        { label: "Email", children: data?.email || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
+        { label: "Email", children: data?.email || "N/A" },
         { label: "Điện thoại", children: data?.mobile || "N/A" },
         { label: "Vai trò", children: data?.role?.name || "N/A" },
         {
@@ -350,19 +349,17 @@ const ViewCommonArea = (props) => {
                 {data?.status ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.typeName) {
       return [
-        { label: "Tên", children: data?.typeName || "N/A", span: 2 },
+        { label: "Tên", children: data?.typeName || "N/A" },
         {
           label: "Hồ sơ",
           children:
             data?.customerTypeDocuments?.map((x) => (
               <p key={x?.id}>{x?.documentType}</p>
             )) || "N/A",
-          span: 2,
         },
         {
           label: "Trạng thái",
@@ -372,7 +369,6 @@ const ViewCommonArea = (props) => {
                 {data?.status ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.assessmentDate) {
@@ -395,7 +391,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Tên thiết bị",
@@ -413,7 +408,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Nhà thầu phụ",
@@ -431,43 +425,35 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Xác xuất rủi ro",
           children: data?.riskProbability || "N/A",
-          span: 2,
         },
         {
           label: "Tác động rủi ro",
           children: data?.riskImpact || "N/A",
-          span: 2,
         },
         {
           label: "Phát hiện rủi ro",
           children: data?.riskDetection || "N/A",
-          span: 2,
         },
         {
           label: "Số ưu tiên rủi ro",
           children: data?.riskPriorityNumber || "N/A",
-          span: 2,
         },
         {
           label: "Hành động giảm thiểu",
           children: data?.mitigationAction || "N/A",
-          span: 2,
         },
         {
           label: "Nhận xét",
           children: data?.remarks || "N/A",
-          span: 2,
         },
         {
           label: "Ngày đánh giá",
           children:
             dayjs(data?.assessmentDate).format(FORMAT_DATE_DISPLAY) || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.performedDate) {
@@ -496,22 +482,18 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Ghi chú",
           children: data?.notes || "N/A",
-          span: 2,
         },
         {
           label: "Vấn đề",
           children: data?.findings || "N/A",
-          span: 2,
         },
         {
           label: "Giải pháp",
           children: data?.resolution || "N/A",
-          span: 2,
         },
         {
           label: "Kỹ thuật viên",
@@ -529,17 +511,15 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Số điện thoại khác",
           children: data?.phone || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.rentPrice) {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
         {
           label: "Hợp đồng",
           children: (
@@ -560,12 +540,10 @@ const ViewCommonArea = (props) => {
               )}
             </>
           ),
-          span: 2,
         },
         {
           label: "Tổng diện tích",
-          children: data?.totalArea + " m²" || "N/A",
-          span: 2,
+          children: data?.totalArea + " m²" || 0,
         },
         {
           label: "Giá thuê",
@@ -573,8 +551,7 @@ const ViewCommonArea = (props) => {
             data?.rentPrice?.toLocaleString("en-US", {
               style: "currency",
               currency: "USD",
-            }) || "N/A",
-          span: 2,
+            }) || 0,
         },
         {
           label: "Phí dịch vụ",
@@ -582,8 +559,7 @@ const ViewCommonArea = (props) => {
             data?.serviceFee?.toLocaleString("en-US", {
               style: "currency",
               currency: "USD",
-            }) || "N/A",
-          span: 2,
+            }) || 0,
         },
         { label: "Tọa độ bắt đầu x", children: data?.startX || 0 },
         { label: "Tọa độ bắt đầu y", children: data?.startY || 0 },
@@ -603,7 +579,6 @@ const ViewCommonArea = (props) => {
                 Xem
               </a>
             ) || "N/A",
-          span: 2,
         },
         {
           label: "Trạng thái",
@@ -617,41 +592,37 @@ const ViewCommonArea = (props) => {
                 {data?.status === "ACTIV" ? "Hoạt động" : "Không hoạt động"}
               </span>
             ) || "N/A",
-          span: 2,
         },
       ];
     } else if (data?.contractEndDate) {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
         { label: "Điện thoại", children: data?.phone || "N/A" },
         {
           label: "Rating",
           children: (
             <Rate value={data?.rating} disabled style={{ fontSize: 16 }} />
           ),
-          span: 2,
         },
         {
           label: "Hệ thống",
           children: data?.system?.systemName || "N/A",
-          span: 2,
         },
         { label: "Ngày bắt đầu", children: data?.contractStartDate || "N/A" },
         { label: "Ngày kết thúc", children: data?.contractEndDate || "N/A" },
       ];
     } else if (data?.companyName) {
       return [
-        { label: "Công ty", children: data?.companyName || "N/A", span: 2 },
-        { label: "Giám đốc", children: data?.directorName || "N/A", span: 2 },
+        { label: "Công ty", children: data?.companyName || "N/A" },
+        { label: "Giám đốc", children: data?.directorName || "N/A" },
         { label: "Email", children: data?.email || "N/A" },
         { label: "Điện thoại", children: data?.phone || "N/A" },
-        { label: "Địa chỉ", children: data?.address || "N/A", span: 2 },
+        { label: "Địa chỉ", children: data?.address || "N/A" },
         {
           label: "Ngày sinh",
           children: data?.birthday
             ? dayjs(data?.birthday).format("YYYY-DD-MM")
             : "N/A",
-          span: 2,
         },
         {
           label: "Liên hệ",
@@ -669,7 +640,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
         {
           label: "Loại khách hàng",
@@ -687,40 +657,6 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
-        },
-        {
-          label: "Hồ sơ",
-          children: (
-            <Steps
-              direction="vertical"
-              size="small"
-              current={1}
-              items={
-                data?.customerType?.customerTypeDocuments?.map((x) => {
-                  const filePath = x?.customerDocuments?.[0]?.filePath;
-                  return {
-                    title: x?.documentType,
-                    description: filePath ? (
-                      <a
-                        href={`${
-                          import.meta.env.VITE_BACKEND_URL
-                        }/storage/customer_documents/${filePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Xem
-                      </a>
-                    ) : (
-                      <span style={{ color: "red" }}>Đang thiếu</span>
-                    ),
-                    status: filePath ? "finish" : "error",
-                  };
-                }) || []
-              }
-            />
-          ),
-          span: 2,
         },
       ];
     } else if (data?.nextScheduledDate) {
@@ -737,12 +673,10 @@ const ViewCommonArea = (props) => {
               : data?.serviceType === "HVAC"
               ? "Hệ thống Điều hòa không khí"
               : "N/A",
-          span: 2,
         },
         {
           label: "Phạm vi",
           children: data?.maintenanceScope || "N/A",
-          span: 2,
         },
         {
           label: "Tần suất",
@@ -754,13 +688,11 @@ const ViewCommonArea = (props) => {
               : data?.frequency === "ANNUALLY"
               ? "Hàng năm"
               : "N/A",
-          span: 2,
         },
         {
           label: "Ngày dự kiến",
           children:
             dayjs(data?.nextScheduledDate).format("YYYY-MM-DD") || "N/A",
-          span: 2,
         },
         {
           label: "Trạng thái",
@@ -782,7 +714,6 @@ const ViewCommonArea = (props) => {
                   : "Đang tiến hành"}
               </span>
             ) || "N/A",
-          span: 2,
         },
         {
           label: "Nhà thầu phụ",
@@ -800,12 +731,11 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
       ];
     } else {
       return [
-        { label: "Tên", children: data?.name || "N/A", span: 2 },
+        { label: "Tên", children: data?.name || "N/A" },
         {
           label: "Vị trí",
           children: data?.location?.floor ? (
@@ -822,16 +752,14 @@ const ViewCommonArea = (props) => {
           ) : (
             "N/A"
           ),
-          span: 2,
         },
-        { label: "Tọa độ bắt đầu X", children: data?.startX || 0, span: 2 },
+        { label: "Tọa độ bắt đầu X", children: data?.startX || 0 },
         {
           label: "Tọa độ bắt đầu Y",
           children: data?.startY || 0,
-          span: 2,
         },
-        { label: "Tọa độ kết thúc X", children: data?.endX || 0, span: 2 },
-        { label: "Tọa độ kết thúc Y", children: data?.endY || 0, span: 2 },
+        { label: "Tọa độ kết thúc X", children: data?.endX || 0 },
+        { label: "Tọa độ kết thúc Y", children: data?.endY || 0 },
       ];
     }
   };
@@ -843,24 +771,20 @@ const ViewCommonArea = (props) => {
       ...items,
       {
         label: "Ngày tạo",
-        span: 2,
         children:
           dayjs(data?.createdAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Ngày cập nhật",
-        span: 2,
         children:
           dayjs(data?.updatedAt).format(FORMAT_DATE_TIME_DISPLAY) || "N/A",
       },
       {
         label: "Tạo bởi",
-        span: 2,
         children: data?.createdBy || "N/A",
       },
       {
         label: "Cập nhật bởi",
-        span: 2,
         children: data?.updatedBy || "N/A",
       },
     ];
@@ -908,11 +832,7 @@ const ViewCommonArea = (props) => {
         </Space>
       }
     >
-      <Descriptions
-        items={items}
-        column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
-        bordered
-      />
+      <Descriptions items={items} column={1} bordered />
     </Drawer>
   );
 };

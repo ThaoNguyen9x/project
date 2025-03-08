@@ -23,11 +23,12 @@ public class DropboxSignEmailController {
      * @return Thông báo kết quả gửi yêu cầu ký.
      */
     @PostMapping("/send-email/{id}")
-    @ApiMessage("Thành công")
+    @ApiMessage("Yêu cầu ký đã được gửi qua email thành công")
     public ResponseEntity<String> sendEmailSignatureRequest(@PathVariable(name = "id") int id) {
         try {
             SignatureRequest request = dropboxSignEmailService.sendEmailSignatureRequestUsingContract(id);
-            return ResponseEntity.ok("Yêu cầu ký đã được gửi qua email. Request ID: " + request.getId());
+            String message = "Yêu cầu ký đã được gửi qua email. Request ID: " + request.getId();
+            return ResponseEntity.ok(message);
         } catch (HelloSignException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi gửi yêu cầu ký qua email: " + e.getMessage());

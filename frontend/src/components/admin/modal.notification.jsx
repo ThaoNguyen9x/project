@@ -144,8 +144,9 @@ const ModalNotification = (props) => {
     Maintenance_Task_Notification: (
       <>
         <p>
-          Bạn có nhiệm vụ bảo trì vào ngày{" "}
-          <b>{new Date(message?.notifications).toLocaleDateString("vi-VN")}</b>
+          Có một thông báo bảo trì được gửi vào ngày{" "}
+          <b>{new Date(message?.createdAt).toLocaleDateString("vi-VN")}</b>. Vui
+          lòng kiểm tra.
         </p>
         <Link
           to={`/dashboard/notifications?openViewDetail=true&id=${message?.id}`}
@@ -334,7 +335,8 @@ const ModalNotification = (props) => {
         <>
           <p>
             Khách hàng từ <b>{message?.contract?.customer?.companyName}</b> vừa
-            phản hồi <b>chấp nhận</b> hợp đồng. Vui lòng kiểm tra.
+            phản hồi <b>chấp nhận</b> hợp đồng. Vui lòng kiểm tra, gửi hợp đồng
+            qua mail cho họ.
           </p>
           <b>Khách hàng có ghi chú thêm rằng:</b>
           <div>

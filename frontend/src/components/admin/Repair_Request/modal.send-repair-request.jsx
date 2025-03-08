@@ -20,6 +20,7 @@ const ModalSendRepairRequest = (props) => {
     setOpenModalSend,
     fetchData,
     listUsers,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -47,6 +48,7 @@ const ModalSendRepairRequest = (props) => {
       });
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 

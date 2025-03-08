@@ -50,5 +50,7 @@ public class ResLoginDTO {
         private String name;
 
         private String email;
+
+        private String role;
     }
 }

@@ -181,8 +181,9 @@ public class ContractService {
             throw new APIException(HttpStatus.NOT_FOUND, "Customer information is invalid or missing");
         }
 
-        fileService.validateFile(drawingContract, allowedExtensions);
-        contract.setFileName(fileService.storeFile(drawingContract, folder));
+        if (drawingContract != null && !drawingContract.isEmpty()) {
+            contract.setFileName(fileService.storeFile(drawingContract, folder));
+        }
 
         return modelMapper.map(contractRepository.save(contract), ContractDto.class);
     }
@@ -233,7 +234,6 @@ public class ContractService {
         }
 
         if (drawingContract != null && !drawingContract.isEmpty()) {
-            fileService.validateFile(drawingContract, allowedExtensions);
 
             // Xóa tệp cũ nếu tồn tại
             if (ex.getFileName() != null) {
@@ -512,7 +512,7 @@ public class ContractService {
 
             emailService.sendEmailFromTemplateSync(
                     contractRequest.getCustomer().getUser().getEmail(),
-                    "Xác nhận hợp đồng khách hàng",
+                    "Thông tin tài khoản đăng nhập hệ thống quản lý tài sản",
                     "contract-confirm-template",
                     contractRequest.getCustomer().getUser().getName(),
                     contractRequest.getCustomer().getCompanyName(),

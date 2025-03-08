@@ -29,6 +29,7 @@ const ModalSystemMaintenanceService = (props) => {
     setOpenModal,
     fetchData,
     listSubcontractors,
+    setCurrent,
   } = props;
 
   const [form] = Form.useForm();
@@ -94,6 +95,7 @@ const ModalSystemMaintenanceService = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 

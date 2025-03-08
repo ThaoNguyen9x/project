@@ -7,6 +7,7 @@ import {
   Popconfirm,
   message,
   notification,
+  Tooltip,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
@@ -62,23 +63,23 @@ const Device = () => {
 
   useEffect(() => {
     const init = async () => {
-      const systems = await callGetAllSystems();
+      const systems = await callGetAllSystems(`page=1&size=100`);
       if (systems && systems.data) {
         setListSystems(systems.data?.result);
       }
 
-      const locations = await callGetAllLocations();
+      const locations = await callGetAllLocations(`page=1&size=100`);
       if (locations && locations.data) {
         setListLocations(locations.data?.result);
       }
 
-      const deviceTypes = await callGetAllDeviceTypes();
+      const deviceTypes = await callGetAllDeviceTypes(`page=1&size=100`);
       if (deviceTypes && deviceTypes.data) {
         setListDeviceTypes(deviceTypes.data?.result);
       }
 
       const systemMaintenanceServices =
-        await callGetAllSystemMaintenanceServices();
+        await callGetAllSystemMaintenanceServices(`page=1&size=100`);
       if (systemMaintenanceServices && systemMaintenanceServices.data) {
         setListSystemMaintenanceServices(
           systemMaintenanceServices.data?.result
@@ -92,6 +93,7 @@ const Device = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -335,40 +337,44 @@ const Device = () => {
       render: (text, record) => (
         <div className="flex items-center gap-3">
           <Access permission={ALL_PERMISSIONS.DEVICES.UPDATE} hideChildren>
-            <div
-              onClick={async () => {
-                const res = await callGetDevice(record?.deviceId);
-                if (res?.data) {
-                  setData(res?.data);
-                  setOpenModalDevice(true);
-                }
-              }}
-              className="cursor-pointer text-amber-900"
-            >
-              <CiEdit className="h-5 w-5" />
-            </div>
+            <Tooltip placement="bottom" title="Chỉnh sửa">
+              <div
+                onClick={async () => {
+                  const res = await callGetDevice(record?.deviceId);
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenModalDevice(true);
+                  }
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <CiEdit className="h-5 w-5" />
+              </div>
+            </Tooltip>
           </Access>
           <Access permission={ALL_PERMISSIONS.DEVICES.DELETE} hideChildren>
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.deviceId)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
+            <Tooltip placement="bottom" title="Xóa">
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc chắn muốn xóa không?"
+                onConfirm={() => handleDelete(record.deviceId)}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+                className="cursor-pointer DELETE"
+              >
+                <>
+                  <AiOutlineDelete className="h-5 w-5" />
+                </>
+              </Popconfirm>
+            </Tooltip>
           </Access>
         </div>
       ),
@@ -389,16 +395,18 @@ const Device = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllDevices(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -406,20 +414,21 @@ const Device = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -428,13 +437,13 @@ const Device = () => {
   const handleDelete = async (deviceId) => {
     const res = await callDeleteDevice(deviceId);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
       notification.error({
         message: "Có lỗi xảy ra",
-        description: res.error,
+        description: "Thiết bị đang được sử dụng không thể xóa",
       });
     }
   };
@@ -444,13 +453,14 @@ const Device = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Thiết bị</h2>
         <Access permission={ALL_PERMISSIONS.DEVICES.CREATE} hideChildren>
-          <Button
-            onClick={() => setOpenModalDevice(true)}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => setOpenModalDevice(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -488,6 +498,7 @@ const Device = () => {
           listLocations={listLocations}
           listDeviceTypes={listDeviceTypes}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

@@ -19,7 +19,15 @@ import {
 const { Option } = Select;
 
 const ModalCommonArea = (props) => {
-  const { data, setData, openModal, setOpenModal, fetchData, listLocations } = props;
+  const {
+    data,
+    setData,
+    openModal,
+    setOpenModal,
+    fetchData,
+    listLocations,
+    setCurrent,
+  } = props;
 
   const [form] = Form.useForm();
   const [isSubmit, setIsSubmit] = useState(false);
@@ -85,6 +93,7 @@ const ModalCommonArea = (props) => {
       }
     }
 
+    setCurrent(1);
     setIsSubmit(false);
   };
 
@@ -148,26 +157,35 @@ const ModalCommonArea = (props) => {
                     .includes(input.toLowerCase())
                 }
               >
-                {listLocations
-                  .map((location) => (
-                    <Select.Option
-                      key={location.id}
-                      value={location.id}
-                      label={location.floor}
-                    >
-                      {location.floor}
-                    </Select.Option>
-                  ))}
+                {listLocations.map((location) => (
+                  <Select.Option
+                    key={location.id}
+                    value={location.id}
+                    label={location.floor}
+                  >
+                    {location.floor}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="Start X"
+              label="Tọa độ bắt đầu X"
               name="startX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -176,10 +194,20 @@ const ModalCommonArea = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="start Y"
+              label="Tọa độ bắt đầu Y"
               name="startY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -188,10 +216,20 @@ const ModalCommonArea = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="End X"
+              label="Tọa độ kết thúc X"
               name="endX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -200,10 +238,20 @@ const ModalCommonArea = (props) => {
 
           <Col lg={12} md={12} sm={24} xs={24}>
             <Form.Item
-              label="End Y"
+              label="Tọa độ kết thúc Y"
               name="endY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />

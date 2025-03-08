@@ -101,6 +101,7 @@ const MaintenanceHistory = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -212,16 +213,18 @@ const MaintenanceHistory = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllMaintenanceHistories(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -229,20 +232,21 @@ const MaintenanceHistory = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -253,7 +257,7 @@ const MaintenanceHistory = () => {
     if (!resRiskAssessment || resRiskAssessment.statusCode !== 200) {
       return notification.error({
         message: "Có lỗi xảy ra",
-        description: resRiskAssessment?.error || "Không thể đánh giá rủi ro.",
+        description: "Không thể đánh giá rủi ro.",
       });
     }
 
@@ -263,8 +267,7 @@ const MaintenanceHistory = () => {
     if (!resMaintenanceHistory || resMaintenanceHistory.statusCode !== 200) {
       return notification.error({
         message: "Có lỗi xảy ra",
-        description:
-          resMaintenanceHistory?.error || "Không thể lịch sử bảo trì.",
+        description: "Không thể lịch sử bảo trì.",
       });
     }
 
@@ -447,6 +450,7 @@ const MaintenanceHistory = () => {
           fetchData={fetchData}
           listSystemMaintenanceServices={listSystemMaintenanceServices}
           listDevices={listDevices}
+          setCurrent={setCurrent}
         />
       </div>
     </div>

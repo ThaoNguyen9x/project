@@ -28,6 +28,7 @@ import {
   callCreateOffice,
   callCreateUser,
   callDeleteCustomer,
+  callDeleteCustomerDocument,
   callDeleteHandoverStatus,
   callDeleteMeter,
   callDeleteOffice,
@@ -249,7 +250,6 @@ const ModalOffice = (props) => {
 
         if (!resUser || !resUser.data) {
           await callDeleteOffice(resOffice.data.id);
-          await callDeleteMeter(resMeter.data.id);
           throw new Error(resUser?.error);
         }
 
@@ -268,9 +268,7 @@ const ModalOffice = (props) => {
         );
 
         if (!resCustomer || !resCustomer.data) {
-          await callDeleteUser(resUser.data.id);
           await callDeleteOffice(resOffice.data.id);
-          await callDeleteMeter(resMeter.data.id);
           throw new Error(resCustomer?.error);
         }
 
@@ -305,10 +303,7 @@ const ModalOffice = (props) => {
         );
 
         if (!resContract || !resContract.data) {
-          await callDeleteCustomer(resCustomer.data.id);
-          await callDeleteUser(resUser.data.id);
           await callDeleteOffice(resOffice.data.id);
-          await callDeleteMeter(resMeter.data.id);
           throw new Error(resContract?.error);
         }
       } else {
@@ -593,12 +588,7 @@ const ModalOffice = (props) => {
       confirmLoading={isSubmit}
       className="w-full lg:!w-1/2"
     >
-      <Form
-        name="office-basic"
-        onFinish={handleFinish}
-        layout="vertical"
-        form={form}
-      >
+      <Form name="basic" onFinish={handleFinish} layout="vertical" form={form}>
         <h3 className="font-semibold text-base my-2">Thông tin khách hàng</h3>
 
         <Row gutter={16}>
@@ -606,7 +596,9 @@ const ModalOffice = (props) => {
             <Form.Item
               label="Công ty"
               name="companyName"
-              rules={[{ required: true, message: "Bắt buộc" }]}
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
             >
               <Input autoComplete="off" allowClear />
             </Form.Item>
@@ -616,7 +608,9 @@ const ModalOffice = (props) => {
             <Form.Item
               label="Giám đốc"
               name="directorName"
-              rules={[{ required: true, message: "Bắt buộc" }]}
+              rules={[
+                { required: true, message: "Vui lòng không được để trống" },
+              ]}
             >
               <Input autoComplete="off" allowClear />
             </Form.Item>
@@ -628,7 +622,7 @@ const ModalOffice = (props) => {
               name="email"
               rules={[
                 { type: "email", message: "Email không hợp lệ" },
-                { required: true, message: "Bắt buộc" },
+                { required: true, message: "Vui lòng không được để trống" },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -675,9 +669,25 @@ const ModalOffice = (props) => {
               name="birthday"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || value.isBefore(new Date(), "day")) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Ngày sinh không được lớn hơn ngày hiện tại")
+                    );
+                  },
+                }),
               ]}
             >
-              <DatePicker format="YYYY-MM-DD" className="w-full" />
+              <DatePicker
+                format="YYYY-MM-DD"
+                className="w-full"
+                disabledDate={(current) =>
+                  current && current.isAfter(new Date(), "day")
+                }
+              />
             </Form.Item>
           </Col>
 
@@ -723,7 +733,9 @@ const ModalOffice = (props) => {
               <ul className="my-2">
                 {listCustomerTypeDocuments
                   ?.filter((doc) => {
-                    return doc.customerType.id === selectedCustomerType;
+                    return (
+                      doc.customerType.id === selectedCustomerType && doc.status
+                    );
                   })
                   ?.map((doc) => (
                     <li key={doc.id}>
@@ -863,7 +875,7 @@ const ModalOffice = (props) => {
                     { required: true, message: "Vui lòng không được để trống" },
                   ]}
                 >
-                  <Input.Password autoComplete="off" />
+                  <Input.Password autoComplete="off" value={"1"} />
                 </Form.Item>
               </Col>
             </>
@@ -907,13 +919,7 @@ const ModalOffice = (props) => {
 
         <Row gutter={16}>
           <Col lg={12} md={12} sm={24} xs={24}>
-            <Form.Item
-              label="File hợp đồng"
-              name="fileName"
-              rules={[
-                { required: true, message: "Vui lòng không được để trống" },
-              ]}
-            >
+            <Form.Item label="File hợp đồng" name="fileName">
               <Upload
                 name="fileName"
                 beforeUpload={beforeUpload}
@@ -948,8 +954,24 @@ const ModalOffice = (props) => {
             <Form.Item
               label="Ngày kết thúc"
               name="endDate"
+              dependencies={["startDate"]}
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const startDate = getFieldValue("startDate");
+                    if (
+                      !value ||
+                      !startDate ||
+                      value.isAfter(startDate, "day")
+                    ) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu")
+                    );
+                  },
+                }),
               ]}
             >
               <DatePicker format="YYYY-MM-DD" className="w-full" />
@@ -979,11 +1001,32 @@ const ModalOffice = (props) => {
                   <Option value="Active" label="Hoạt động">
                     Hoạt động
                   </Option>
-                  <Option value="Pending" label="Đang chờ gia hạn">
+                  <Option value="Rejected" label="Từ chối">
+                    Từ chối
+                  </Option>
+                  <Option value="Approved" label="Chấp thuận">
+                    Chấp thuận
+                  </Option>
+                  <Option value="Send" label="Đã gửi hợp đồng">
+                    Đã gửi hợp đồng
+                  </Option>
+                  <Option value="Wait" label="Đang chờ gia hạn">
                     Đang chờ gia hạn
                   </Option>
                   <Option value="Inactive" label="Đã chấm dứt">
                     Đã chấm dứt
+                  </Option>
+                  <Option value="Corrected" label="Đã sửa">
+                    Đã sửa
+                  </Option>
+                  <Option value="W_Confirmation" label="Đang chờ xác nhận">
+                    Đang chờ xác nhận
+                  </Option>
+                  <Option
+                    value="W_Confirmation_2"
+                    label="Đang chờ xác nhận lần 2"
+                  >
+                    Đang chờ xác nhận lần 2
                   </Option>
                 </Select>
               </Form.Item>
@@ -1052,7 +1095,7 @@ const ModalOffice = (props) => {
                 listType="text"
               >
                 {dataFileOffice.length < 1 ? (
-                  <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                  <Button icon={<UploadOutlined />}>Bấm để tải lên</Button>
                 ) : null}
               </Upload>
             </Form.Item>
@@ -1064,6 +1107,16 @@ const ModalOffice = (props) => {
               name="startX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1076,6 +1129,16 @@ const ModalOffice = (props) => {
               name="startY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1088,6 +1151,16 @@ const ModalOffice = (props) => {
               name="endX"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1100,6 +1173,16 @@ const ModalOffice = (props) => {
               name="endY"
               rules={[
                 { required: true, message: "Vui lòng không được để trống" },
+                {
+                  validator: (_, value) => {
+                    if (value && isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Vui lòng nhập số hợp lệ")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input autoComplete="off" allowClear />
@@ -1127,7 +1210,7 @@ const ModalOffice = (props) => {
                 },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input prefix="$" suffix="USD" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 
@@ -1152,7 +1235,7 @@ const ModalOffice = (props) => {
                 },
               ]}
             >
-              <Input autoComplete="off" allowClear />
+              <Input prefix="$" suffix="USD" autoComplete="off" allowClear />
             </Form.Item>
           </Col>
 

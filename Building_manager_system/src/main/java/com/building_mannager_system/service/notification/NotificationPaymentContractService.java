@@ -172,6 +172,29 @@ public class NotificationPaymentContractService {
 
         try {
             String message = JsonUntils.toJson(workRegistrationDto);
+
+            List<String> roles = List.of("Technician_Manager", "Technician_Employee");
+            List<User> recipients = userRepository.findByRole_NameIn(roles);
+
+            for (User admin : recipients) {
+                Recipient adminRec = new Recipient();
+                adminRec.setType("Work_Register_Notification_Customer");
+                adminRec.setName("Send Work RegisterNotification");
+                adminRec.setReferenceId(admin.getId());
+
+                Recipient savedAdminRec = recipientService.createRecipient(adminRec);
+
+                Notification adminNoti = new Notification();
+                adminNoti.setRecipient(savedAdminRec);
+                adminNoti.setMessage(message);
+                adminNoti.setStatus(StatusNotifi.PENDING);
+                adminNoti.setCreatedAt(LocalDateTime.now());
+
+                notificationService.createNotification(adminNoti);
+
+                messagingTemplate.convertAndSend("/topic/work-registration-notifications/" + admin.getId(), message);
+            }
+
             Recipient rec = new Recipient();
 
             rec.setType("Work_Register_Notification_Customer");

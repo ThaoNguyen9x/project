@@ -50,8 +50,8 @@ public class SecurityUtil {
 
         // Hardcode permission
         List<String> listAuthority = new ArrayList<>();
-        listAuthority.add("Customer");
-        listAuthority.add("Application_Admin");
+        userToken.setRole(dto.getUser().getRole().getName()); // Set role directly
+        listAuthority.add(dto.getUser().getRole().getName()); // Add role name to list
 
         List<Map<String, String>> pageDetails = pages.stream()
                 .map(page -> {

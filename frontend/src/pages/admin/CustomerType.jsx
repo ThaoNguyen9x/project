@@ -7,6 +7,7 @@ import {
   Popconfirm,
   message,
   notification,
+  Tooltip,
 } from "antd";
 
 import { AiOutlineDelete } from "react-icons/ai";
@@ -52,6 +53,7 @@ const CustomerType = () => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
+    setCurrent(1);
   };
 
   const handleReset = (clearFilters) => {
@@ -184,18 +186,8 @@ const CustomerType = () => {
     {
       title: "Trạng thái",
       dataIndex: "status",
-      filters: [
-        {
-          text: "Hoạt động",
-          value: true,
-        },
-        {
-          text: "Không hoạt động",
-          value: false,
-        },
-      ],
-      onFilter: (value, record) => record?.status === value,
-      render: (status, record) => (
+      sorter: (a, b) => (a.status === b.status ? 0 : a.status ? -1 : 1),
+      render: (status) => (
         <span className={`${status ? "success" : "danger"} status`}>
           {status ? "Hoạt động" : "Không hoạt động"}
         </span>
@@ -209,43 +201,47 @@ const CustomerType = () => {
             permission={ALL_PERMISSIONS.CUSTOMER_TYPES.UPDATE}
             hideChildren
           >
-            <div
-              onClick={async () => {
-                const res = await callGetCustomerType(record?.id);
-                if (res?.data) {
-                  setData(res?.data);
-                  setOpenModal(true);
-                }
-              }}
-              className="cursor-pointer text-amber-900"
-            >
-              <CiEdit className="h-5 w-5" />
-            </div>
+            <Tooltip placement="bottom" title="Chỉnh sửa">
+              <div
+                onClick={async () => {
+                  const res = await callGetCustomerType(record?.id);
+                  if (res?.data) {
+                    setData(res?.data);
+                    setOpenModal(true);
+                  }
+                }}
+                className="cursor-pointer text-amber-900"
+              >
+                <CiEdit className="h-5 w-5" />
+              </div>
+            </Tooltip>
           </Access>
           <Access
             permission={ALL_PERMISSIONS.CUSTOMER_TYPES.DELETE}
             hideChildren
           >
-            <Popconfirm
-              placement="leftBottom"
-              okText="Có"
-              cancelText="Không"
-              title="Xác nhận"
-              description="Bạn có chắc chắn muốn xóa không?"
-              onConfirm={() => handleDelete(record.id)}
-              icon={
-                <QuestionCircleOutlined
-                  style={{
-                    color: "red",
-                  }}
-                />
-              }
-              className="cursor-pointer DELETE"
-            >
-              <>
-                <AiOutlineDelete className="h-5 w-5" />
-              </>
-            </Popconfirm>
+            <Tooltip placement="bottom" title="Xóa">
+              <Popconfirm
+                placement="leftBottom"
+                okText="Có"
+                cancelText="Không"
+                title="Xác nhận"
+                description="Bạn có chắc chắn muốn xóa không?"
+                onConfirm={() => handleDelete(record.id)}
+                icon={
+                  <QuestionCircleOutlined
+                    style={{
+                      color: "red",
+                    }}
+                  />
+                }
+                className="cursor-pointer DELETE"
+              >
+                <>
+                  <AiOutlineDelete className="h-5 w-5" />
+                </>
+              </Popconfirm>
+            </Tooltip>
           </Access>
         </div>
       ),
@@ -266,16 +262,18 @@ const CustomerType = () => {
     }
 
     if (sortQuery) {
-      query += `&${sortQuery}`;
+      query += `&sort=${sortQuery}`;
+    } else {
+      query += `&sort=updatedAt,desc`;
     }
 
     const res = await callGetAllCustomerTypes(query);
     if (res && res.data) {
-      setList(
-        res.data.result.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
+      let data = res.data.result;
+
+      data = data.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      setList(data);
       setTotal(res.data.meta.total);
     }
 
@@ -283,20 +281,21 @@ const CustomerType = () => {
   };
 
   const onChange = (pagination, filters, sorter) => {
-    if (pagination && pagination.current !== current) {
-      setCurrent(pagination.current);
-    }
+    if (pagination) {
+      if (pagination.current !== current) {
+        setCurrent(pagination.current);
+      }
 
-    if (pagination && pagination.pageSize !== pageSize) {
-      setPageSize(pagination.pageSize);
-      setCurrent(1);
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+        setCurrent(1);
+      }
     }
 
     if (sorter && sorter.field) {
       const sortField = sorter.field;
       const sortOrder = sorter.order === "ascend" ? "asc" : "desc";
-      const q = `sort=${sortField},${sortOrder}`;
-      setSortQuery(q);
+      setSortQuery(`${sortField},${sortOrder}`);
     } else {
       setSortQuery("");
     }
@@ -305,7 +304,7 @@ const CustomerType = () => {
   const handleDelete = async (id) => {
     const res = await callDeleteCustomerType(id);
 
-    if (res && res && res.statusCode === 200) {
+    if (res && res.statusCode === 200) {
       message.success(res.message);
       fetchData();
     } else {
@@ -321,13 +320,14 @@ const CustomerType = () => {
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-base xl:text-xl font-bold">Loại khách hàng</h2>
         <Access permission={ALL_PERMISSIONS.CUSTOMER_TYPES.CREATE} hideChildren>
-          <Button
-            onClick={() => setOpenModal(true)}
-            className="p-2 xl:p-3 gap-1 xl:gap-2"
-          >
-            <GoPlus className="h-4 w-4" />
-            Thêm
-          </Button>
+          <Tooltip placement="bottom" title="Thêm">
+            <Button
+              onClick={() => setOpenModal(true)}
+              className="p-2 xl:p-3 gap-1 xl:gap-2"
+            >
+              <GoPlus className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </Access>
       </div>
       <div className="relative overflow-x-auto">
@@ -361,6 +361,7 @@ const CustomerType = () => {
           openModal={openModal}
           setOpenModal={setOpenModal}
           fetchData={fetchData}
+          setCurrent={setCurrent}
         />
       </div>
     </div>
